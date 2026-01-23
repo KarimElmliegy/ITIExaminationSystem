@@ -1,0 +1,281 @@
+﻿@{
+    Layout = null;
+}
+@model List<Student>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ITI Instructor - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://unpkg.com/lucide@latest" defer></script>
+    <link rel="icon" type="image/png" href="/images/Gemini_Generated_Image_vi5243vi5243vi52.png">
+    <link rel="stylesheet" href="/css/Instructor.css" />
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" defer></script>
+</head>
+<body>
+    <div id="dashboard-view">
+        <header class="admin-header">
+            <div class="header-left">
+                <div class="nav-logo-box"></div>
+                <span class="header-title">Admin Portal</span>
+            </div>
+            <nav class="nav-links">
+                <a style="text-decoration: none;" href="/Instructor/insDiplayStudents" class="nav-link ">Students</a>
+                <a style="text-decoration: none;" href="/Instructor/Courses" class="nav-link ">Courses</a>
+                <a style="text-decoration: none;" href="/Instructor/Exams" class="nav-link ">Exams</a>
+            </nav>
+
+
+            <a style="text-decoration: none;"  href="/Home/Login" id="logoutBtn" class="nav-link logout-btn">Logout</a>
+
+
+        </header>
+
+        <main class="main-content">
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">👨‍🎓</div>
+                    <div class="stat-info">
+                        <h3>Total Students</h3>
+                        <p id="stat-students">@ViewBag.StudentCount</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👨‍🏫</div>
+                    <div class="stat-info">
+                        <h3>Instructors</h3>
+                        <p id="stat-instructors">@ViewBag.instractors</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📚</div>
+                    <div class="stat-info">
+                        <h3>Active Courses</h3>
+                        <p id="stat-courses">@ViewBag.CourseCount</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-info">
+                        <h3>Exams Scheduled</h3>
+                        <p>1</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STUDENTS TAB -->
+            <div id="tab-students" class="content-tab">
+                <div class="data-panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">👨‍🎓 Student Management</h2>
+                        <button class="btn-add" onclick="openModal('student')">
+                            + Add Student
+                        </button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr >
+                                <th></th>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Branch</th>
+                                <th>Track</th>
+                                <th class="select">
+                                    <div class="roller">
+                                        <button type="button" class="roller-btn" data-step="1">▲</button>
+
+                                        <span id="rollerValue">@(ViewBag.SelectedIntake ?? 46)</span>
+
+                                        <button type="button" class="roller-btn" data-step="-1">▼</button>
+
+                                        <!-- Hidden real select (for form submit) -->
+                                        <select name="Intake" id="intake" hidden>
+                                            @for (int i = 46; i > 0; i--)
+                                            {
+                                                <option value="@i">@i</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var s in Model)
+                            {
+                                <tr class="ROWEDIT" data-user-id="@s.UserId">
+                                    <td>@s.UserId</td>
+                                    <td style="font-weight: 600; color: #667eea">@s?.User?.UserName</td>
+                                    <td>@s?.User?.UserEmail</td>
+                                    <td>@s.BranchId</td>
+                                    <td>
+                                        <span class="badge badge-purple">
+                                            @((ViewBag.Tracks as List<Track>)
+                                                ?.FirstOrDefault(t => t.TrackId == s.TrackId)
+                                                ?.TrackName)
+                                        </span>
+                                    </td>
+                                    <td>@s.IntakeNumber</td>
+                                    <td>
+                                        <button class="action-btn btn-edit"
+                                                onclick="openEditStudentModal(
+                            '@s.UserId',
+                            '@s?.User?.UserName',
+                            '@s?.User?.UserEmail',
+                            '@s.BranchId',
+                            '@s.TrackId',
+                            '@s.IntakeNumber')">
+                                            Edit
+                                        </button>
+
+                                        <button class="action-btn btn-delete"
+                                                data-user-id="@s.User.UserId"
+                                                data-user-name="@s.User.UserName"
+                                                data-user-email="@s.User.UserEmail">
+                                            Delete
+                                        </button>
+
+                                       
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+  
+       
+        </main>
+    </div>
+
+
+    <div id="modal-overlay" class="modal-overlay hidden">
+
+        <div id="modal-student" class="modal-box hidden">
+            <h2 class="modal-title">Add New Student</h2>
+            <form asp-action="AddStudent" asp-controller="Instructor" method="post">
+
+                <div id="step-1">
+                    <div class="form-group">
+                        <label>Student Name</label>
+                        <input type="text" id="inp-stud-name" name="FullName" class="form-input" required placeholder="e.g. Ahmed Ali" />
+                    </div>
+                    <div class="form-group">
+                        <label>Branch ID</label>
+                        <input type="number" id="inp-stud-branch" name="Branch" class="form-input" required placeholder="Enter Branch ID" />
+                    </div>
+                    <div class="form-group">
+                        <label>Track ID</label>
+                        <input type="number" id="inp-stud-track" name="Track" class="form-input" required placeholder="Enter Track ID" />
+                    </div>
+                    <div class="form-group">
+                        <label>Intake</label>
+                        <input type="number" id="inp-stud-intake" name="Intake" class="form-input" required min="1" placeholder="e.g. 46" />
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+                        <button type="button" class="btn-next action-btn" style="background: #4f46e5; color: white;" onclick="showStep2()">Next: Login Info →</button>
+                    </div>
+                </div>
+
+                <div id="step-2" class="hidden">
+                    <div class="banner-info" style="background: #e0e7ff; padding: 10px; border-radius: 6px; margin-bottom: 15px; color: #3730a3; font-size: 0.9em;">
+                        ℹ️ Set the login credentials for this student.
+                    </div>
+                    <div class="form-group">
+                        <label>Email (Username)</label>
+                        <input type="email" id="inp-stud-email" name="Email" class="form-input" required placeholder="student@iti.gov.eg" />
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" name="Password" class="form-input" required placeholder="******" />
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm Password</label>
+                        <input type="password" name="ConfirmPassword" class="form-input" required placeholder="******" />
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-cancel" onclick="showStep1()">← Back</button>
+                        <button type="submit" class="btn-add">Create Account</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div id="modal-edit-student" class="modal-box hidden">
+            <h2 class="modal-title">Edit Student</h2>
+            <form asp-action="UpdateStudent" asp-controller="Instructor" method="post">
+                <input type="hidden" id="edit-stud-id" name="UserId" />
+                <div class="form-group">
+                    <label>Student Name</label>
+                    <input type="text" id="edit-stud-name" name="FullName" class="form-input" required />
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="edit-stud-email" name="Email" class="form-input" required />
+                </div>
+                <div class="form-group">
+                    <label>Branch ID</label>
+                    <input type="number" id="edit-stud-branch" name="Branch" class="form-input" required />
+                </div>
+                <div class="form-group">
+                    <label>Track ID</label>
+                    <input type="number" id="edit-stud-track" name="Track" class="form-input" required />
+                </div>
+                <div class="form-group">
+                    <label>Intake</label>
+                    <input type="number" id="edit-stud-intake" name="Intake" class="form-input" required />
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button asp-action="UpdateStudent" asp-controller="Instructor"
+                            class="btn btn-secondary">
+                        Update Student
+                    </button>
+
+                </div>
+            </form>
+        </div>
+
+     
+        <div id="modal-edit-course" class="modal-box hidden">
+            <h2 class="modal-title">Edit Course</h2>
+            <form asp-action="UpdateCourse" asp-controller="Instructor" method="post">
+                <input type="hidden" id="edit-course-id" name="CourseId" />
+                <div class="form-group">
+                    <label>Course Name</label>
+                    <input type="text" id="edit-course-name" name="CourseName" class="form-input" required placeholder="e.g. Web Development" />
+                </div>
+                <div class="form-group">
+                    <label>Instructor Name</label>
+                    <input type="text" id="edit-course-inst" name="InstructorName" class="form-input" required placeholder="e.g. Dr. Mohamed" />
+                </div>
+                <div class="form-group">
+                    <label>Duration</label>
+                    <input type="text" id="edit-course-dur" name="Duration" class="form-input" required placeholder="e.g. 10 Weeks" />
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="edit-course-status" name="Status" class="form-input" required>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn-add">Update Course</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="/js/Instructor.js"></script>
+
+</body>
+
+</html>

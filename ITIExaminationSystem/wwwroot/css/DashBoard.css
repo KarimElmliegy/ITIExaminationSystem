@@ -1,0 +1,1517 @@
+﻿/* =========================================
+   1. VARIABLES & RESET
+   ========================================= */
+:root {
+    --primary-blue: #1e3a8a;
+    --secondary-blue: #3b82f6;
+    --bg-gradient-start: #4a6fa5;
+    --bg-gradient-end: #6b8bb5;
+    --text-dark: #1f2937;
+    --text-gray: #6b7280;
+    --white: #ffffff;
+    --danger: #ef4444;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Inter", sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+}
+
+    /* Animated Background Particles */
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.03) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.03) 0%, transparent 50%);
+        animation: gradientShift 15s ease infinite;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+@keyframes gradientShift {
+    0%, 100% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    33% {
+        transform: translate(30px, -30px) scale(1.05);
+    }
+
+    66% {
+        transform: translate(-20px, 20px) scale(0.95);
+    }
+}
+
+/* =========================================
+   2. UTILITIES
+   ========================================= */
+.hidden {
+    display: none !important;
+}
+
+.fade-in {
+    animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Pulse Animation for Badges */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+}
+
+/* Shimmer Effect for Loading States */
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+/* =========================================
+   3. SHARED FORM STYLES (Used in Modals)
+   ========================================= */
+.form-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #374151;
+        font-size: 1rem;
+        font-weight: 500;
+        transition: color 0.3s ease, transform 0.3s ease;
+    }
+
+    .form-group:focus-within label {
+        color: #3b82f6;
+        transform: translateX(3px);
+    }
+
+.form-input {
+    width: 100%;
+    padding: 1rem 1.2rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+    background: white;
+    position: relative;
+}
+
+    .form-input:hover {
+        border-color: #cbd5e1;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-input:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+        transform: scale(1.01);
+    }
+
+        /* Floating Label Effect */
+        .form-input:focus + label,
+        .form-input:not(:placeholder-shown) + label {
+            transform: translateY(-1.5rem) scale(0.85);
+        }
+
+/* =========================================
+   4. DASHBOARD VIEW
+   ========================================= */
+#dashboard-view {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 1;
+}
+
+/* --- Header Styles --- */
+.admin-header {
+    background-color: rgba(45, 75, 125, 0.95);
+    padding: 0 2rem;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 12px -1px rgba(0, 0, 0, 0.15);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(12px) saturate(180%);
+    transition: box-shadow 0.3s ease, background-color 0.3s ease;
+}
+
+    .admin-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    }
+
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    animation: slideInLeft 0.6s ease-out;
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.nav-logo-box {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background-image: url(../images/ITI.jpg);
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+    .nav-logo-box::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transform: rotate(45deg);
+        animation: logoShine 3s ease-in-out infinite;
+    }
+
+@keyframes logoShine {
+    0% {
+        transform: translateX(-100%) translateY(-100%) rotate(45deg);
+    }
+
+    50%, 100% {
+        transform: translateX(100%) translateY(100%) rotate(45deg);
+    }
+}
+
+.nav-logo-box:hover {
+    transform: rotate(360deg) scale(1.1);
+}
+
+.header-title {
+    color: white;
+    font-size: 1.25rem;
+    font-weight: 500;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: text-shadow 0.3s ease;
+}
+
+    .header-title:hover {
+        text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+/* --- Navigation --- */
+.nav-links {
+    display: flex;
+    gap: 0.5rem;
+    animation: slideInRight 0.6s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.nav-link {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    padding: 0.5rem 1.25rem;
+    border-radius: 99px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+    .nav-link::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s ease, height 0.6s ease;
+    }
+
+    .nav-link:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+
+    .nav-link:hover {
+        color: white;
+        background-color: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .nav-link:active {
+        transform: translateY(0) scale(0.95);
+    }
+
+    .nav-link.active {
+        background-color: white;
+        color: #1e3a8a;
+        font-weight: 600;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        animation: navActive 0.4s ease-out;
+    }
+
+@keyframes navActive {
+    0% {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.logout-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    color: white;
+    padding: 0.5rem 1.25rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+  
+
+    .logout-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: white;
+        padding-right: 2.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+        .logout-btn:hover::after {
+            opacity: 1;
+            right: 1rem;
+        }
+
+    .logout-btn:active {
+        transform: scale(0.95);
+    }
+
+/* --- Main Content --- */
+.main-content {
+    flex: 1;
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 1.5rem;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+    animation: cardSlideIn 0.6s ease-out backwards;
+}
+
+@keyframes cardSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.stat-card:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.stat-card:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.stat-card:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.stat-card:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: rotate(45deg);
+    transition: all 0.6s ease;
+}
+
+.stat-card:hover::before {
+    left: 100%;
+}
+
+.stat-card:hover {
+    transform: translateY(-12px) scale(1.03);
+    box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.2), 0 10px 20px -5px rgba(0, 0, 0, 0.1);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    background: rgba(255, 255, 255, 0.9);
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+
+.stat-icon::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+    top: 0;
+    left: -100%;
+    transition: left 0.6s ease;
+}
+
+.stat-card:hover .stat-icon::after {
+    left: 100%;
+}
+
+.stat-info h3 {
+    color: #bfdbfe;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover .stat-info h3 {
+    letter-spacing: 0.1em;
+}
+
+.stat-info p {
+    color: white;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover .stat-info p {
+    transform: scale(1.05);
+}
+
+.data-panel {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    min-height: 400px;
+    transition: box-shadow 0.3s ease;
+    animation: panelFadeIn 0.8s ease-out 0.3s backwards;
+}
+
+@keyframes panelFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.data-panel:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+}
+
+/* =========================================
+   5. TABLE STYLES
+   ========================================= */
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+thead tr {
+    background-color: #f9fafb;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+
+th {
+    padding: 1rem;
+    text-align: left;
+    color: #6b7280;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    transition: color 0.3s ease;
+}
+
+
+
+tbody tr {
+    border-bottom: 1px solid #f3f4f6;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+ tbody tr::before {
+     content: '';
+     position: absolute;
+     left: 0;
+     top: 0;
+     width: 3px;
+     height: 0;
+     background: linear-gradient(180deg, #3b82f6, #8b5cf6);
+     transition: height 0.3s ease;
+ }
+
+    tbody tr:hover::before {
+        height: 100%;
+    }
+
+    tbody tr:hover {
+        background-color: #fafafa;
+        transform: translateX(5px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+td {
+    padding: 1rem;
+    color: #6b7280;
+    transition: color 0.3s ease;
+}
+
+tbody tr:hover td {
+    color: #374151;
+}
+
+/* --- Badges --- */
+.badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: inline-block;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+    .badge::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .badge:hover::before {
+        left: 100%;
+    }
+
+    .badge:hover {
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+.badge-purple {
+    background-color: #e9d5ff;
+    color: #7c3aed;
+}
+
+.badge-blue {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.badge-green {
+    background-color: #d1fae5;
+    color: #059669;
+}
+
+.badge-yellow {
+    background-color: #fef3c7;
+    color: #d97706;
+}
+
+/* --- Action Buttons --- */
+.action-btn {
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+    .action-btn::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.5s ease, height 0.5s ease;
+    }
+
+    .action-btn:active::after {
+        width: 300px;
+        height: 300px;
+    }
+
+.btn-edit {
+    background: #3b82f6;
+    color: white;
+    margin-right: 0.5rem;
+}
+
+    .btn-edit:hover {
+        background: #2563eb;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-edit:active {
+        transform: translateY(-1px);
+    }
+
+.btn-delete {
+    background: #ef4444;
+    color: white;
+}
+
+    .btn-delete:hover {
+        background: #dc2626;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-delete:active {
+        transform: translateY(-1px);
+    }
+
+.btn-view {
+    background: #3b82f6;
+    color: white;
+    margin-right: 0.5rem;
+}
+
+    .btn-view:hover {
+        background: #2563eb;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(59, 130, 246, 0.3);
+    }
+
+.btn-archive {
+    background: #6b7280;
+    color: white;
+}
+
+    .btn-archive:hover {
+        background: #4b5563;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(107, 114, 128, 0.3);
+    }
+
+/* --- Panel Header --- */
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    animation: headerSlideIn 0.6s ease-out;
+}
+
+@keyframes headerSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.panel-title {
+    color: #1e3a8a;
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0;
+    position: relative;
+    display: inline-block;
+}
+
+    .panel-title::after {
+        content: '';
+        position: absolute;
+        bottom: -5px;
+        left: 0;
+        width: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        transition: width 0.4s ease;
+    }
+
+.panel-header:hover .panel-title::after {
+    width: 100%;
+}
+
+.btn-add {
+    background-color: #3b6ca5;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+
+
+    .btn-add:hover {
+        background-color: #2d5585;
+        transform: translateY(-3px);
+        /* padding-left line removed */
+        box-shadow: 0 8px 16px rgba(59, 108, 165, 0.3);
+    }
+
+    .btn-add:active {
+        transform: translateY(-1px);
+    }
+
+/* =========================================
+   6. MODAL STYLES
+   ========================================= */
+.modal-overlay {
+    position: fixed !important; /* Fixed positioning relative to viewport */
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background-color: rgba(0, 0, 0, 0.65) !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    z-index: 99999 !important; /* Very high z-index */
+    backdrop-filter: blur(8px) saturate(120%) !important;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+@keyframes overlayFadeIn {
+    from {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+    }
+
+    to {
+        opacity: 1;
+        backdrop-filter: blur(8px);
+    }
+}
+
+.modal-box {
+    background: white !important;
+    padding: 2.5rem !important;
+    border-radius: 20px !important;
+    width: 90% !important;
+    max-width: 550px !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 10px 20px -5px rgba(0, 0, 0, 0.25) !important;
+    position: relative !important;
+    z-index: 100000 !important;
+    transform: scale(1);
+    animation: modalPopIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalPopIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.85) translateY(30px);
+    }
+
+    50% {
+        transform: scale(1.02) translateY(-5px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+
+.modal-title {
+    font-size: 1.5rem;
+    color: #1e3a8a;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    position: relative;
+    padding-bottom: 0.5rem;
+}
+
+.modal-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    animation: titleLineExpand 0.6s ease-out 0.3s backwards;
+}
+
+@keyframes titleLineExpand {
+    from {
+        width: 0;
+    }
+
+    to {
+        width: 50px;
+    }
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn-cancel {
+    background: transparent;
+    border: 1px solid #e5e7eb;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    font-weight: 500;
+    color: #6b7280;
+    transition: all 0.3s ease;
+}
+
+    .btn-cancel:hover {
+        border-color: #cbd5e1;
+        background: #f9fafb;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-cancel:active {
+        transform: translateY(0);
+    }
+
+/* =========================================
+   7. CONTENT TAB ANIMATION
+   ========================================= */
+.content-tab {
+    animation: tabSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes tabSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* =========================================
+   8. SCROLL ENHANCEMENTS
+   ========================================= */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #3b82f6, #8b5cf6);
+    border-radius: 10px;
+    transition: background 0.3s ease;
+}
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(180deg, #2563eb, #7c3aed);
+    }
+
+/* =========================================
+   9. RESPONSIVE
+   ========================================= */
+@media (max-width: 1024px) {
+    .admin-header {
+        height: auto;
+        padding: 1rem;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    table {
+        font-size: 0.875rem;
+    }
+
+    th, td {
+        padding: 0.75rem 0.5rem;
+    }
+
+    .stat-card {
+        animation-delay: 0s !important;
+    }
+}
+th.select {
+    text-align: center;
+}
+
+.roller {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #5578AA;
+    border: 1px solid #5578AA;
+    border-radius: 10px;
+    padding: 6px 10px;
+    color: #fff;
+    font-weight: 600;
+    user-select: none;
+}
+
+.roller-btn {
+    background: #5578AA;
+    color : whitesmoke ; 
+    border: none;
+    color: #5578AA;
+    cursor: pointer;
+    font-size: 11px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+    .roller-btn:hover {
+        background: #5578AA;
+        color: black;
+    }
+
+#rollerValue {
+    min-width: 26px;
+    text-align: center;
+    font-size: 14px;
+}
+/*sssssssss*/
+
+/* =========================================
+   ENHANCED MODAL SYSTEM - OVERLAY & POPUPS
+   ========================================= */
+
+/* Modal Overlay - Appears above everything */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Very high to appear above all content */
+    backdrop-filter: blur(8px) saturate(120%);
+    animation: overlayFadeIn 0.3s ease-out;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease, visibility 0.3s ease, backdrop-filter 0.3s ease;
+}
+
+/* Hidden state for overlay */
+.modal-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+    backdrop-filter: blur(0px);
+    pointer-events: none;
+}
+
+/* Modal Box Container */
+.modal-box {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 550px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 
+        0 25px 50px -12px rgba(0, 0, 0, 0.25),
+        0 10px 20px -5px rgba(0, 0, 0, 0.15),
+        0 0 0 1px rgba(0, 0, 0, 0.05);
+    position: relative;
+    z-index: 10000;
+    animation: modalPopIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-origin: center center;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Hidden state for modal boxes */
+    .modal-box.hidden {
+        display: none !important;
+    }
+
+
+/* Modal Pop-in Animation */
+@keyframes modalPopIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.85) translateY(30px);
+    }
+    50% {
+        transform: scale(1.02) translateY(-5px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Overlay Fade In Animation */
+@keyframes overlayFadeIn {
+    from {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+    }
+    to {
+        opacity: 1;
+        backdrop-filter: blur(8px) saturate(120%);
+    }
+}
+
+/* Modal Title Styling */
+.modal-title {
+    font-size: 1.75rem;
+    color: #1e3a8a;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    position: relative;
+    padding-bottom: 0.75rem;
+    display: inline-block;
+}
+
+.modal-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    border-radius: 2px;
+    animation: titleLineExpand 0.6s ease-out 0.3s backwards;
+}
+
+@keyframes titleLineExpand {
+    from {
+        width: 0;
+        opacity: 0;
+    }
+    to {
+        width: 60px;
+        opacity: 1;
+    }
+}
+
+/* Form Groups inside Modal */
+.modal-box .form-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+    animation: formFieldSlideIn 0.4s ease-out backwards;
+}
+
+.modal-box .form-group:nth-child(1) { animation-delay: 0.1s; }
+.modal-box .form-group:nth-child(2) { animation-delay: 0.15s; }
+.modal-box .form-group:nth-child(3) { animation-delay: 0.2s; }
+.modal-box .form-group:nth-child(4) { animation-delay: 0.25s; }
+.modal-box .form-group:nth-child(5) { animation-delay: 0.3s; }
+.modal-box .form-group:nth-child(6) { animation-delay: 0.35s; }
+
+@keyframes formFieldSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.modal-box .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #374151;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.modal-box .form-group:focus-within label {
+    color: #3b82f6;
+    transform: translateX(3px);
+}
+
+/* Form Input Styling */
+.modal-box .form-input {
+    width: 100%;
+    padding: 0.875rem 1.125rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+    background: white;
+}
+
+.modal-box .form-input:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.modal-box .form-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+    transform: scale(1.01);
+}
+
+/* Select Dropdown Styling */
+.modal-box select.form-input {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+    appearance: none;
+}
+
+.modal-box select.form-input:focus {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%233b82f6' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+}
+
+/* Modal Actions (Button Container) */
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #f3f4f6;
+    animation: actionsSlideUp 0.4s ease-out 0.4s backwards;
+}
+
+@keyframes actionsSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Cancel Button */
+.btn-cancel {
+    background: transparent;
+    border: 2px solid #e5e7eb;
+    padding: 0.75rem 1.75rem;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #6b7280;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-cancel::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(107, 114, 128, 0.1);
+    transform: translate(-50%, -50%);
+    transition: width 0.5s ease, height 0.5s ease;
+}
+
+.btn-cancel:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-cancel:hover {
+    border-color: #cbd5e1;
+    background: #f9fafb;
+    color: #374151;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.btn-cancel:active {
+    transform: translateY(0);
+}
+
+/* Submit/Add Button (already in your CSS, enhanced here) */
+.modal-box .btn-add {
+    background-color: #3b82f6;
+    color: white;
+    padding: 0.75rem 1.75rem;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2);
+}
+
+.modal-box .btn-add::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.5s ease, height 0.5s ease;
+}
+
+.modal-box .btn-add:hover::after {
+    width: 300px;
+    height: 300px;
+}
+
+.modal-box .btn-add:hover {
+    background-color: #2563eb;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+}
+
+.modal-box .btn-add:active {
+    transform: translateY(-1px);
+}
+
+/* Next Button (for multi-step forms) */
+.btn-next {
+    background: #4f46e5;
+    color: white;
+    padding: 0.75rem 1.75rem;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);
+}
+
+.btn-next:hover {
+    background: #4338ca;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(79, 70, 229, 0.3);
+}
+
+/* Info Banner (for step 2) */
+.banner-info {
+    background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+    border-left: 4px solid #3b82f6;
+    padding: 1rem 1.25rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    color: #1e40af;
+    font-size: 0.95rem;
+    font-weight: 500;
+    animation: bannerSlideIn 0.4s ease-out;
+}
+
+@keyframes bannerSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Scrollbar for Modal */
+.modal-box::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-box::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.modal-box::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #3b82f6, #8b5cf6);
+    border-radius: 10px;
+}
+
+.modal-box::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #2563eb, #7c3aed);
+}
+
+/* Close button (X) - Optional Enhancement */
+.modal-close {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #f3f4f6;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    color: #6b7280;
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+.modal-close:hover {
+    background: #ef4444;
+    color: white;
+    transform: rotate(90deg) scale(1.1);
+}
+
+/* Prevent body scroll when modal is open */
+body.modal-open {
+    overflow: hidden !important;
+}
+/* Responsive Modal */
+@media (max-width: 640px) {
+    .modal-box {
+        width: 95%;
+        padding: 1.5rem;
+        max-height: 85vh;
+    }
+    
+    .modal-title {
+        font-size: 1.5rem;
+    }
+    
+    .modal-actions {
+        flex-direction: column-reverse;
+        gap: 0.75rem;
+    }
+    
+    .btn-cancel,
+    .modal-box .btn-add {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* Loading State (Optional) */
+.modal-box.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+}
+
+/* Focus trap indicator */
+.modal-overlay:focus-within {
+    outline: none;
+}
+
+/* Ensure modals stack properly */
+#modal-student,
+#modal-instructor,
+#modal-course,
+#modal-edit-student,
+#modal-edit-instructor,
+#modal-edit-course {
+    position: relative;
+    z-index: 10001;
+}
+

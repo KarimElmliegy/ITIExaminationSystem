@@ -1,0 +1,1052 @@
+﻿@{
+    Layout = null; 
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="~/images/Gemini_Generated_Image_vi5243vi5243vi52.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Exam Slider</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #7c3aed;
+            --primary-light: #a78bfa;
+            --primary-dark: #5b21b6;
+            --accent: #ec4899;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --gray: #64748b;
+            --light-bg: #f8fafc;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color : #5175A9;
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* Timer */
+        .timer-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .timer-label {
+            font-size: 0.95rem;
+            color: var(--gray);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .timer-value {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Stats Dashboard */
+        .exam-stats-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .stat-item::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: linear-gradient(90deg, var(--primary), var(--accent));
+            }
+
+            .stat-item:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+            }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--gray);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--dark);
+        }
+
+        .text-warning {
+            color: var(--warning);
+        }
+
+        .text-success {
+            color: var(--success);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .progress-label {
+            font-size: 0.95rem;
+            color: var(--gray);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .progress-percentage {
+            font-size: 1.3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .progress-bar-bg {
+            background: #e2e8f0;
+            border-radius: 20px;
+            height: 14px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            height: 100%;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+        }
+
+        /* Question Card */
+        .question-slider-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .question-slider-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 5px;
+                background: linear-gradient(90deg, var(--primary), var(--accent));
+            }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 25px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .header-left, .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .highlight-num {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0 5px;
+        }
+
+        .btn-flag {
+            background: white;
+            border: 2px solid #e2e8f0;
+            color: var(--gray);
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+            .btn-flag:hover {
+                background: #fef3c7;
+                border-color: var(--warning);
+                transform: scale(1.05);
+            }
+
+            .btn-flag.active {
+                background: linear-gradient(135deg, #fbbf24, #f59e0b);
+                border-color: var(--warning);
+                color: white;
+                box-shadow: 0 5px 20px rgba(245, 158, 11, 0.3);
+            }
+
+        .badge-primary {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 20px rgba(124, 58, 237, 0.3);
+        }
+
+        .question-text {
+            font-size: 1.5rem;
+            color: var(--dark);
+            margin-bottom: 30px;
+            line-height: 1.7;
+            font-weight: 600;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .option-card {
+            display: flex;
+            align-items: center;
+            padding: 20px 25px;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: white;
+            position: relative;
+        }
+
+            .option-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 0;
+                height: 100%;
+                background: linear-gradient(90deg, rgba(124, 58, 237, 0.05), rgba(236, 72, 153, 0.05));
+                border-radius: 16px;
+                transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                z-index: 0;
+            }
+
+            .option-card:hover::before {
+                width: 100%;
+            }
+
+            .option-card:hover {
+                border-color: var(--primary);
+                transform: translateX(8px);
+                box-shadow: 0 10px 30px rgba(124, 58, 237, 0.2);
+            }
+
+            .option-card.selected {
+                border-color: var(--primary);
+                background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(236, 72, 153, 0.1));
+                font-weight: 700;
+                box-shadow: 0 10px 40px rgba(124, 58, 237, 0.3);
+                transform: scale(1.02);
+            }
+
+        .option-marker {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            border: 2px solid #cbd5e1;
+            margin-right: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--gray);
+            transition: all 0.3s;
+            position: relative;
+            z-index: 1;
+        }
+
+        .option-card.selected .option-marker {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            box-shadow: 0 5px 20px rgba(124, 58, 237, 0.4);
+        }
+
+        .option-text {
+            flex: 1;
+            position: relative;
+            z-index: 1;
+        }
+
+        .slider-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 35px;
+            padding-top: 30px;
+            border-top: 2px solid #f1f5f9;
+        }
+
+        .btn-nav {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 32px;
+            border-radius: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 1rem;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            box-shadow: 0 10px 30px rgba(124, 58, 237, 0.4);
+        }
+
+            .btn-primary:hover:not(:disabled) {
+                transform: translateY(-3px);
+                box-shadow: 0 15px 40px rgba(124, 58, 237, 0.5);
+            }
+
+        .btn-outline {
+            background: white;
+            border: 2px solid #e2e8f0;
+            color: var(--gray);
+        }
+
+            .btn-outline:hover:not(:disabled) {
+                background: var(--light-bg);
+                border-color: var(--primary);
+                color: var(--primary);
+                transform: translateY(-2px);
+            }
+
+        .btn-nav:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Question Navigator */
+        .question-navigator {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .navigator-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--gray);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .navigator-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+            gap: 12px;
+        }
+
+        .nav-dot {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: white;
+            color: var(--gray);
+            border: 2px solid #e2e8f0;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+            .nav-dot:hover {
+                border-color: var(--primary);
+                background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(236, 72, 153, 0.1));
+                transform: scale(1.1);
+            }
+
+            .nav-dot.active {
+                background: linear-gradient(135deg, var(--primary), var(--accent));
+                color: white;
+                border-color: var(--primary);
+                box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
+                transform: scale(1.1);
+            }
+
+            .nav-dot.answered {
+                background: linear-gradient(135deg, var(--success), #059669);
+                color: white;
+                border-color: var(--success);
+                box-shadow: 0 5px 20px rgba(16, 185, 129, 0.3);
+            }
+
+            .nav-dot.flagged {
+                border-color: var(--warning);
+                background: #fef3c7;
+                color: var(--warning);
+            }
+
+                .nav-dot.flagged.answered {
+                    background: linear-gradient(135deg, var(--warning), #d97706);
+                    color: white;
+                    border-color: var(--warning);
+                    box-shadow: 0 5px 20px rgba(245, 158, 11, 0.3);
+                }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+            .modal.active {
+                display: flex;
+            }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @@keyframes modalSlideIn {
+            from
+
+        {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        }
+
+        .modal-header {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .modal-body {
+            color: var(--gray);
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+        .review-question {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .review-question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .review-question-number {
+            font-weight: 800;
+            font-size: 1.1rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .review-question-type {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            padding: 5px 15px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .review-question-text {
+            font-size: 1.1rem;
+            color: var(--dark);
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .review-answer {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .review-answer-label {
+            font-weight: 600;
+            color: var(--gray);
+        }
+
+        .review-answer-value {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        .review-answer-none {
+            background: #fef2f2;
+            color: var(--danger);
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        .review-summary {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(236, 72, 153, 0.1));
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .review-summary-item {
+            text-align: center;
+        }
+
+        .review-summary-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--dark);
+        }
+
+        .review-summary-label {
+            font-size: 0.85rem;
+            color: var(--gray);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            padding-top: 20px;
+            border-top: 2px solid #f1f5f9;
+        }
+
+        .btn-modal {
+            padding: 12px 28px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+        }
+
+            .btn-modal.btn-cancel {
+                background: #e2e8f0;
+                color: var(--gray);
+            }
+
+                .btn-modal.btn-cancel:hover {
+                    background: #cbd5e1;
+                }
+
+            .btn-modal.btn-submit {
+                background: linear-gradient(135deg, var(--success), #059669);
+                color: white;
+                box-shadow: 0 5px 20px rgba(16, 185, 129, 0.3);
+            }
+
+                .btn-modal.btn-submit:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4);
+                }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="timer-container">
+            <span class="timer-label">Time Remaining</span>
+            <span class="timer-value" id="timer">60:00</span>
+        </div>
+
+        <div class="exam-stats-dashboard">
+            <div class="stat-item">
+                <span class="stat-label">Solved</span>
+                <span id="stat-solved" class="stat-value text-success">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Flagged</span>
+                <span id="stat-flagged" class="stat-value text-warning">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Remaining</span>
+                <span id="stat-remaining" class="stat-value">4</span>
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-header">
+                <span class="progress-label">Exam Progress</span>
+                <span class="progress-percentage" id="progress-percentage">0%</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <div class="question-slider-card">
+            <div class="slider-header">
+                <div class="header-left">
+                    <span style="color: var(--gray); font-weight: 600;">Question</span>
+                    <span id="current-q-num" class="highlight-num">1</span>
+                    <span style="color: var(--gray); font-weight: 600;">of</span>
+                    <span id="total-q-num" style="font-weight: 700; color: var(--dark);">4</span>
+                </div>
+
+                <div class="header-right">
+                    <button id="btn-flag" class="btn-flag">
+                        <span>🚩</span> <span id="flag-text">Flag</span>
+                    </button>
+                    <span class="badge badge-primary" id="q-type-badge">MCQ</span>
+                </div>
+            </div>
+
+            <div class="slider-body">
+                <h3 id="question-text" class="question-text">Loading...</h3>
+                <div id="options-container" class="options-grid"></div>
+            </div>
+
+            <div class="slider-footer">
+                <button id="btn-prev" class="btn-nav btn-outline">
+                    ← Previous
+                </button>
+                <button id="btn-next" class="btn-nav btn-primary">
+                    Next →
+                </button>
+            </div>
+        </div>
+
+        <div class="question-navigator">
+            <div class="navigator-title">Quick Navigation</div>
+            <div class="navigator-grid" id="navigator-grid"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="submit-modal">
+        <div class="modal-content">
+            <h2 class="modal-header">Review Your Answers</h2>
+            <div class="modal-body">
+                <div class="review-summary">
+                    <div class="review-summary-item">
+                        <div class="review-summary-value text-success" id="review-answered">0</div>
+                        <div class="review-summary-label">Answered</div>
+                    </div>
+                    <div class="review-summary-item">
+                        <div class="review-summary-value text-warning" id="review-flagged">0</div>
+                        <div class="review-summary-label">Flagged</div>
+                    </div>
+                    <div class="review-summary-item">
+                        <div class="review-summary-value" id="review-unanswered">0</div>
+                        <div class="review-summary-label">Unanswered</div>
+                    </div>
+                </div>
+
+                <div id="review-questions-container"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal btn-cancel" id="btn-cancel-submit">Back to Exam</button>
+                <button class="btn-modal btn-submit" id="btn-confirm-submit">Submit Exam</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var examQuestions = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.Questions));
+
+
+        var currentIndex = 0;
+        var timerSeconds = 3600;
+
+        function init() {
+            loadQuestion(currentIndex);
+            updateDashboardStats();
+            createNavigator();
+            startTimer();
+
+            document.getElementById('btn-prev').addEventListener('click', prevQuestion);
+            document.getElementById('btn-next').addEventListener('click', nextQuestion);
+            document.getElementById('btn-flag').addEventListener('click', toggleFlag);
+            document.getElementById('btn-cancel-submit').addEventListener('click', closeModal);
+            document.getElementById('btn-confirm-submit').addEventListener('click', confirmSubmit);
+        }
+
+        function loadQuestion(index) {
+            var q = examQuestions[index];
+            document.getElementById('current-q-num').innerText = index + 1;
+            document.getElementById('total-q-num').innerText = examQuestions.length;
+            document.getElementById('q-type-badge').innerText = q.type;
+            document.getElementById('question-text').innerText = q.text;
+
+            var container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            for (var i = 0; i < q.options.length; i++) {
+                var optionDiv = document.createElement('div');
+                optionDiv.className = 'option-card';
+
+                if (q.userAnswer === i) {
+                    optionDiv.classList.add('selected');
+                }
+
+                var markerChar = String.fromCharCode(65 + i);
+                optionDiv.innerHTML = '<div class="option-marker">' + markerChar + '</div><div class="option-text">' + q.options[i] + '</div>';
+
+                optionDiv.setAttribute('data-option', i);
+                optionDiv.addEventListener('click', function() {
+                    selectOption(parseInt(this.getAttribute('data-option')));
+                });
+
+                container.appendChild(optionDiv);
+            }
+
+            var flagBtn = document.getElementById('btn-flag');
+            var flagText = document.getElementById('flag-text');
+            if (q.isFlagged) {
+                flagBtn.classList.add('active');
+                flagText.innerText = 'Flagged';
+            } else {
+                flagBtn.classList.remove('active');
+                flagText.innerText = 'Flag';
+            }
+
+            document.getElementById('btn-prev').disabled = index === 0;
+            var nextBtn = document.getElementById('btn-next');
+            if (index === examQuestions.length - 1) {
+                nextBtn.innerHTML = 'Finish ✓';
+            } else {
+                nextBtn.innerHTML = 'Next →';
+            }
+
+            updateNavigator();
+        }
+
+        function selectOption(optionIndex) {
+            // Check if the clicked option is the same as the current answer
+            if (examQuestions[currentIndex].userAnswer === optionIndex) {
+                // If yes, deselect it (set to null)
+                examQuestions[currentIndex].userAnswer = null;
+            } else {
+                // If no, select the new option
+                examQuestions[currentIndex].userAnswer = optionIndex;
+            }
+
+            // Reload UI to reflect changes
+            loadQuestion(currentIndex);
+            updateDashboardStats();
+        }
+
+        function toggleFlag() {
+            examQuestions[currentIndex].isFlagged = !examQuestions[currentIndex].isFlagged;
+            loadQuestion(currentIndex);
+            updateDashboardStats();
+        }
+
+        function updateDashboardStats() {
+            var total = examQuestions.length;
+            var solvedCount = 0;
+            var flaggedCount = 0;
+
+            for (var i = 0; i < examQuestions.length; i++) {
+                if (examQuestions[i].userAnswer !== null) solvedCount++;
+                if (examQuestions[i].isFlagged) flaggedCount++;
+            }
+
+            var remaining = total - solvedCount;
+            var percentage = Math.round((solvedCount / total) * 100);
+
+            document.getElementById('stat-solved').innerText = solvedCount;
+            document.getElementById('stat-flagged').innerText = flaggedCount;
+            document.getElementById('stat-remaining').innerText = remaining;
+            document.getElementById('progress-percentage').innerText = percentage + '%';
+            document.getElementById('progress-bar').style.width = percentage + '%';
+        }
+
+        function nextQuestion() {
+            if (currentIndex < examQuestions.length - 1) {
+                currentIndex++;
+                loadQuestion(currentIndex);
+            } else {
+                showSubmitModal();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                loadQuestion(currentIndex);
+            }
+        }
+
+        function goToQuestion(index) {
+            currentIndex = index;
+            loadQuestion(currentIndex);
+        }
+
+        function createNavigator() {
+            var container = document.getElementById('navigator-grid');
+            container.innerHTML = '';
+
+            for (var i = 0; i < examQuestions.length; i++) {
+                var dot = document.createElement('button');
+                dot.className = 'nav-dot';
+                dot.innerText = i + 1;
+                dot.setAttribute('data-index', i);
+                dot.addEventListener('click', function() {
+                    goToQuestion(parseInt(this.getAttribute('data-index')));
+                });
+                container.appendChild(dot);
+            }
+        }
+
+        function updateNavigator() {
+            var dots = document.querySelectorAll('.nav-dot');
+            for (var i = 0; i < dots.length; i++) {
+                dots[i].classList.remove('active', 'answered', 'flagged');
+
+                if (i === currentIndex) {
+                    dots[i].classList.add('active');
+                }
+
+                if (examQuestions[i].userAnswer !== null) {
+                    dots[i].classList.add('answered');
+                }
+
+                if (examQuestions[i].isFlagged) {
+                    dots[i].classList.add('flagged');
+                }
+            }
+        }
+
+        function startTimer() {
+            setInterval(function() {
+                if (timerSeconds > 0) {
+                    timerSeconds--;
+                    var minutes = Math.floor(timerSeconds / 60);
+                    var seconds = timerSeconds % 60;
+                    document.getElementById('timer').innerText =
+                        (minutes < 10 ? '0' : '') + minutes + ':' +
+                        (seconds < 10 ? '0' : '') + seconds;
+                } else {
+                    alert('Time is up! Submitting exam...');
+                    confirmSubmit();
+                }
+            }, 1000);
+        }
+
+        function showSubmitModal() {
+            var solvedCount = 0;
+            var flaggedCount = 0;
+
+            for (var i = 0; i < examQuestions.length; i++) {
+                if (examQuestions[i].userAnswer !== null) solvedCount++;
+                if (examQuestions[i].isFlagged) flaggedCount++;
+            }
+
+            var unanswered = examQuestions.length - solvedCount;
+
+            document.getElementById('review-answered').innerText = solvedCount;
+            document.getElementById('review-flagged').innerText = flaggedCount;
+            document.getElementById('review-unanswered').innerText = unanswered;
+
+            var reviewContainer = document.getElementById('review-questions-container');
+            reviewContainer.innerHTML = '';
+
+            for (var i = 0; i < examQuestions.length; i++) {
+                var q = examQuestions[i];
+
+                var questionDiv = document.createElement('div');
+                questionDiv.className = 'review-question';
+
+                var headerDiv = document.createElement('div');
+                headerDiv.className = 'review-question-header';
+
+                var numberSpan = document.createElement('span');
+                numberSpan.className = 'review-question-number';
+                numberSpan.innerText = 'Question ' + (i + 1);
+
+                var typeSpan = document.createElement('span');
+                typeSpan.className = 'review-question-type';
+                typeSpan.innerText = q.type;
+
+                headerDiv.appendChild(numberSpan);
+                headerDiv.appendChild(typeSpan);
+
+                var textDiv = document.createElement('div');
+                textDiv.className = 'review-question-text';
+                textDiv.innerText = q.text;
+
+                var answerDiv = document.createElement('div');
+                answerDiv.className = 'review-answer';
+
+                var labelSpan = document.createElement('span');
+                labelSpan.className = 'review-answer-label';
+                labelSpan.innerText = 'Your Answer:';
+
+                var valueSpan = document.createElement('span');
+                if (q.userAnswer !== null) {
+                    valueSpan.className = 'review-answer-value';
+                    var answerLetter = String.fromCharCode(65 + q.userAnswer);
+                    valueSpan.innerText = answerLetter + ': ' + q.options[q.userAnswer];
+                } else {
+                    valueSpan.className = 'review-answer-none';
+                    valueSpan.innerText = 'Not Answered';
+                }
+
+                answerDiv.appendChild(labelSpan);
+                answerDiv.appendChild(valueSpan);
+
+                questionDiv.appendChild(headerDiv);
+                questionDiv.appendChild(textDiv);
+                questionDiv.appendChild(answerDiv);
+
+                reviewContainer.appendChild(questionDiv);
+            }
+
+            document.getElementById('submit-modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('submit-modal').classList.remove('active');
+        }
+
+        function confirmSubmit() {
+            closeModal();
+            alert('Exam submitted successfully! Check console for results.');
+            console.log('Exam Results:', examQuestions);
+        }
+
+        init();
+    </script>
+</body>
+</html>@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
