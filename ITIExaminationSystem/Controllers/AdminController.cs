@@ -15,6 +15,12 @@ namespace ITIExaminationSystem.Controllers
         // 2. REMOVED the Constructor that was causing the "Unable to resolve service" error.
         // public AdminController(ApplicationDbContext context) { ... }  <-- DELETED
 
+        public IActionResult Logout()
+        {
+            // HttpContext.Session.Clear(); // Uncomment if using session
+            return RedirectToAction("Login", "Account");
+        }
+
         [HttpGet]
         public IActionResult Dashboard()
         {
@@ -87,10 +93,6 @@ namespace ITIExaminationSystem.Controllers
             return RedirectToAction("Dashboard");
         }
 
-        public IActionResult Logout()
-        {
-            // HttpContext.Session.Clear(); // Uncomment if using session
-            return RedirectToAction("Login", "Account");
-        }
+   
     }
 }

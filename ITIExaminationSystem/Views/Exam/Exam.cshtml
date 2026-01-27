@@ -1,689 +1,52 @@
-﻿@{
-    Layout = null; 
+﻿@using System.Text.Json
+@using ITIExaminationSystem.Models.ModelView ;
+@model TakeExamViewModel
+
+@{
+    Layout = null;
+    
+    // Fix: Configure JSON to use CamelCase so JavaScript can read it (QuestionList -> questionList)
+    var jsonOptions = new JsonSerializerOptions
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = false
+    };
+    var modelJson = JsonSerializer.Serialize(Model, jsonOptions);
 }
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/png" href="~/images/Gemini_Generated_Image_vi5243vi5243vi52.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern Exam Slider</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    <title>@Model.Name - Exam</title>
 
-        :root {
-            --primary: #7c3aed;
-            --primary-light: #a78bfa;
-            --primary-dark: #5b21b6;
-            --accent: #ec4899;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --dark: #0f172a;
-            --gray: #64748b;
-            --light-bg: #f8fafc;
-            --card-bg: #ffffff;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background-color : #5175A9;
-            min-height: 100vh;
-            padding: 30px 20px;
-        }
-
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-
-        /* Timer */
-        .timer-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 20px 30px;
-            margin-bottom: 25px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .timer-label {
-            font-size: 0.95rem;
-            color: var(--gray);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .timer-value {
-            font-size: 2rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-family: 'Courier New', monospace;
-        }
-
-        /* Stats Dashboard */
-        .exam-stats-dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 20px;
-            margin-bottom: 25px;
-        }
-
-        .stat-item {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 25px;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            transition: transform 0.3s, box-shadow 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-
-            .stat-item::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                height: 4px;
-                background: linear-gradient(90deg, var(--primary), var(--accent));
-            }
-
-            .stat-item:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
-            }
-
-        .stat-label {
-            font-size: 0.85rem;
-            color: var(--gray);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-        }
-
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: var(--dark);
-        }
-
-        .text-warning {
-            color: var(--warning);
-        }
-
-        .text-success {
-            color: var(--success);
-        }
-
-        /* Progress Bar */
-        .progress-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .progress-label {
-            font-size: 0.95rem;
-            color: var(--gray);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .progress-percentage {
-            font-size: 1.3rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .progress-bar-bg {
-            background: #e2e8f0;
-            border-radius: 20px;
-            height: 14px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .progress-bar-fill {
-            background: linear-gradient(90deg, var(--primary), var(--accent));
-            height: 100%;
-            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 20px;
-            box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
-        }
-
-        /* Question Card */
-        .question-slider-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            margin-bottom: 25px;
-            position: relative;
-            overflow: hidden;
-        }
-
-            .question-slider-card::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                height: 5px;
-                background: linear-gradient(90deg, var(--primary), var(--accent));
-            }
-
-        .slider-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 25px;
-            border-bottom: 2px solid #f1f5f9;
-        }
-
-        .header-left, .header-right {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .highlight-num {
-            font-size: 1.8rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin: 0 5px;
-        }
-
-        .btn-flag {
-            background: white;
-            border: 2px solid #e2e8f0;
-            color: var(--gray);
-            padding: 10px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
-            font-size: 0.95rem;
-            font-weight: 600;
-        }
-
-            .btn-flag:hover {
-                background: #fef3c7;
-                border-color: var(--warning);
-                transform: scale(1.05);
-            }
-
-            .btn-flag.active {
-                background: linear-gradient(135deg, #fbbf24, #f59e0b);
-                border-color: var(--warning);
-                color: white;
-                box-shadow: 0 5px 20px rgba(245, 158, 11, 0.3);
-            }
-
-        .badge-primary {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: white;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            box-shadow: 0 5px 20px rgba(124, 58, 237, 0.3);
-        }
-
-        .question-text {
-            font-size: 1.5rem;
-            color: var(--dark);
-            margin-bottom: 30px;
-            line-height: 1.7;
-            font-weight: 600;
-        }
-
-        .options-grid {
-            display: grid;
-            gap: 15px;
-        }
-
-        .option-card {
-            display: flex;
-            align-items: center;
-            padding: 20px 25px;
-            border: 2px solid #e2e8f0;
-            border-radius: 16px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            background: white;
-            position: relative;
-        }
-
-            .option-card::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 0;
-                height: 100%;
-                background: linear-gradient(90deg, rgba(124, 58, 237, 0.05), rgba(236, 72, 153, 0.05));
-                border-radius: 16px;
-                transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                z-index: 0;
-            }
-
-            .option-card:hover::before {
-                width: 100%;
-            }
-
-            .option-card:hover {
-                border-color: var(--primary);
-                transform: translateX(8px);
-                box-shadow: 0 10px 30px rgba(124, 58, 237, 0.2);
-            }
-
-            .option-card.selected {
-                border-color: var(--primary);
-                background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(236, 72, 153, 0.1));
-                font-weight: 700;
-                box-shadow: 0 10px 40px rgba(124, 58, 237, 0.3);
-                transform: scale(1.02);
-            }
-
-        .option-marker {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            border: 2px solid #cbd5e1;
-            margin-right: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--gray);
-            transition: all 0.3s;
-            position: relative;
-            z-index: 1;
-        }
-
-        .option-card.selected .option-marker {
-            border-color: var(--primary);
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: white;
-            box-shadow: 0 5px 20px rgba(124, 58, 237, 0.4);
-        }
-
-        .option-text {
-            flex: 1;
-            position: relative;
-            z-index: 1;
-        }
-
-        .slider-footer {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 35px;
-            padding-top: 30px;
-            border-top: 2px solid #f1f5f9;
-        }
-
-        .btn-nav {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 14px 32px;
-            border-radius: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-size: 1rem;
-            border: none;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: white;
-            box-shadow: 0 10px 30px rgba(124, 58, 237, 0.4);
-        }
-
-            .btn-primary:hover:not(:disabled) {
-                transform: translateY(-3px);
-                box-shadow: 0 15px 40px rgba(124, 58, 237, 0.5);
-            }
-
-        .btn-outline {
-            background: white;
-            border: 2px solid #e2e8f0;
-            color: var(--gray);
-        }
-
-            .btn-outline:hover:not(:disabled) {
-                background: var(--light-bg);
-                border-color: var(--primary);
-                color: var(--primary);
-                transform: translateY(-2px);
-            }
-
-        .btn-nav:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        /* Question Navigator */
-        .question-navigator {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .navigator-title {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: var(--gray);
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .navigator-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
-            gap: 12px;
-        }
-
-        .nav-dot {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            background: white;
-            color: var(--gray);
-            border: 2px solid #e2e8f0;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-        }
-
-            .nav-dot:hover {
-                border-color: var(--primary);
-                background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(236, 72, 153, 0.1));
-                transform: scale(1.1);
-            }
-
-            .nav-dot.active {
-                background: linear-gradient(135deg, var(--primary), var(--accent));
-                color: white;
-                border-color: var(--primary);
-                box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
-                transform: scale(1.1);
-            }
-
-            .nav-dot.answered {
-                background: linear-gradient(135deg, var(--success), #059669);
-                color: white;
-                border-color: var(--success);
-                box-shadow: 0 5px 20px rgba(16, 185, 129, 0.3);
-            }
-
-            .nav-dot.flagged {
-                border-color: var(--warning);
-                background: #fef3c7;
-                color: var(--warning);
-            }
-
-                .nav-dot.flagged.answered {
-                    background: linear-gradient(135deg, var(--warning), #d97706);
-                    color: white;
-                    border-color: var(--warning);
-                    box-shadow: 0 5px 20px rgba(245, 158, 11, 0.3);
-                }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(5px);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-            .modal.active {
-                display: flex;
-            }
-
-        .modal-content {
-            background: white;
-            border-radius: 24px;
-            padding: 40px;
-            max-width: 800px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-            animation: modalSlideIn 0.3s ease;
-        }
-
-        @@keyframes modalSlideIn {
-            from
-
-        {
-            opacity: 0;
-            transform: translateY(-30px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        }
-
-        .modal-header {
-            font-size: 1.8rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f1f5f9;
-        }
-
-        .modal-body {
-            color: var(--gray);
-            line-height: 1.8;
-            margin-bottom: 30px;
-        }
-
-        .review-question {
-            background: #f8fafc;
-            border-radius: 16px;
-            padding: 25px;
-            margin-bottom: 20px;
-            border-left: 4px solid var(--primary);
-        }
-
-        .review-question-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .review-question-number {
-            font-weight: 800;
-            font-size: 1.1rem;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .review-question-type {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: white;
-            padding: 5px 15px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 700;
-        }
-
-        .review-question-text {
-            font-size: 1.1rem;
-            color: var(--dark);
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-
-        .review-answer {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .review-answer-label {
-            font-weight: 600;
-            color: var(--gray);
-        }
-
-        .review-answer-value {
-            background: linear-gradient(135deg, var(--success), #059669);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 10px;
-            font-weight: 700;
-        }
-
-        .review-answer-none {
-            background: #fef2f2;
-            color: var(--danger);
-            padding: 8px 16px;
-            border-radius: 10px;
-            font-weight: 700;
-        }
-
-        .review-summary {
-            background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(236, 72, 153, 0.1));
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 25px;
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .review-summary-item {
-            text-align: center;
-        }
-
-        .review-summary-value {
-            font-size: 2rem;
-            font-weight: 800;
-            color: var(--dark);
-        }
-
-        .review-summary-label {
-            font-size: 0.85rem;
-            color: var(--gray);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .modal-footer {
-            display: flex;
-            gap: 15px;
-            justify-content: flex-end;
-            padding-top: 20px;
-            border-top: 2px solid #f1f5f9;
-        }
-
-        .btn-modal {
-            padding: 12px 28px;
-            border-radius: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            border: none;
-            transition: all 0.3s;
-        }
-
-            .btn-modal.btn-cancel {
-                background: #e2e8f0;
-                color: var(--gray);
-            }
-
-                .btn-modal.btn-cancel:hover {
-                    background: #cbd5e1;
-                }
-
-            .btn-modal.btn-submit {
-                background: linear-gradient(135deg, var(--success), #059669);
-                color: white;
-                box-shadow: 0 5px 20px rgba(16, 185, 129, 0.3);
-            }
-
-                .btn-modal.btn-submit:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4);
-                }
-    </style>
+    <link href="/css/Exam.css" rel="stylesheet" />
 </head>
 <body>
     <div class="container">
+        <div class="exam-header">
+            <h1 class="exam-title">@Model.Name</h1>
+            <div class="exam-info">
+                <div class="exam-info-item">
+                    <span>⏱️</span>
+                    <span>Duration: @Model.Duration minutes</span>
+                </div>
+                <div class="exam-info-item">
+                    <span>📝</span>
+                    <span>Questions: @Model.QuestionList.Count</span>
+                </div>
+                <div class="exam-info-item">
+                    <span>🎯</span>
+                    <span>Total Score: @Model.TotalScore</span>
+                </div>
+            </div>
+        </div>
+
         <div class="timer-container">
             <span class="timer-label">Time Remaining</span>
-            <span class="timer-value" id="timer">60:00</span>
+            <span class="timer-value" id="timer">@(Model.Duration):00</span>
         </div>
 
         <div class="exam-stats-dashboard">
@@ -697,7 +60,7 @@
             </div>
             <div class="stat-item">
                 <span class="stat-label">Remaining</span>
-                <span id="stat-remaining" class="stat-value">4</span>
+                <span id="stat-remaining" class="stat-value">@Model.QuestionList.Count</span>
             </div>
         </div>
 
@@ -707,7 +70,7 @@
                 <span class="progress-percentage" id="progress-percentage">0%</span>
             </div>
             <div class="progress-bar-bg">
-                <div class="progress-bar-fill" id="progress-bar"></div>
+                <div class="progress-bar-fill" id="progress-bar" style="width: 0%"></div>
             </div>
         </div>
 
@@ -717,7 +80,7 @@
                     <span style="color: var(--gray); font-weight: 600;">Question</span>
                     <span id="current-q-num" class="highlight-num">1</span>
                     <span style="color: var(--gray); font-weight: 600;">of</span>
-                    <span id="total-q-num" style="font-weight: 700; color: var(--dark);">4</span>
+                    <span id="total-q-num" style="font-weight: 700; color: var(--dark);">@Model.QuestionList.Count</span>
                 </div>
 
                 <div class="header-right">
@@ -734,12 +97,8 @@
             </div>
 
             <div class="slider-footer">
-                <button id="btn-prev" class="btn-nav btn-outline">
-                    ← Previous
-                </button>
-                <button id="btn-next" class="btn-nav btn-primary">
-                    Next →
-                </button>
+                <button id="btn-prev" class="btn-nav btn-outline">← Previous</button>
+                <button id="btn-next" class="btn-nav btn-primary">Next →</button>
             </div>
         </div>
 
@@ -767,7 +126,6 @@
                         <div class="review-summary-label">Unanswered</div>
                     </div>
                 </div>
-
                 <div id="review-questions-container"></div>
             </div>
             <div class="modal-footer">
@@ -777,14 +135,63 @@
         </div>
     </div>
 
+    <form id="exam-form" action="/Exam/SubmitExam" method="post" style="display:none;">
+        <input type="hidden" name="ExamId" value="@Model.id" />
+        <input type="hidden" name="StudentId" value="@ViewBag.StudentId" />
+        <input type="hidden" name="AnswersJson" id="answers-input" />
+    </form>
     <script>
-        var examQuestions = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.Questions));
+        // FIXED: Use the pre-serialized JSON from C# which handles CamelCase
+        var examData = @Html.Raw(modelJson);
+        var examDuration = @Model.Duration * 60; // Convert to seconds
+        var examId = @ViewBag.ExamId;
+        var studentId = @ViewBag.StudentId;
 
+        // Transform the data structure for the exam
+        var examQuestions = examData.questionList.map(function(q, index) {
+            var questionType = (q.type || 'MCQ').toLowerCase();
+
+            if (questionType === 'tf' || questionType === 'truefalse' || questionType === 't/f') {
+                return {
+                    id: q.questionId,
+                    text: q.text,
+                    type: 'True/False',
+                    options: ['True', 'False'],
+                    choices: (q.choices && q.choices.length > 0)
+                             ? q.choices
+                             : [{choiceId: -1, text: 'True'}, {choiceId: -2, text: 'False'}],
+                    userAnswer: null,
+                    userAnswerChoiceId: null,
+                    isFlagged: false,
+                    isTrueFalse: true
+                };
+            } else {
+                return {
+                    id: q.questionId,
+                    text: q.text,
+                    type: questionType.toUpperCase(),
+                    options: q.choices.map(c => c.text),
+                    choices: q.choices,
+                    userAnswer: null,
+                    userAnswerChoiceId: null,
+                    isFlagged: false,
+                    isTrueFalse: false
+                };
+            }
+        });
 
         var currentIndex = 0;
-        var timerSeconds = 3600;
+        var timerSeconds = examDuration;
+        var timerInterval = null;
+        var isSubmitting = false; // Prevent double submission
 
         function init() {
+            // ✅ FIXED: Check if there are any questions before proceeding
+            if (!examQuestions || examQuestions.length === 0) {
+                console.warn('There are no questions in this exam.');
+                return;
+            }
+
             loadQuestion(currentIndex);
             updateDashboardStats();
             createNavigator();
@@ -795,6 +202,15 @@
             document.getElementById('btn-flag').addEventListener('click', toggleFlag);
             document.getElementById('btn-cancel-submit').addEventListener('click', closeModal);
             document.getElementById('btn-confirm-submit').addEventListener('click', confirmSubmit);
+
+            // ✅ Prevent page reload/close during exam
+            window.addEventListener('beforeunload', function (e) {
+                if (!isSubmitting) {
+                    e.preventDefault();
+                    e.returnValue = 'You have an ongoing exam. Are you sure you want to leave?';
+                    return e.returnValue;
+                }
+            });
         }
 
         function loadQuestion(index) {
@@ -807,6 +223,12 @@
             var container = document.getElementById('options-container');
             container.innerHTML = '';
 
+            if (q.isTrueFalse) {
+                container.className = 'tf-options';
+            } else {
+                container.className = 'options-grid';
+            }
+
             for (var i = 0; i < q.options.length; i++) {
                 var optionDiv = document.createElement('div');
                 optionDiv.className = 'option-card';
@@ -816,10 +238,10 @@
                 }
 
                 var markerChar = String.fromCharCode(65 + i);
-                optionDiv.innerHTML = '<div class="option-marker">' + markerChar + '</div><div class="option-text">' + q.options[i] + '</div>';
+                optionDiv.innerHTML = '<div class="option-marker">' + markerChar + '</div><div class="option-text">' + escapeHtml(q.options[i]) + '</div>';
 
                 optionDiv.setAttribute('data-option', i);
-                optionDiv.addEventListener('click', function() {
+                optionDiv.addEventListener('click', function () {
                     selectOption(parseInt(this.getAttribute('data-option')));
                 });
 
@@ -848,16 +270,18 @@
         }
 
         function selectOption(optionIndex) {
-            // Check if the clicked option is the same as the current answer
-            if (examQuestions[currentIndex].userAnswer === optionIndex) {
-                // If yes, deselect it (set to null)
-                examQuestions[currentIndex].userAnswer = null;
+            var currentQ = examQuestions[currentIndex];
+
+            if (currentQ.userAnswer === optionIndex) {
+                currentQ.userAnswer = null;
+                currentQ.userAnswerChoiceId = null;
             } else {
-                // If no, select the new option
-                examQuestions[currentIndex].userAnswer = optionIndex;
+                currentQ.userAnswer = optionIndex;
+                if (currentQ.choices && currentQ.choices[optionIndex]) {
+                     currentQ.userAnswerChoiceId = currentQ.choices[optionIndex].choiceId;
+                }
             }
 
-            // Reload UI to reflect changes
             loadQuestion(currentIndex);
             updateDashboardStats();
         }
@@ -879,7 +303,7 @@
             }
 
             var remaining = total - solvedCount;
-            var percentage = Math.round((solvedCount / total) * 100);
+            var percentage = total > 0 ? Math.round((solvedCount / total) * 100) : 0;
 
             document.getElementById('stat-solved').innerText = solvedCount;
             document.getElementById('stat-flagged').innerText = flaggedCount;
@@ -918,7 +342,7 @@
                 dot.className = 'nav-dot';
                 dot.innerText = i + 1;
                 dot.setAttribute('data-index', i);
-                dot.addEventListener('click', function() {
+                dot.addEventListener('click', function () {
                     goToQuestion(parseInt(this.getAttribute('data-index')));
                 });
                 container.appendChild(dot);
@@ -945,20 +369,64 @@
         }
 
         function startTimer() {
-            setInterval(function() {
+            timerInterval = setInterval(function () {
                 if (timerSeconds > 0) {
                     timerSeconds--;
                     var minutes = Math.floor(timerSeconds / 60);
                     var seconds = timerSeconds % 60;
-                    document.getElementById('timer').innerText =
+
+                    var timerElement = document.getElementById('timer');
+                    timerElement.innerText =
                         (minutes < 10 ? '0' : '') + minutes + ':' +
                         (seconds < 10 ? '0' : '') + seconds;
+
+                    // ✅ Warning when 5 minutes left
+                    if (timerSeconds === 300) {
+                        timerElement.style.color = '#f59e0b'; // Orange warning
+                        alert('⚠️ Warning: Only 5 minutes remaining!');
+                    }
+
+                    // ✅ Critical warning when 1 minute left
+                    if (timerSeconds === 60) {
+                        timerElement.style.color = '#ef4444'; // Red critical
+                        alert('🚨 Critical: Only 1 minute remaining!');
+                    }
+
                 } else {
-                    alert('Time is up! Submitting exam...');
-                    confirmSubmit();
+                    // ✅ TIME IS UP - AUTO SUBMIT
+                    clearInterval(timerInterval);
+                    autoSubmitExam();
                 }
             }, 1000);
         }
+
+        // ✅ AUTO SUBMIT WHEN TIME IS UP
+              function autoSubmitExam() {
+            if (isSubmitting) return;
+            isSubmitting = true;
+
+            alert('⏰ Time is up! Your exam is being submitted automatically...');
+
+            // Prepare answers data matching C# SubmittedAnswer class EXACTLY
+            var answers = examQuestions.map(function(q) {
+                return {
+                    QuestionId: q.id,
+
+                    // Match C# property: public int? ChoiceId
+                    ChoiceId: q.userAnswerChoiceId,
+
+                    // Match C# property: public bool? TrueFalseAnswer
+                    // If isTrueFalse is true: index 0 is "True", index 1 is "False"
+                    TrueFalseAnswer: q.isTrueFalse && q.userAnswer !== null
+                                     ? (q.userAnswer === 0)
+                                     : null
+                };
+            });
+
+            document.getElementById('answers-input').value = JSON.stringify(answers);
+            document.getElementById('exam-form').submit();
+        }
+
 
         function showSubmitModal() {
             var solvedCount = 0;
@@ -1035,18 +503,49 @@
         function closeModal() {
             document.getElementById('submit-modal').classList.remove('active');
         }
-
+        // ✅ CONFIRM SUBMIT (Fixed Data Mapping)
         function confirmSubmit() {
+            if (isSubmitting) return;
+            isSubmitting = true;
+
             closeModal();
-            alert('Exam submitted successfully! Check console for results.');
-            console.log('Exam Results:', examQuestions);
+
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+
+            // Prepare answers data matching C# SubmittedAnswer class EXACTLY
+            var answers = examQuestions.map(function(q) {
+                return {
+                    QuestionId: q.id,
+
+                    // Match C# property: public int? ChoiceId
+                    ChoiceId: q.userAnswerChoiceId,
+
+                    // Match C# property: public bool? TrueFalseAnswer
+                    TrueFalseAnswer: q.isTrueFalse && q.userAnswer !== null
+                                     ? (q.userAnswer === 0)
+                                     : null
+                };
+            });
+
+            document.getElementById('answers-input').value = JSON.stringify(answers);
+            document.getElementById('exam-form').submit();
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            var map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
         }
 
         init();
     </script>
 </body>
-</html>@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+</html>

@@ -116,30 +116,42 @@ public partial class ExaminationSystemContext : DbContext
 
         modelBuilder.Entity<Assign>(entity =>
         {
-            entity.HasKey(e => new { e.StudentId, e.ExamId, e.InstructorId }).HasName("PK__Assign__2E8CC52932C8B0F6");
+            // 1. Define the new Composite Primary Key
+            entity.HasKey(e => new { e.ExamId, e.InstructorId, e.BranchId, e.TrackId })
+                  .HasName("PK_Assign_New");
 
             entity.ToTable("Assign");
 
-            entity.Property(e => e.StudentId).HasColumnName("Student_Id");
             entity.Property(e => e.ExamId).HasColumnName("Exam_Id");
             entity.Property(e => e.InstructorId).HasColumnName("Instructor_Id");
+            entity.Property(e => e.BranchId).HasColumnName("Branch_Id");
+            entity.Property(e => e.TrackId).HasColumnName("Track_Id");
 
-            entity.HasOne(d => d.Exam).WithMany(p => p.Assigns)
+            // 2. Setup Relationships
+            entity.HasOne(d => d.Exam)
+                .WithMany(p => p.Assigns)
                 .HasForeignKey(d => d.ExamId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Assign__Exam_Id__6383C8BA");
+                .HasConstraintName("FK_Assign_Exam");
 
-            entity.HasOne(d => d.Instructor).WithMany(p => p.Assigns)
+            entity.HasOne(d => d.Instructor)
+                .WithMany(p => p.Assigns)
                 .HasForeignKey(d => d.InstructorId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Assign__Instruct__6477ECF3");
+                .HasConstraintName("FK_Assign_Instructor");
 
-            entity.HasOne(d => d.Student).WithMany(p => p.Assigns)
-                .HasForeignKey(d => d.StudentId)
+            entity.HasOne(d => d.Branch)
+                .WithMany(p => p.Assigns) // Ensure Branch class has public virtual ICollection<Assign> Assigns { get; set; }
+                .HasForeignKey(d => d.BranchId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Assign__Student___628FA481");
-        });
+                .HasConstraintName("FK_Assign_Branch");
 
+            entity.HasOne(d => d.Track)
+                .WithMany(p => p.Assigns) // Ensure Track class has public virtual ICollection<Assign> Assigns { get; set; }
+                .HasForeignKey(d => d.TrackId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Assign_Track");
+        });
         modelBuilder.Entity<Branch>(entity =>
         {
             entity.HasKey(e => e.BranchId).HasName("PK__Branch__12CEB061AD589742");
@@ -228,6 +240,9 @@ public partial class ExaminationSystemContext : DbContext
             entity.HasKey(e => e.ExamId).HasName("PK__Exam__C782CA59A3A9FB14");
 
             entity.ToTable("Exam");
+
+            entity.Property(e => e.QuestionCount)
+                 .HasDefaultValue(0);
 
             entity.Property(e => e.ExamId).HasColumnName("Exam_Id");
             entity.Property(e => e.CourseId).HasColumnName("Course_Id");

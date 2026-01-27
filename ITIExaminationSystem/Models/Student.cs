@@ -17,7 +17,6 @@ public partial class Student
 
     public virtual ICollection<Answer> Answers { get; set; } = new List<Answer>();
 
-    public virtual ICollection<Assign> Assigns { get; set; } = new List<Assign>();
 
     public virtual Branch? Branch { get; set; }
 

@@ -18,6 +18,16 @@ namespace ITIExaminationSystem
         builder.Configuration.GetConnectionString("ExaminationSystem")
     )
 );
+
+            builder.Services.AddDistributedMemoryCache();
+
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -28,6 +38,8 @@ namespace ITIExaminationSystem
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            app.UseSession();   // ✅ ADD THIS LINE
 
             app.UseAuthorization();
 

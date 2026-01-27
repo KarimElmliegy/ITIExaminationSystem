@@ -13,6 +13,8 @@ public partial class Branch
 
     public virtual ICollection<BranchManager> BranchManagers { get; set; } = new List<BranchManager>();
 
+
+    public virtual ICollection<Assign> Assigns { get; set; } = new List<Assign>();
     public virtual ICollection<Student> Students { get; set; } = new List<Student>();
 
     public virtual ICollection<Teach> Teaches { get; set; } = new List<Teach>();

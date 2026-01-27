@@ -1,20 +1,15 @@
 ﻿@{
     Layout = null;
 }
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ITI Admin - Login</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet" />
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="/images/Gemini_Generated_Image_vi5243vi5243vi52.png">
-    
-    <link rel="stylesheet" href="/css/Login.css" />
+    <link href="/css/Login.css" rel="stylesheet" />
 </head>
 <body>
     <div class="bg-gradient"></div>
@@ -24,6 +19,7 @@
         <div class="shape shape-3"></div>
     </div>
     <div class="grid-overlay"></div>
+    <div class="particles" id="particles"></div>
 
     <div class="login-view">
         <div class="login-card">
@@ -36,11 +32,12 @@
 
             <div class="logo">
                 <div class="logo-icon">📚</div>
-                <h1>Welcome Back</h1>
+                <h1 id="typewriterText"></h1>
                 <p>Access your examination portal</p>
             </div>
 
-            <form id="loginFormMVC" action="/Home/CheckLoginUser" method="post">
+            <!-- ✅ Connected to CheckLoginUser action -->
+            <form id="loginFormMVC" asp-action="CheckLoginUser" asp-controller="Home" method="post">
                 <div class="form-group">
                     <label>Email Address</label>
                     <div class="input-wrapper">
@@ -48,7 +45,8 @@
                                name="Email"
                                class="form-input"
                                placeholder="Enter your email"
-                               required />
+                               required
+                               autocomplete="email" />
                     </div>
                 </div>
 
@@ -59,15 +57,24 @@
                                name="Password"
                                class="form-input"
                                placeholder="Enter your password"
-                               required />
+                               required
+                               autocomplete="current-password" />
                     </div>
                 </div>
 
                 <button type="submit" class="btn-primary">
-                    Sign In
+                    <span>Sign In</span>
                 </button>
 
-                <div id="errorMsg" style="display:none;"></div>
+                <!-- ✅ Display error message from ViewBag -->
+                @if (ViewBag.Error != null)
+                {
+                    <div id="errorMsg" style="display:block;">@ViewBag.Error</div>
+                }
+                else
+                {
+                    <div id="errorMsg" style="display:none;"></div>
+                }
 
                 <div class="footer-note">
                     Click login to access dashboard
@@ -75,6 +82,88 @@
             </form>
         </div>
     </div>
-</body>
 
+    <script>
+        // Typewriter effect that loops forever
+        function typewriterEffect() {
+            const text = "Welcome Back";
+            const element = document.getElementById('typewriterText');
+            let index = 0;
+            let isDeleting = false;
+
+            function type() {
+                if (!isDeleting && index <= text.length) {
+                    element.textContent = text.substring(0, index);
+                    index++;
+                    setTimeout(type, 150);
+                } else if (!isDeleting && index > text.length) {
+                    isDeleting = true;
+                    setTimeout(type, 2000);
+                } else if (isDeleting && index > 0) {
+                    index--;
+                    element.textContent = text.substring(0, index);
+                    setTimeout(type, 100);
+                } else if (isDeleting && index === 0) {
+                    isDeleting = false;
+                    setTimeout(type, 500);
+                }
+            }
+
+            type();
+        }
+
+        // Create particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 30;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.animationDelay = `${Math.random() * 8}s`;
+                particle.style.animationDuration = `${6 + Math.random() * 6}s`;
+                particle.style.backgroundColor = `hsl(${260 + Math.random() * 60}, 70%, 60%)`;
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Form submission with animation
+        document.getElementById('loginFormMVC').addEventListener('submit', function(e) {
+            const button = this.querySelector('.btn-primary');
+            const errorMsg = document.getElementById('errorMsg');
+
+            // Hide error on new submission
+            errorMsg.style.display = 'none';
+            button.classList.remove('success');
+
+            // Add loading state
+            button.classList.add('loading');
+
+            // Let the form submit naturally - the animation will play during server processing
+            // Note: Remove e.preventDefault() to allow actual form submission
+        });
+
+        // Mouse move effect for shapes
+        document.addEventListener('mousemove', function(e) {
+            const shapes = document.querySelectorAll('.shape');
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+
+            shapes.forEach((shape, index) => {
+                const speed = 0.01 * (index + 1);
+                const moveX = (x - 0.5) * 50;
+                const moveY = (y - 0.5) * 50;
+
+                shape.style.transform = `translate(${moveX}px, ${moveY}px) scale(${1 + speed})`;
+            });
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            typewriterEffect();
+        });
+    </script>
+</body>
 </html>

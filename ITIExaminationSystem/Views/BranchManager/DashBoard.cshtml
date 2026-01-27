@@ -1,12 +1,13 @@
 ﻿@{
     Layout = null;
 }
+@model List<Student>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ITI BranchManager - Dashboard</title>
+    <title>ITI Admin - Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="icon" type="image/png" href="/images/Gemini_Generated_Image_vi5243vi5243vi52.png">
@@ -53,7 +54,7 @@
                     <div class="stat-icon">👨‍🏫</div>
                     <div class="stat-info">
                         <h3>Instructors</h3>
-                        <p id="stat-instructors">@ViewBag.InstructorCount</p>
+                        <p id="stat-instructors">@ViewBag.instructors.Count</p>
                     </div>
                 </div>
                 <div class="stat-card">
@@ -66,7 +67,7 @@
                 <div class="stat-card">
                     <div class="stat-icon">📝</div>
                     <div class="stat-info">
-                        <h3>Exams Scheduled</h3>
+                        <h3>Number Of Branches</h3>
                         <p>1</p>
                     </div>
                 </div>
@@ -231,7 +232,7 @@
     <div id="modal-overlay" class="modal-overlay hidden">
         <div id="modal-student" class="modal-box hidden">
             <h2 class="modal-title">Add New Student</h2>
-            <form asp-action="Dashboard" asp-controller="BranchManager" method="post">
+            <form asp-action="Dashboard" asp-controller="Admin" method="post">
                 <div id="step-1">
                     <div class="form-group">
                         <label>Student Name</label>
@@ -280,7 +281,7 @@
 
         <div id="modal-instructor" class="modal-box hidden">
             <h2 class="modal-title">Add New Instructor</h2>
-            <form asp-action="AddInstructor" asp-controller="BranchManager">
+            <form asp-action="AddInstructor" asp-controller="Admin">
                 <div class="form-group">
                     <label>Full Name</label>
                     <input type="text" id="inp-inst-name" class="form-input" required placeholder="e.g. Dr. Sara Hassan" />

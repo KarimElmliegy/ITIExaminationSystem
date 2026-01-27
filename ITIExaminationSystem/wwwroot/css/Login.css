@@ -1,5 +1,4 @@
-﻿<style >
-* {
+﻿* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -91,10 +90,62 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
-    background-size: 50px 50px;
+    background-image: linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px), linear-gradient(rgba(99, 102, 241, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(99, 102, 241, 0.02) 1px, transparent 1px);
+    background-size: 50px 50px, 50px 50px, 100px 100px, 100px 100px;
     z-index: 2;
     pointer-events: none;
+    animation: gridPulse 20s infinite alternate;
+}
+
+@keyframes gridPulse {
+    0% {
+        opacity: 0.3;
+    }
+
+    100% {
+        opacity: 0.6;
+    }
+}
+
+/* Particles */
+.particles {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 3;
+}
+
+.particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: #667eea;
+    border-radius: 50%;
+    animation: particleFloat 8s infinite linear;
+    opacity: 0;
+}
+
+@keyframes particleFloat {
+    0% {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 0.3;
+    }
+
+    90% {
+        opacity: 0.3;
+    }
+
+    100% {
+        transform: translateY(-100px) rotate(360deg);
+        opacity: 0;
+    }
 }
 
 /* Main Container */
@@ -106,6 +157,17 @@ body {
     align-items: center;
     justify-content: center;
     padding: 20px;
+    animation: fadeIn 1s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 .login-card {
@@ -116,8 +178,8 @@ body {
     padding: 60px;
     max-width: 480px;
     width: 100%;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    animation: slideUp 0.6s ease-out;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    animation: cardEntrance 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
     position: relative;
     overflow: hidden;
 }
@@ -130,187 +192,53 @@ body {
         right: 0;
         height: 1px;
         background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        animation: shimmer 3s infinite;
     }
 
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Logo */
-.logo {
-    text-align: center;
-    margin-bottom: 40px;
-}
-
-.logo-icon {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 40px;
-    box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0%, 100% {
-        transform: scale(1);
-    }
-
-    50% {
-        transform: scale(1.05);
-    }
-}
-
-.logo h1 {
-    color: #ffffff;
-    font-size: 32px;
-    font-weight: 800;
-    margin-bottom: 8px;
-    background: linear-gradient(135deg, #fff 0%, #a8b3ff 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.logo p {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 15px;
-    font-weight: 500;
-}
-
-/* Form Styles */
-.form-group {
-    margin-bottom: 24px;
-}
-
-    .form-group label {
-        display: block;
-        color: rgba(255, 255, 255, 0.9);
-        font-size: 14px;
-        font-weight: 600;
-        margin-bottom: 10px;
-        letter-spacing: 0.3px;
-    }
-
-.input-wrapper {
-    position: relative;
-}
-
-.form-input {
-    width: 100%;
-    padding: 16px 20px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    border-radius: 14px;
-    color: #ffffff;
-    font-size: 15px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    font-family: 'Inter', sans-serif;
-}
-
-    .form-input:focus {
-        outline: none;
-        background: rgba(255, 255, 255, 0.12);
-        border-color: #667eea;
-        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-    }
-
-    .form-input::placeholder {
-        color: rgba(255, 255, 255, 0.4);
-    }
-
-/* Button */
-.btn-primary {
-    width: 100%;
-    padding: 18px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: none;
-    border-radius: 14px;
-    color: #ffffff;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 10px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-}
-
-    .btn-primary::before {
+    .login-card::after {
         content: '';
         position: absolute;
         top: 0;
         left: -100%;
         width: 100%;
         height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-        transition: left 0.5s ease;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+        animation: cardShimmer 8s infinite;
     }
 
-    .btn-primary:hover::before {
+@keyframes cardEntrance {
+    0% {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes shimmer {
+    0%, 100% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+@keyframes cardShimmer {
+    0% {
+        left: -100%;
+    }
+
+    100% {
         left: 100%;
     }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
-    }
-
-    .btn-primary:active {
-        transform: translateY(0);
-    }
-
-/* Error Message */
-#errorMsg {
-    margin-top: 20px;
-    padding: 14px 18px;
-    background: rgba(239, 68, 68, 0.15);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    border-radius: 12px;
-    color: #fca5a5;
-    font-weight: 600;
-    font-size: 14px;
-    text-align: center;
-    animation: shake 0.4s ease;
 }
 
-@keyframes shake {
-    0%, 100% {
-        transform: translateX(0);
-    }
-
-    25% {
-        transform: translateX(-5px);
-    }
-
-    75% {
-        transform: translateX(5px);
-    }
-}
-
-.footer-note {
-    margin-top: 24px;
-    text-align: center;
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 13px;
-}
-
-/* Decorative Elements */
+/* Floating Dots */
 .floating-dots {
     position: absolute;
     width: 100%;
@@ -335,24 +263,28 @@ body {
         top: 10%;
         left: 20%;
         animation-delay: 0s;
+        animation-duration: 20s;
     }
 
     .dot:nth-child(2) {
         top: 60%;
         left: 80%;
         animation-delay: 2s;
+        animation-duration: 18s;
     }
 
     .dot:nth-child(3) {
         top: 30%;
         left: 70%;
         animation-delay: 4s;
+        animation-duration: 22s;
     }
 
     .dot:nth-child(4) {
         top: 80%;
         left: 30%;
         animation-delay: 6s;
+        animation-duration: 16s;
     }
 
 @keyframes floatDot {
@@ -363,6 +295,404 @@ body {
 
     50% {
         transform: translateY(-20px) scale(1.5);
+        opacity: 0.8;
+        box-shadow: 0 0 10px #667eea;
+    }
+}
+
+/* Logo */
+.logo {
+    text-align: center;
+    margin-bottom: 40px;
+    position: relative;
+    opacity: 0;
+    animation: fadeInUp 0.6s ease-out 0.2s forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.logo-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4), 0 0 20px rgba(102, 126, 234, 0.3);
+    animation: pulse 2s infinite, floatIcon 6s ease-in-out infinite;
+    position: relative;
+    overflow: hidden;
+}
+
+    .logo-icon::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        animation: iconShine 3s infinite;
+    }
+
+@keyframes floatIcon {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-10px) rotate(5deg);
+    }
+}
+
+@keyframes iconShine {
+    0% {
+        transform: translateX(-100%) translateY(-100%) rotate(45deg);
+    }
+
+    100% {
+        transform: translateX(100%) translateY(100%) rotate(45deg);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4), 0 0 20px rgba(102, 126, 234, 0.3);
+    }
+
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 15px 50px rgba(102, 126, 234, 0.5), 0 0 30px rgba(102, 126, 234, 0.4);
+    }
+}
+
+.logo h1 {
+    color: #ffffff;
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #fff 0%, #a8b3ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    min-height: 1.2em;
+    display: inline-block;
+}
+
+    .logo h1::after {
+        content: '|';
+        position: absolute;
+        color: #667eea;
+        animation: blink 0.7s infinite;
+        -webkit-text-fill-color: #667eea;
+    }
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+}
+
+.logo p {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 15px;
+    font-weight: 500;
+    opacity: 0;
+    animation: fadeInUp 0.8s ease-out 0.6s forwards;
+}
+
+/* Form - ✅ REMOVED ANIMATION DELAYS FOR IMMEDIATE INTERACTION */
+.form-group {
+    margin-bottom: 24px;
+    /* ✅ Removed animation delay - inputs are now immediately active */
+}
+
+    .form-group label {
+        display: block;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        letter-spacing: 0.3px;
+    }
+
+.input-wrapper {
+    position: relative;
+}
+
+    .input-wrapper::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 14px;
+        padding: 2px;
+        background: linear-gradient(135deg, #667eea, #764ba2, #4facfe);
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        mask-composite: exclude;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .input-wrapper:focus-within::before {
+        opacity: 1;
+        animation: borderRotate 3s linear infinite;
+    }
+
+@keyframes borderRotate {
+    0% {
+        background: linear-gradient(135deg, #667eea, #764ba2, #4facfe);
+    }
+
+    33% {
+        background: linear-gradient(135deg, #764ba2, #4facfe, #667eea);
+    }
+
+    66% {
+        background: linear-gradient(135deg, #4facfe, #667eea, #764ba2);
+    }
+
+    100% {
+        background: linear-gradient(135deg, #667eea, #764ba2, #4facfe);
+    }
+}
+
+.form-input {
+    width: 100%;
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    font-family: 'Inter', sans-serif;
+    position: relative;
+    z-index: 1;
+}
+
+    .form-input:focus {
+        outline: none;
+        background: rgba(255, 255, 255, 0.12);
+        border-color: transparent;
+        transform: translateY(-1px);
+    }
+
+    .form-input::placeholder {
+        color: rgba(255, 255, 255, 0.4);
+    }
+
+/* Button - ✅ REMOVED ENTRANCE ANIMATION DELAY */
+.btn-primary {
+    width: 100%;
+    padding: 18px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 14px;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3), 0 0 20px rgba(102, 126, 234, 0.2);
+    /* ✅ Only keeping the glow animation */
+    animation: buttonGlow 2s ease-in-out infinite alternate;
+    z-index: 1;
+}
+
+@keyframes buttonGlow {
+    from {
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3), 0 0 20px rgba(102, 126, 234, 0.2);
+    }
+
+    to {
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4), 0 0 30px rgba(102, 126, 234, 0.3);
+    }
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.btn-primary:hover::before {
+    left: 100%;
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 20px 50px rgba(102, 126, 234, 0.5), 0 0 40px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* Loading State */
+.btn-primary.loading {
+    pointer-events: none;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    animation: none;
+}
+
+    .btn-primary.loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: buttonSpin 0.8s linear infinite;
+    }
+
+    .btn-primary.loading span {
+        opacity: 0;
+    }
+
+@keyframes buttonSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Success State */
+.btn-primary.success {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    animation: successPulse 0.5s ease;
+}
+
+    .btn-primary.success::after {
+        content: '✓';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 24px;
+        color: white;
+        animation: checkmark 0.5s ease;
+    }
+
+    .btn-primary.success span {
+        opacity: 0;
+    }
+
+@keyframes successPulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes checkmark {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+/* Error Message */
+#errorMsg {
+    margin-top: 20px;
+    padding: 14px 18px;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 12px;
+    color: #fca5a5;
+    font-weight: 600;
+    font-size: 14px;
+    text-align: center;
+    animation: shake 0.4s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+    #errorMsg::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: #ef4444;
+    }
+
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+.footer-note {
+    margin-top: 24px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 13px;
+    animation: textFloat 4s ease-in-out infinite;
+}
+
+@keyframes textFloat {
+    0%, 100% {
+        opacity: 0.5;
+    }
+
+    50% {
         opacity: 0.8;
     }
 }
@@ -384,5 +714,3 @@ body {
         font-size: 35px;
     }
 }
-
-</style >

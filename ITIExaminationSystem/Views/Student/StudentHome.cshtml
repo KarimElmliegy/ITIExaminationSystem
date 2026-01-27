@@ -18,160 +18,556 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ITI Student Portal</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/studentHome.css"/>
+    <link rel="icon" type="image/png" href="/images/Gemini_Generated_Image_vi5243vi5243vi52.png">
+    <link rel="stylesheet" href="/css/studentHome.css" />
+    <style>
+        /* Enhanced Exam Card Styles */
+        .exam-item {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .exam-item::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 4px;
+                height: 100%;
+                background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+
+            .exam-item:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+                border-color: rgba(255, 255, 255, 0.15);
+            }
+
+                .exam-item:hover::before {
+                    opacity: 1;
+                }
+
+            .exam-item.card-active {
+                background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.05) 100%);
+                border: 2px solid rgba(102, 126, 234, 0.3);
+                box-shadow: 0 4px 20px rgba(102, 126, 234, 0.2);
+            }
+
+                .exam-item.card-active::before {
+                    opacity: 1;
+                    width: 5px;
+                    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+                    box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+                }
+
+            .exam-item.card-expired {
+                background: linear-gradient(135deg, rgba(198, 40, 40, 0.05) 0%, rgba(198, 40, 40, 0.02) 100%);
+                border-color: rgba(198, 40, 40, 0.2);
+                opacity: 0.7;
+            }
+
+        .exam-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .exam-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .exam-type {
+            display: inline-block;
+            padding: 6px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .exam-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .exam-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.95rem;
+        }
+
+            .exam-detail-item i {
+                color: #667eea;
+                font-size: 1.1rem;
+                width: 20px;
+                text-align: center;
+            }
+
+        .exam-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Enhanced Status Badges */
+        .exam-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            border: 1px solid;
+        }
+
+            .exam-status i {
+                font-size: 1rem;
+            }
+
+        /* Available Status */
+        .status-available {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            border-color: #c3e6cb;
+            box-shadow: 0 2px 10px rgba(21, 87, 36, 0.2);
+        }
+
+        /* Upcoming Status */
+        .status-upcoming {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            color: #856404;
+            border-color: #ffeaa7;
+            box-shadow: 0 2px 10px rgba(133, 100, 4, 0.2);
+        }
+
+        /* Expired Status */
+        .status-expired {
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+            color: #c62828;
+            border-color: #ffcdd2;
+            box-shadow: 0 2px 10px rgba(198, 40, 40, 0.2);
+        }
+
+        /* Enhanced Countdown Timer */
+        .countdown-timer {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .countdown-timer::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+                transition: left 0.5s ease;
+            }
+
+            .countdown-timer:hover::before {
+                left: 100%;
+            }
+
+            .countdown-timer:hover {
+                transform: translateY(-3px) scale(1.05);
+                box-shadow: 0 6px 20px rgba(243, 156, 18, 0.5);
+            }
+
+            .countdown-timer i {
+                font-size: 1.1rem;
+                animation: tick 1s ease-in-out infinite;
+            }
+
+        @@keyframes tick {
+            0%, 100%
+
+        {
+            transform: rotate(0deg);
+        }
+
+        25% {
+            transform: rotate(-10deg);
+        }
+
+        75% {
+            transform: rotate(10deg);
+        }
+
+        }
+
+        .countdown-text {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        /* Enhanced Exam Button */
+        .exam-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .exam-btn::before {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 0;
+                height: 0;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.2);
+                transform: translate(-50%, -50%);
+                transition: width 0.6s ease, height 0.6s ease;
+            }
+
+            .exam-btn:hover::before {
+                width: 300px;
+                height: 300px;
+            }
+
+            .exam-btn i {
+                font-size: 1.1rem;
+                position: relative;
+                z-index: 1;
+            }
+
+            .exam-btn span {
+                position: relative;
+                z-index: 1;
+            }
+
+            .exam-btn:disabled {
+                cursor: not-allowed;
+                opacity: 0.6;
+            }
+
+            .exam-btn:not(:disabled):hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            }
+
+        /* Action Container */
+        #exam-action-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        /* Pulse Animation for Active Items */
+        @@keyframes pulse {
+            0%
+
+        {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+        }
+
+        50% {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+        }
+
+        100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+        }
+
+        }
+
+        /* Glow Effect */
+        @@keyframes glow {
+            0%, 100%
+
+        {
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.5), 0 0 10px rgba(102, 126, 234, 0.3), 0 0 15px rgba(102, 126, 234, 0.2);
+        }
+
+        50% {
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.8), 0 0 20px rgba(102, 126, 234, 0.5), 0 0 30px rgba(102, 126, 234, 0.3);
+        }
+
+        }
+
+        .exam-btn[style*="pulse"] {
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        /* Section Titles */
+        .exam-section-title {
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 30px 0 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+            .exam-section-title i {
+                font-size: 1.3rem;
+            }
+
+        /* Responsive Design */
+        @@media (max-width: 768px) {
+            .exam-details
+
+        {
+            grid-template-columns: 1fr;
+        }
+
+        .exam-footer {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        #exam-action-container {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .countdown-timer,
+        .exam-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .exam-name {
+            font-size: 1.1rem;
+        }
+
+        }
+
+        /* Score Display */
+        .exam-score {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            box-shadow: 0 2px 10px rgba(39, 174, 96, 0.3);
+        }
+
+            .exam-score i {
+                color: #f1c40f;
+                font-size: 1.1rem;
+            }
+    </style>
 </head>
 <body>
-    <div class="top-nav">
-        <div class="logo-section">
-            <div class="logo pulse">ITI</div>
-            <span class="portal-title">Student Portal</span>
-        </div>
-        <div class="user-section">
-            <div class="user-info">
-                <div class="user-name">@Model.User.UserName</div>
-                <div class="user-role">Student ID: @Model.StudentId</div>
+    <div class="main-container">
+        <div class="top-nav">
+            <div class="logo-section">
+                <div class="logo pulse"></div>
+                <span class="portal-title">Student Portal</span>
             </div>
-            <a class="logout-btn" asp-action="LoginPage" asp-controller="Home">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </a>
-        </div>
-    </div>
-
-    <div id="dashboard" class="container">
-        <div class="student-info-card">
-            <div class="student-info-grid">
-                <div class="info-item">
-                    <div class="info-label"><i class="fas fa-user"></i> Student Name</div>
-                    <div class="info-value">@Model.User.UserName</div>
+            <div class="user-section">
+                <div class="user-info">
+                    <div class="user-name typing-effect glow-effect">@Model.User.UserName</div>
+                    <div class="user-role">Student ID: @Model.StudentId</div>
                 </div>
-                <div class="info-item">
-                    <div class="info-label"><i class="fas fa-graduation-cap"></i> Track</div>
-                    <div class="info-value">@ViewBag.Track.TrackName</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label"><i class="fas fa-building"></i> Branch</div>
-                    <div class="info-value">@ViewBag.Branch.BranchName</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label"><i class="fas fa-calendar-alt"></i> Academic Year</div>
-                    <div class="info-value">2024/2025</div>
-                </div>
+                <a class="logout-btn" asp-action="LoginPage" asp-controller="Home">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
             </div>
         </div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon courses"><i class="fas fa-book"></i></div>
-                <div class="stat-content">
-                    <div class="stat-label">Enrolled Courses</div>
-                    <div class="stat-value">@ViewBag.TrackCourses</div>
+        <div id="dashboard" class="dashboard-container">
+            <div class="student-info-card">
+                <div class="student-info-grid">
+                    <div class="info-item">
+                        <div class="info-label"><i class="fas fa-user"></i> Student Name</div>
+                        <div class="info-value">@Model.User.UserName</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label"><i class="fas fa-graduation-cap"></i> Track</div>
+                        <div class="info-value">@ViewBag.Track.TrackName</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label"><i class="fas fa-building"></i> Branch</div>
+                        <div class="info-value">@ViewBag.Branch.BranchName</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label"><i class="fas fa-calendar-alt"></i> Academic Year</div>
+                        <div class="info-value">2024/2025</div>
+                    </div>
                 </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon exams"><i class="fas fa-file-alt"></i></div>
-                <div class="stat-content">
-                    <div class="stat-label">Total Exams</div>
-                    <div class="stat-value">@ViewBag.TotalExams</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon completed"><i class="fas fa-check-circle"></i></div>
-                <div class="stat-content">
-                    <div class="stat-label">Completed</div>
-                    <div class="stat-value">@ViewBag.CompletedExams</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon content"><i class="fas fa-graduation-cap"></i></div>
-                <div class="stat-content">
-                    <div class="stat-label">Modules</div>
-                    <div class="stat-value">@ViewBag.TotalModules</div>
-                </div>
-            </div>
-        </div>
 
-        <h2 class="section-title">My Courses</h2>
-
-        <div class="search-container">
-            <div class="search-box">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" id="courseSearch" class="search-input"
-                       placeholder="Search courses by name, code, or instructor..." />
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon courses"><i class="fas fa-book"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-label">Enrolled Courses</div>
+                        <div class="stat-value">@ViewBag.TrackCourses</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon exams"><i class="fas fa-file-alt"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-label">Total Exams</div>
+                        <div class="stat-value">@ViewBag.TotalExams</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon completed"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-label">Completed</div>
+                        <div class="stat-value">@ViewBag.CompletedExams</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon content"><i class="fas fa-graduation-cap"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-label">Intake</div>
+                        <div class="stat-value">@ViewBag.IntakeNumber</div>
+                    </div>
+                </div>
             </div>
-            <div class="search-results" id="searchResults">
-                Showing all @(ViewBag.Courses?.Count ?? 0) courses
-            </div>
-        </div>
 
-        <div class="courses-grid" id="coursesGrid">
-            @if (ViewBag.Courses != null && ViewBag.Courses.Count > 0)
-            {
-                foreach (var course in ViewBag.Courses)
+            <h2 class="section-title">My Courses</h2>
+
+            <div class="search-container">
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="courseSearch" class="search-input"
+                           placeholder="Search courses by name, code, or instructor..." />
+                </div>
+                <div class="search-results" id="searchResults">
+                    Showing all @(ViewBag.Courses?.Count ?? 0) courses
+                </div>
+            </div>
+
+            <div class="courses-grid" id="coursesGrid">
+                @if (ViewBag.Courses != null && ViewBag.Courses.Count > 0)
                 {
-                    var badgeColor = "linear-gradient(135deg, var(--primary), var(--accent))";
-                    if (course.Status == "COMPLETED") { badgeColor = "linear-gradient(135deg, var(--success), #27ae60)"; }
-                    else if (course.Status == "UPCOMING") { badgeColor = "linear-gradient(135deg, var(--warning), #e67e22)"; }
+                    foreach (var course in ViewBag.Courses)
+                    {
+                        var badgeColor = "linear-gradient(135deg, var(--primary), var(--accent))";
+                        if (course.Status == "COMPLETED") { badgeColor = "linear-gradient(135deg, var(--success), #27ae60)"; }
+                        else if (course.Status == "UPCOMING") { badgeColor = "linear-gradient(135deg, var(--warning), #e67e22)"; }
 
-                    <div class="course-card"
-                         data-course-id="@course.Id"
-                         data-course-title="@course.Title.ToLower()"
-                         data-course-code="@course.Code.ToString().ToLower()"
-                         data-course-instructor="@course.Instructor.ToLower()"
-                         onclick="openCourseModal(@course.Id)">
-                        <div class="course-header">
-                            <div>
-                                <div class="course-title">@course.Title</div>
-                                <div class="course-code">@course.Code</div>
-                            </div>
-                            <div class="course-badge" style="background: @badgeColor;">@course.Status</div>
-                        </div>
-                        <div class="course-footer">
-                            <div class="course-instructor">
-                                <i class="fas fa-user-tie"></i> @course.Instructor
-                            </div>
-                            <div class="course-stats">
-                                <div class="course-stat-item">
-                                    <div class="course-stat-value">@course.Modules</div>
-                                    <div class="course-stat-label">Modules</div>
+                        <div class="course-card"
+                             data-course-id="@course.Id"
+                             data-course-title="@course.Title.ToLower()"
+                             data-course-code="@course.Code.ToString().ToLower()"
+                             data-course-instructor="@course.Instructor.ToLower()"
+                             onclick="openCourseModal(@course.Id)">
+                            <div class="course-header">
+                                <div>
+                                    <div class="course-title">@course.Title</div>
+                                    <div class="course-code">@course.Code</div>
                                 </div>
-                                <div class="course-stat-item">
-                                    <div class="course-stat-value">@course.Exams</div>
-                                    <div class="course-stat-label">Exams</div>
+                                <div class="course-badge" style="background: @badgeColor;">@course.Status</div>
+                            </div>
+                            <div class="course-footer">
+                                <div class="course-instructor">
+                                    <i class="fas fa-user-tie"></i> @course.Instructor
+                                </div>
+                                <div class="course-stats">
+                                    <div class="course-stat-item">
+                                        <div class="course-stat-value">@course.Modules</div>
+                                        <div class="course-stat-label">Modules</div>
+                                    </div>
+                                    <div class="course-stat-item">
+                                        <div class="course-stat-value">@course.Exams</div>
+                                        <div class="course-stat-label">Exams</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                    }
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <i class="fas fa-book"></i>
+                        <h3>No courses available</h3>
+                        <p>You are not enrolled in any courses yet.</p>
                     </div>
                 }
-            }
-            else
-            {
-                <div class="empty-state">
-                    <i class="fas fa-book"></i>
-                    <h3>No courses available</h3>
-                    <p>You are not enrolled in any courses yet.</p>
-                </div>
-            }
-        </div>
-    </div>
-
-    <div class="modal" id="courseModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title" id="modalTitle">Course Details</h2>
-                <button class="close-btn" onclick="closeModal()">×</button>
             </div>
-            <div class="modal-body" id="modalBody"></div>
         </div>
+
+        <div class="modal" id="courseModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title" id="modalTitle">Course Details</h2>
+                    <button class="close-btn" onclick="closeModal()">×</button>
+                </div>
+                <div class="modal-body" id="modalBody"></div>
+            </div>
+        </div>
+
+        <div class="fab" onclick="scrollToTop()"><i class="fas fa-arrow-up"></i></div>
+
     </div>
-
-    <div class="fab" onclick="scrollToTop()"><i class="fas fa-arrow-up"></i></div>
-
     <script>
         // ============================================================
-        // FIXED: Use pre-serialized JSON from C#
+        // GLOBAL VARIABLES
         // ============================================================
         const coursesData = {};
-        const rawData = @(Html.Raw(coursesJson));
+        const currentStudentId = @Model.StudentId;
+        const rawData = @Html.Raw(coursesJson);
 
         if (rawData && Array.isArray(rawData)) {
             rawData.forEach(c => {
@@ -180,11 +576,90 @@
         }
 
         console.log("✅ Courses Loaded:", Object.keys(coursesData).length, "courses");
+        console.log("✅ Current Student ID:", currentStudentId);
 
+        // ============================================================
+        // COUNTDOWN TIMER MANAGEMENT
+        // ============================================================
+        let countdownInterval = null;
+
+        function startCountdownTimers() {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+            countdownInterval = setInterval(updateAllCountdowns, 1000);
+            updateAllCountdowns();
+        }
+
+        function updateAllCountdowns() {
+            const countdownElements = document.querySelectorAll('.countdown-timer[data-start-time]');
+            const now = new Date().getTime();
+
+            countdownElements.forEach(element => {
+                const startTimeStr = element.getAttribute('data-start-time');
+                const examId = element.getAttribute('data-exam-id');
+
+                if (!startTimeStr || !examId) return;
+
+                try {
+                    const startTime = new Date(startTimeStr).getTime();
+                    const distance = startTime - now;
+
+                    if (distance < 0) {
+                        const actionSection = document.getElementById(`exam-action-${examId}`);
+                        if (actionSection && !actionSection.classList.contains('transformed')) {
+                            actionSection.classList.add('transformed');
+                            actionSection.innerHTML = `
+                                <a href="/Exam/Start?examId=${examId}&studentId=${currentStudentId}"
+                                   class="exam-btn"
+                                   style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); animation: pulse 2s infinite;">
+                                    <i class="fas fa-play-circle"></i>
+                                    <span>Start Exam Now!</span>
+                                </a>`;
+
+                            const parentCard = actionSection.closest('.exam-item');
+                            if (parentCard) {
+                                parentCard.classList.add('card-active');
+                                const statusBadge = parentCard.querySelector('.exam-status');
+                                if (statusBadge) {
+                                    statusBadge.className = 'exam-status status-available';
+                                    statusBadge.innerHTML = `<i class="fas fa-unlock"></i> Available Now`;
+                                }
+                            }
+                        }
+                    } else {
+                        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                        let timeString = '';
+                        if (days > 0) {
+                            timeString = `${days}d ${hours}h ${minutes}m`;
+                        } else if (hours > 0) {
+                            timeString = `${hours}h ${minutes}m ${seconds}s`;
+                        } else if (minutes > 0) {
+                            timeString = `${minutes}m ${seconds}s`;
+                        } else {
+                            timeString = `${seconds}s`;
+                        }
+
+                        const textSpan = element.querySelector('.countdown-text');
+                        if (textSpan) {
+                            textSpan.textContent = timeString;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error updating countdown for exam', examId, ':', error);
+                }
+            });
+        }
+
+        // ============================================================
+        // SEARCH FUNCTIONALITY
+        // ============================================================
         function setupSearch() {
             const searchInput = document.getElementById('courseSearch');
-            const searchResults = document.getElementById('searchResults');
-            const totalCourses = Object.keys(coursesData).length;
 
             searchInput.addEventListener('input', function() {
                 const searchTerm = this.value.toLowerCase().trim();
@@ -201,7 +676,6 @@
 
                     if (matches || searchTerm === '') {
                         card.style.display = 'flex';
-                        card.style.animation = 'fadeInUp 0.4s ease';
                         visibleCount++;
                     } else {
                         card.style.display = 'none';
@@ -211,7 +685,6 @@
                 updateSearchResults(visibleCount);
             });
 
-            // Add focus effect
             searchInput.addEventListener('focus', function() {
                 this.parentElement.style.transform = 'scale(1.02)';
             });
@@ -240,21 +713,14 @@
             }
         }
 
+        // ============================================================
+        // MODAL MANAGEMENT
+        // ============================================================
         function openCourseModal(courseId) {
-            console.log('Opening modal for course ID:', courseId);
             const course = coursesData[courseId];
-
-            if (!course) {
-                console.error('❌ Course not found!', courseId);
-                showNotification('Course not found!', 'error');
-                return;
-            }
+            if (!course) return;
 
             document.getElementById('modalTitle').textContent = `${course.title} (${course.code})`;
-
-            const contentHtml = generateContentHtml(course);
-            const examsHtml = generateExamsHtml(course);
-
             const modalBody = document.getElementById('modalBody');
             modalBody.innerHTML = `
                 <div class="modal-tabs">
@@ -266,52 +732,39 @@
                     </button>
                 </div>
                 <div class="tab-content">
-                    <div id="content-tab" class="tab-pane active">${contentHtml}</div>
-                    <div id="examinations-tab" class="tab-pane">${examsHtml}</div>
+                    <div id="content-tab" class="tab-pane active">${generateContentHtml(course)}</div>
+                    <div id="examinations-tab" class="tab-pane">${generateExamsHtml(course)}</div>
                 </div>
             `;
 
-            // Set up event listeners for the tabs
             setupTabListeners();
-
             document.getElementById('courseModal').classList.add('active');
             document.body.style.overflow = 'hidden';
+            setTimeout(() => startCountdownTimers(), 100);
         }
 
         function setupTabListeners() {
-            // Add click event to all tab buttons
-            const tabButtons = document.querySelectorAll('.tab-btn');
-            tabButtons.forEach(button => {
+            document.querySelectorAll('.tab-btn').forEach(button => {
                 button.addEventListener('click', function() {
-                    const tabName = this.getAttribute('data-tab');
-                    switchTab(tabName);
+                    switchTab(this.getAttribute('data-tab'));
                 });
             });
         }
 
         function switchTab(tabName) {
-            console.log('Switching to tab:', tabName);
-
-            // Update active tab button
             document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.getAttribute('data-tab') === tabName) {
-                    btn.classList.add('active');
-                }
+                btn.classList.toggle('active', btn.getAttribute('data-tab') === tabName);
             });
-
-            // Update active tab pane
             document.querySelectorAll('.tab-pane').forEach(pane => {
-                pane.classList.remove('active');
-                if (pane.id === `${tabName}-tab`) {
-                    pane.classList.add('active');
-                }
+                pane.classList.toggle('active', pane.id === `${tabName}-tab`);
             });
         }
 
+        // ============================================================
+        // CONTENT GENERATION
+        // ============================================================
         function generateContentHtml(course) {
             let html = '<div class="content-section">';
-
             html += `
                 <div class="summary-stats">
                     <div class="summary-stat">
@@ -333,14 +786,14 @@
                 </div>
             `;
 
-            if (course.description && course.description.trim() !== '') {
+            if (course.description && course.description.trim()) {
                 html += `
                     <div style="margin: 30px 0;">
                         <h3 style="color: var(--dark); margin-bottom: 15px; font-size: 1.3rem; display: flex; align-items: center; gap: 10px;">
                             <i class="fas fa-info-circle" style="color: var(--primary);"></i> Course Description
                         </h3>
                         <div style="background: rgba(67, 97, 238, 0.05); padding: 20px; border-radius: 12px; border-left: 4px solid var(--primary);">
-                            <p style="color: var(--dark); line-height: 1.6;">${escapeHtml(course.description)}</p>
+                            <p style="color: var(--white); line-height: 1.6;">${escapeHtml(course.description)}</p>
                         </div>
                     </div>
                 `;
@@ -352,16 +805,13 @@
                         <i class="fas fa-bookmark" style="color: var(--primary);"></i> Course Modules
                     </h3>
                     <div class="headlines-list">`;
-
                 course.topics.forEach((topic, index) => {
                     html += `
                         <div class="headline-item">
                             <div class="headline-number">${index + 1}</div>
                             <div class="headline-text">${escapeHtml(topic)}</div>
-                        </div>
-                    `;
+                        </div>`;
                 });
-
                 html += '</div>';
             }
 
@@ -385,32 +835,25 @@
             let html = "";
 
             if (completedExams.length > 0) {
-                html += '<h3 style="color: var(--dark); margin-bottom: 25px; font-size: 1.5rem; display: flex; align-items: center; gap: 12px;"><i class="fas fa-check-circle" style="color: var(--success);"></i> Completed Exams</h3>';
+                html += '<h3 class="exam-section-title"><i class="fas fa-check-circle" style="color: #27ae60;"></i> Completed Exams</h3>';
                 completedExams.forEach((exam) => {
                     const percentage = exam.totalScore ? Math.round((exam.score || 0) / exam.totalScore * 100) : 0;
                     html += `
                         <div class="exam-item">
                             <div class="exam-item-header">
-                                <div class="exam-name">${escapeHtml(exam.name || `Exam ${exam.id}`)}</div>
-                                <div class="exam-type">${escapeHtml(exam.type || 'Exam')}</div>
+                                <div>
+                                    <div class="exam-name">${escapeHtml(exam.name || `Exam ${exam.id}`)}</div>
+                                </div>
+                                <div class="exam-type">Exam</div>
                             </div>
                             <div class="exam-details">
-                                <div class="exam-detail-item">
-                                    <i class="fas fa-calendar"></i> ${exam.date || 'Not scheduled'}
-                                </div>
-                                <div class="exam-detail-item">
-                                    <i class="fas fa-clock"></i> ${exam.duration || 'N/A'} minutes
-                                </div>
-                                <div class="exam-detail-item">
-                                    <i class="fas fa-question-circle"></i> ${exam.questions || 'N/A'} Questions
-                                </div>
+                                <div class="exam-detail-item"><i class="fas fa-calendar-alt"></i> ${exam.date || 'Not scheduled'}</div>
+                                <div class="exam-detail-item"><i class="fas fa-stopwatch"></i> ${exam.duration || 'N/A'} minutes</div>
+                                <div class="exam-detail-item"><i class="fas fa-list-ol"></i> ${exam.questionCount || 'N/A'} Questions</div>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 20px; margin-top: 20px;">
+                            <div class="exam-footer">
                                 <span class="exam-score">
-                                    <i class="fas fa-star"></i> Score: ${exam.score || 0}/${exam.totalScore || 100}
-                                </span>
-                                <span style="font-size: 0.9rem; color: var(--gray);">
-                                    (${percentage}%)
+                                    <i class="fas fa-star"></i> Score: ${exam.score || 0}/${exam.totalScore || 100} (${percentage}%)
                                 </span>
                             </div>
                         </div>
@@ -419,41 +862,59 @@
             }
 
             if (scheduledExams.length > 0) {
-                if (completedExams.length > 0) {
-                    html += '<div style="margin-top: 40px;"></div>';
-                }
-                html += '<h3 style="color: var(--dark); margin: 40px 0 25px; font-size: 1.5rem; display: flex; align-items: center; gap: 12px;"><i class="fas fa-calendar-check" style="color: var(--warning);"></i> Scheduled Exams</h3>';
+                if (completedExams.length > 0) html += '<div style="margin-top: 40px;"></div>';
+                html += '<h3 class="exam-section-title"><i class="fas fa-calendar-check" style="color: #f39c12;"></i> Scheduled Exams</h3>';
+
                 scheduledExams.forEach((exam) => {
+                    const isExpired = exam.isExpired || false;
+                    const isAvailable = exam.available || false;
+                    const fullStartDate = exam.fullStartDate;
+
+                    let cardClass = "exam-item";
+                    let statusBadge = "";
+                    let actionSection = "";
+
+                    if (isExpired) {
+                        cardClass += " card-expired";
+                        statusBadge = `<span class="exam-status status-expired"><i class="fas fa-times-circle"></i> Expired</span>`;
+                        actionSection = `<button class="exam-btn" style="background-color: #95a5a6; cursor: not-allowed;" disabled><i class="fas fa-ban"></i><span>Expired</span></button>`;
+                    } else if (isAvailable) {
+                        cardClass += " card-active";
+                        statusBadge = `<span class="exam-status status-available"><i class="fas fa-unlock"></i> Available Now</span>`;
+                        actionSection = `<a href="/Exam/Start?examId=${exam.id}&studentId=${currentStudentId}" class="exam-btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); animation: pulse 2s infinite;"><i class="fas fa-play-circle"></i><span>Start Exam</span></a>`;
+                    } else if (fullStartDate) {
+                        statusBadge = `<span class="exam-status status-upcoming"><i class="fas fa-hourglass-half"></i> Not Available Yet</span>`;
+                        actionSection = `
+                            <div id="exam-action-${exam.id}" style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                                <div id="countdown-${exam.id}" class="countdown-timer" data-start-time="${fullStartDate}" data-exam-id="${exam.id}">
+                                    <i class="fas fa-clock"></i>
+                                    <span class="countdown-text">Loading...</span>
+                                </div>
+                                <button class="exam-btn" style="background-color: #6c757d; cursor: not-allowed;" disabled>
+                                    <i class="fas fa-lock"></i><span>Coming Soon</span>
+                                </button>
+                            </div>`;
+                    } else {
+                        statusBadge = `<span class="exam-status status-upcoming"><i class="fas fa-hourglass-half"></i> Not Available Yet</span>`;
+                        actionSection = `<button class="exam-btn" style="background-color: #6c757d; cursor: not-allowed;" disabled><i class="fas fa-lock"></i><span>Coming Soon</span></button>`;
+                    }
+
                     html += `
-                        <div class="exam-item">
+                        <div class="${cardClass}">
                             <div class="exam-item-header">
-                                <div class="exam-name">${escapeHtml(exam.name || `Exam ${exam.id}`)}</div>
-                                <div class="exam-type">${escapeHtml(exam.type || 'Exam')}</div>
+                                <div>
+                                    <div class="exam-name">${escapeHtml(exam.name || `Exam ${exam.id}`)}</div>
+                                </div>
+                                <div class="exam-type">Exam</div>
                             </div>
                             <div class="exam-details">
-                                <div class="exam-detail-item">
-                                    <i class="fas fa-calendar"></i> ${exam.date || 'Not scheduled'}
-                                </div>
-                                <div class="exam-detail-item">
-                                    <i class="fas fa-clock"></i> ${exam.duration || 'N/A'} minutes
-                                </div>
-                                <div class="exam-detail-item">
-                                    <i class="fas fa-question-circle"></i> ${exam.questions || 'N/A'} Questions
-                                </div>
+                                <div class="exam-detail-item"><i class="fas fa-calendar-alt"></i> ${exam.date || 'Not scheduled'}</div>
+                                <div class="exam-detail-item"><i class="fas fa-stopwatch"></i> ${exam.duration || 'N/A'} minutes</div>
+                                <div class="exam-detail-item"><i class="fas fa-list-ol"></i> ${exam.questionCount || 'N/A'} Questions</div>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 20px; margin-top: 20px;">
-                                <span class="exam-status ${exam.available ? "status-available" : "status-upcoming"}">
-                                    <i class="fas ${exam.available ? "fa-check-circle" : "fa-hourglass-half"}"></i>
-                                    ${exam.available ? "Available Now" : "Not Available Yet"}
-                                </span>
-                                ${exam.available
-                                    ? `<a href="/exam/start?examId=${exam.id}" class="exam-btn">
-                                          <i class="fas fa-play-circle"></i> Start Exam
-                                      </a>`
-                                    : `<button class="exam-btn" disabled>
-                                          <i class="fas fa-lock"></i> Coming Soon
-                                      </button>`
-                                }
+                            <div class="exam-footer">
+                                ${statusBadge}
+                                ${actionSection}
                             </div>
                         </div>
                     `;
@@ -469,10 +930,7 @@
         }
 
         function scrollToTop() {
-            window.scrollTo({
-                top: 0,
-                behavior: "smooth"
-            });
+            window.scrollTo({ top: 0, behavior: "smooth" });
         }
 
         function escapeHtml(text) {
@@ -482,81 +940,28 @@
             return div.innerHTML;
         }
 
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 15px 25px;
-                background: ${type === 'error' ? 'var(--danger)' : type === 'success' ? 'var(--success)' : 'var(--primary)'};
-                color: white;
-                border-radius: 12px;
-                box-shadow: var(--shadow-lg);
-                z-index: 10000;
-                font-weight: 600;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                transform: translateX(150%);
-                transition: transform 0.3s ease;
-            `;
-
-            notification.innerHTML = `
-                <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}"></i>
-                <span>${escapeHtml(message)}</span>
-            `;
-
-            document.body.appendChild(notification);
-
-            setTimeout(() => {
-                notification.style.transform = 'translateX(0)';
-            }, 10);
-
-            setTimeout(() => {
-                notification.style.transform = 'translateX(150%)';
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
-        }
-
+        // ============================================================
+        // INITIALIZATION
+        // ============================================================
         document.addEventListener('DOMContentLoaded', function() {
             setupSearch();
-
-            // Add animation delay to stat cards
             document.querySelectorAll('.stat-card').forEach((card, index) => {
                 card.style.animationDelay = `${index * 0.1}s`;
             });
-
-            // Add animation delay to course cards
             document.querySelectorAll('.course-card').forEach((card, index) => {
                 card.style.animationDelay = `${index * 0.05}s`;
             });
+            startCountdownTimers();
         });
 
         window.onclick = function(event) {
-            const modal = document.getElementById('courseModal');
-            if (event.target === modal) {
+            if (event.target === document.getElementById('courseModal')) {
                 closeModal();
             }
         };
 
         document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeModal();
-            }
-        });
-
-        // Smooth scroll behavior for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth'
-                    });
-                }
-            });
+            if (event.key === 'Escape') closeModal();
         });
     </script>
 </body>

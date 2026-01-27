@@ -1,0 +1,1189 @@
+﻿@{
+    Layout = null;
+}
+@model List<Exam>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ITI Instructor - Exam Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="/images/Gemini_Generated_Image_vi5243vi5243vi52.png">
+    <style>
+        /* =========================================
+                   VARIABLES & RESET
+                   ========================================= */
+        :root {
+            --primary: #667eea;
+            --primary-light: #764ba2;
+            --primary-dark: #4c51bf;
+            --accent: #f093fb;
+            --accent-secondary: #f5576c;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0a0e27;
+            --gray: rgba(255, 255, 255, 0.6);
+            --light-bg: rgba(255, 255, 255, 0.05);
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --white: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #0a0e27;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+            body::before {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1729 100%);
+                z-index: 0;
+            }
+
+            body::after {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-image: linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+                background-size: 50px 50px;
+                z-index: 1;
+                pointer-events: none;
+            }
+
+        /* Animated Shapes */
+        .shape {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.3;
+            animation: float 20s infinite ease-in-out;
+            z-index: 0;
+        }
+
+        .shape-1 {
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            top: -10%;
+            left: -5%;
+            animation-delay: 0s;
+        }
+
+        .shape-2 {
+            width: 350px;
+            height: 350px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            bottom: -10%;
+            right: -5%;
+            animation-delay: 5s;
+        }
+
+        .shape-3 {
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: 10s;
+        }
+
+        @@keyframes float {
+            0%, 100%
+
+        {
+            transform: translate(0, 0) scale(1);
+        }
+
+        33% {
+            transform: translate(30px, -30px) scale(1.1);
+        }
+
+        66% {
+            transform: translate(-20px, 20px) scale(0.9);
+        }
+
+        }
+
+        /* Utilities */
+        .hidden {
+            display: none !important;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @@keyframes fadeIn {
+            from
+
+        {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        }
+
+        /* Dashboard Container */
+        #dashboard-view {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Header */
+        .admin-header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 32px;
+            padding: 20px 30px;
+            margin: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 20px;
+            z-index: 50;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @@keyframes slideUp {
+            from
+
+        {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        }
+
+        .admin-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-logo-box {
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
+            color: white;
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
+            background-image: url("/images/ITI.jpg");
+            background-size: cover;
+            background-position: center;
+        }
+
+            .nav-logo-box:hover {
+                transform: rotate(5deg) scale(1.05);
+            }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #a8b3ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Navigation */
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-link {
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 10px 24px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .nav-link:hover {
+                color: white;
+                border-color: #667eea;
+                background: rgba(102, 126, 234, 0.15);
+                transform: translateY(-2px);
+            }
+
+            .nav-link.active {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border-color: #667eea;
+                box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+            .logout-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+            }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 0 20px 40px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: slideUp 0.6s ease-out backwards;
+        }
+
+            .stat-card:nth-child(1) {
+                animation-delay: 0.1s;
+            }
+
+            .stat-card:nth-child(2) {
+                animation-delay: 0.2s;
+            }
+
+            .stat-card:nth-child(3) {
+                animation-delay: 0.3s;
+            }
+
+            .stat-card:nth-child(4) {
+                animation-delay: 0.4s;
+            }
+
+            .stat-card:hover {
+                transform: translateY(-8px) scale(1.02);
+                box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+            }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-card:hover .stat-icon {
+            transform: rotate(360deg) scale(1.1);
+        }
+
+        .stat-info h3 {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .stat-info p {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #ffffff;
+            line-height: 1;
+        }
+
+        /* Data Panel */
+        .data-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 32px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out 0.5s backwards;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .panel-title {
+            font-size: 2rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #fff 0%, #a8b3ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+            .btn-add:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+            }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        thead tr {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+        }
+
+        th {
+            padding: 20px;
+            text-align: left;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        tbody tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+            tbody tr:hover {
+                background: rgba(255, 255, 255, 0.08);
+                transform: translateX(8px);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            }
+
+        td {
+            padding: 20px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        tbody tr:hover td {
+            color: #ffffff;
+        }
+
+        /* Badges */
+        .badge {
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+
+        .badge-purple {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .badge-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .badge-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            box-shadow: 0 5px 20px rgba(245, 158, 11, 0.3);
+        }
+
+        .badge-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            box-shadow: 0 5px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        /* Action Buttons */
+        .action-btn {
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            margin-right: 8px;
+        }
+
+        .btn-view {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-edit {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-delete {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            box-shadow: 0 5px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-box {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 32px;
+            padding: 40px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+            animation: modalSlideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @@keyframes modalSlideIn {
+            from
+
+        {
+            opacity: 0;
+            transform: translateY(-50px) scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #fff 0%, #a8b3ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+            .form-group label {
+                display: block;
+                font-weight: 600;
+                margin-bottom: 10px;
+                color: rgba(255, 255, 255, 0.7);
+                font-size: 0.875rem;
+                text-transform: uppercase;
+                letter-spacing: 0.025em;
+            }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            font-size: 1rem;
+            color: white;
+            transition: all 0.3s;
+        }
+
+            .form-select option {
+                background: #0f1729;
+                color: white;
+            }
+
+            .form-input:focus, .form-select:focus {
+                outline: none;
+                border-color: #667eea;
+                background: rgba(255, 255, 255, 0.12);
+                box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 16px;
+            margin-top: 36px;
+            justify-content: flex-end;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-cancel {
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 14px 28px;
+            border-radius: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+            .btn-cancel:hover {
+                background: rgba(255, 255, 255, 0.12);
+                transform: translateY(-2px);
+            }
+
+        /* Exam Details Card */
+        .exam-details-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+            .detail-row:last-child {
+                border-bottom: none;
+            }
+
+        .detail-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .detail-value {
+            color: white;
+            font-weight: 700;
+        }
+
+        /* Delete Confirmation Modal */
+        .delete-confirm-modal {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .warning-icon {
+            font-size: 3rem;
+            color: #ef4444;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        @@keyframes pulse {
+            0%
+
+        {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.1);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+
+        }
+
+        .delete-confirm-modal h3 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+
+        .delete-confirm-modal p {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 30px;
+        }
+
+        .delete-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn-delete-confirm {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+        }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .stats-grid
+
+        {
+            grid-template-columns: 1fr;
+        }
+
+        .nav-links {
+            flex-wrap: wrap;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .modal-box {
+            width: 95%;
+            padding: 25px;
+        }
+
+        }
+    </style>
+</head>
+<body>
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="shape shape-3"></div>
+
+    <div id="dashboard-view">
+        <!-- Header -->
+        <header class="admin-header">
+            <div class="header-left">
+                <div class="nav-logo-box"></div>
+                <span class="header-title">Instructor Portal</span>
+            </div>
+            <nav class="nav-links">
+                <a href="/Instructor/insDiplayStudents" class="nav-link">Students</a>
+                <a href="/Instructor/Courses" class="nav-link">Courses</a>
+                <a href="/Instructor/Exams" class="nav-link active">Exams</a>
+            </nav>
+            <a href="/Home/LoginPage" class="nav-link logout-btn">Logout</a>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-info">
+                        <h3>Total Exams</h3>
+                        <p id="stat-total">12</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏳</div>
+                    <div class="stat-info">
+                        <h3>Upcoming</h3>
+                        <p id="stat-upcoming">5</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info">
+                        <h3>Completed</h3>
+                        <p id="stat-completed">7</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-info">
+                        <h3>Avg. Students</h3>
+                        <p id="stat-avg">45</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Exams Table -->
+            <div class="data-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">📝 Exam Management</h2>
+                    <button class="btn-add" onclick="openAddExamModal()">+ Create Exam</button>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Exam ID</th>
+                            <th>Course</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Duration</th>
+                            <th>Full Marks</th>
+                            <th>Questions</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="examTableBody">
+                        <!-- Data will be populated from backend -->
+                        @foreach (var exam in Model)
+                        {
+                            <tr>
+                                <td style="font-weight: 600; color: #667eea">#@exam.ExamId.ToString("D3")</td>
+                                <td>@exam.Course?.CourseName</td>
+                                <td>@exam.Date?.ToString("yyyy-MM-dd")</td>
+                                <td>@exam.Time?.ToString("hh:mm tt")</td>
+                                <td>@exam.Duration hrs</td>
+                                <td>@exam.FullMarks</td>
+
+                                <td><span class="badge badge-purple">@exam.QuestionCount</span></td>
+                                <td>
+                                    @if (exam.Date < DateOnly.FromDateTime(DateTime.Now))
+                                    {
+                                        <span class="badge badge-success">Completed</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-warning">Upcoming</span>
+                                    }
+                                </td>
+                                <td>
+                                    <button class="action-btn btn-view" onclick="viewExam(@exam.ExamId)">View</button>
+                                    <button class="action-btn btn-edit" onclick="openEditExamModal(@exam.ExamId)">Edit</button>
+                                    <button class="action-btn btn-delete" onclick="showDeleteConfirm(@exam.ExamId, '@exam.Course?.CourseName')">Delete</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit Exam Modal -->
+    <div id="examModal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h2 class="modal-title" id="modalTitle">Create New Exam</h2>
+                <form id="examForm" method="post" action="/Instructor/CreateExam">
+                    @Html.AntiForgeryToken()
+                <input type="hidden" id="examId" name="ExamId" value="0" />
+                <input type="hidden" id="questionCount" name="QuestionCount" value="0" />
+                <div class="form-group">
+                    <label for="courseId">Course</label>
+                    <select class="form-select" id="courseId" name="CourseId" required>
+                        <option value="">Select Course</option>
+                        <!-- Populate from backend -->
+                        @foreach (var course in ViewBag.Courses)
+                        {
+                            <option value="@course.CourseId">@course.CourseName</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="stats-grid" style="grid-template-columns: 1fr 1fr; gap: 15px;">
+    <div class="form-group">
+        <label>TARGET BRANCH</label>
+        <select name="BranchId" class="form-input" required 
+                style="background: #2a2a2a; color: white; border: 1px solid #444;">
+            <option value="">Select Branch</option>
+            @foreach (var branch in (List<Branch>)ViewBag.Branches)
+            {
+                <option value="@branch.BranchId">@branch.BranchName</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>TARGET TRACK</label>
+        <select name="TrackId" class="form-input" required
+                style="background: #2a2a2a; color: white; border: 1px solid #444;">
+            <option value="">Select Track</option>
+            @foreach (var track in (List<Track>)ViewBag.Tracks)
+            {
+                <option value="@track.TrackId">@track.TrackName</option>
+            }
+        </select>
+    </div>
+</div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="examDate">Exam Date</label>
+                        <input type="date" id="examDate" name="Date" class="form-input" required
+                               min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="form-group">
+                        <label for="examTime">Exam Time</label>
+                        <input type="time" id="examTime" name="Time" class="form-input" required />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="duration">Duration (hours)</label>
+                        <input type="number" id="duration" name="Duration" step="0.5" min="0.5" max="10"
+                               class="form-input" placeholder="e.g., 2.5" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="fullMarks">Full Marks</label>
+                        <input type="number" id="fullMarks" name="FullMarks" min="1" max="500"
+                               class="form-input" placeholder="e.g., 100" required />
+                    </div>
+                </div>
+
+                <!-- Question Types Section -->
+                <div class="form-group">
+                    <label style="margin-bottom: 15px;">Question Types</label>
+                    <div style="background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 14px;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="mcqCount">MCQ Questions</label>
+                                <input type="number" id="mcqCount" name="McqCount" min="0" max="50"
+                                       class="form-input" placeholder="Number of MCQ questions" />
+                            </div>
+                            <div class="form-group">
+                                <label for="mcqMarks">MCQ Marks Each</label>
+                                <input type="number" id="mcqMarks" name="McqMarks" min="1" max="10"
+                                       class="form-input" placeholder="Marks per MCQ" />
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="trueFalseCount">True/False Questions</label>
+                                <input type="number" id="trueFalseCount" name="TrueFalseCount" min="0" max="50"
+                                       class="form-input" placeholder="Number of T/F questions" />
+                            </div>
+                            <div class="form-group">
+                                <label for="trueFalseMarks">T/F Marks Each</label>
+                                <input type="number" id="trueFalseMarks" name="TrueFalseMarks" min="1" max="10"
+                                       class="form-input" placeholder="Marks per T/F" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Instructions Section -->
+                <div class="form-group">
+                    <label for="instructions">Special Instructions (Optional)</label>
+                    <textarea id="instructions" name="Instructions" class="form-input"
+                              rows="3" placeholder="Any special instructions for the exam..."></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn-add" id="modalSubmitBtn">Create Exam</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal-overlay hidden">
+        <div class="modal-box delete-confirm-modal">
+            <div class="warning-icon">⚠️</div>
+            <h3>Delete Exam</h3>
+            <p>
+                Are you sure you want to delete this exam?<br>
+                <span id="deleteExamName" style="color: #ef4444; font-weight: 600;"></span>
+            </p>
+            <p style="color: rgba(255, 255, 255, 0.5); font-size: 0.9rem;">
+                This action cannot be undone. All exam data including questions and student answers will be permanently deleted.
+            </p>
+
+            <div class="delete-actions">
+                <button type="button" class="btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+                <form id="deleteForm" method="post" action="/Instructor/DeleteExam" style="display: inline;">
+                    <input type="hidden" id="deleteExamId" name="examId" value="" />
+                    <button type="submit" class="btn-delete-confirm">Delete Exam</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Modal Functions
+        let currentExamId = null;
+        let isEditMode = false;
+
+        function openAddExamModal() {
+            const modal = document.getElementById('examModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const form = document.getElementById('examForm');
+            const submitBtn = document.getElementById('modalSubmitBtn');
+
+            modalTitle.textContent = 'Create New Exam';
+            form.reset();
+            form.action = '/Instructor/CreateExam';
+            document.getElementById('examId').value = '0';
+            submitBtn.textContent = 'Create Exam';
+            isEditMode = false;
+
+            // Set minimum date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('examDate').min = today;
+
+            modal.classList.remove('hidden');
+        }
+
+        function openEditExamModal(examId) {
+            const modal = document.getElementById('examModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const form = document.getElementById('examForm');
+            const submitBtn = document.getElementById('modalSubmitBtn');
+
+            modalTitle.textContent = 'Edit Exam';
+            form.action = '/Instructor/UpdateExam';
+            document.getElementById('examId').value = examId;
+            submitBtn.textContent = 'Update Exam';
+            isEditMode = true;
+            currentExamId = examId;
+
+            // TODO: Fetch exam data from server and populate form
+            // For now, we'll just open the modal
+            // You should make an AJAX call to get exam data and populate the form
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('examModal').classList.add('hidden');
+            currentExamId = null;
+            isEditMode = false;
+        }
+
+        // View Exam Details
+        function viewExam(examId) {
+            // You can implement a detailed view modal here
+            alert('Viewing exam details for ID: ' + examId);
+            // Or redirect to a detailed view page
+            // window.location.href = '/Instructor/ViewExam/' + examId;
+        }
+
+        // Delete Confirmation
+        function showDeleteConfirm(examId, examName) {
+            document.getElementById('deleteExamName').textContent = examName;
+            document.getElementById('deleteExamId').value = examId;
+            document.getElementById('deleteModal').classList.remove('hidden');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.add('hidden');
+        }
+
+        // Form validation
+        document.getElementById('examForm').addEventListener('submit', function(e) {
+            const date = document.getElementById('examDate').value;
+            const time = document.getElementById('examTime').value;
+            const duration = document.getElementById('duration').value;
+            const fullMarks = document.getElementById('fullMarks').value;
+
+            if (!date || !time || !duration || !fullMarks) {
+                e.preventDefault();
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            // Validate date is not in the past
+            const examDateTime = new Date(date + ' ' + time);
+            if (examDateTime < new Date() && !isEditMode) {
+                e.preventDefault();
+                alert('Exam date and time must be in the future.');
+                return;
+            }
+        });
+
+        // Close modal when clicking outside
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('examModal');
+            const deleteModal = document.getElementById('deleteModal');
+
+            if (e.target === modal) {
+                closeModal();
+            }
+            if (e.target === deleteModal) {
+                closeDeleteModal();
+            }
+        });
+
+        // Handle keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+                closeDeleteModal();
+            }
+        });
+
+        // Auto-calculate total marks based on question types
+             function calculateTotals() {
+            const mcqCount = parseInt(document.getElementById('mcqCount').value) || 0;
+            const mcqMarks = parseInt(document.getElementById('mcqMarks').value) || 0;
+            const tfCount = parseInt(document.getElementById('trueFalseCount').value) || 0;
+            const tfMarks = parseInt(document.getElementById('trueFalseMarks').value) || 0;
+
+            // ✅ Total Questions
+            const totalQuestions = mcqCount + tfCount;
+            document.getElementById('questionCount').value = totalQuestions;
+
+            // ✅ Total Marks
+            const totalMarks = (mcqCount * mcqMarks) + (tfCount * tfMarks);
+            if (totalMarks > 0) {
+                document.getElementById('fullMarks').value = totalMarks;
+            }
+        }
+
+
+        // Add event listeners for auto-calculation
+                document.getElementById('mcqCount').addEventListener('input', calculateTotals);
+        document.getElementById('mcqMarks').addEventListener('input', calculateTotals);
+        document.getElementById('trueFalseCount').addEventListener('input', calculateTotals);
+        document.getElementById('trueFalseMarks').addEventListener('input', calculateTotals);
+
+        // Initialize with today's date and current time + 1 hour
+        window.onload = function() {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            document.getElementById('examDate').value = tomorrow.toISOString().split('T')[0];
+
+            // Set time to next hour
+            const nextHour = new Date(today);
+            nextHour.setHours(nextHour.getHours() + 1);
+            nextHour.setMinutes(0);
+            document.getElementById('examTime').value = nextHour.toTimeString().slice(0, 5);
+        };
+    </script>
+
+</body>
+</html>
