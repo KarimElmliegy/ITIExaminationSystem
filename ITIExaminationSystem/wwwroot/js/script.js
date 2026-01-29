@@ -372,152 +372,153 @@ document.addEventListener('keydown', function (e) {
 //////////////////////////////
 //////////////////////////////
 
-        // Initialize Lucide icons
-    lucide.createIcons();
+// Initialize Lucide icons
+lucide.createIcons();
 
-    // Update time and date
-    function updateDateTime() {
-            const now = new Date();
+// Update time and date
+function updateDateTime() {
+    const now = new Date();
 
     // Format time
     const time = now.toLocaleTimeString('en-US', {
         hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
-            });
+        minute: '2-digit',
+        hour12: true
+    });
 
     // Format date
     const date = now.toLocaleDateString('en-US', {
         weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-            });
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
 
     document.getElementById('current-time').textContent = time;
     document.getElementById('current-date').textContent = date;
+}
+
+// Update every minute
+updateDateTime();
+setInterval(updateDateTime, 60000);
+
+// Password toggle
+const togglePassword = document.getElementById('togglePassword');
+const passwordInput = document.getElementById('password');
+
+if (togglePassword && passwordInput) {
+    togglePassword.addEventListener('click', function () {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+
+        const eyeIcon = this.querySelector('.eye-icon');
+        if (eyeIcon) {
+            eyeIcon.setAttribute('data-lucide', type === 'password' ? 'eye' : 'eye-off');
+            lucide.createIcons();
         }
+    });
+}
 
-    // Update every minute
-    updateDateTime();
-    setInterval(updateDateTime, 60000);
+// Floating label animation
+document.querySelectorAll('.modern-input').forEach(input => {
+    input.addEventListener('focus', function () {
+        this.parentElement.classList.add('focused');
+    });
 
-    // Password toggle
-    const togglePassword = document.getElementById('togglePassword');
-    const passwordInput = document.getElementById('password');
-
-    if (togglePassword && passwordInput) {
-        togglePassword.addEventListener('click', function () {
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-
-            const eyeIcon = this.querySelector('.eye-icon');
-            if (eyeIcon) {
-                eyeIcon.setAttribute('data-lucide', type === 'password' ? 'eye' : 'eye-off');
-                lucide.createIcons();
-            }
-        });
+    input.addEventListener('blur', function () {
+        if (!this.value) {
+            this.parentElement.classList.remove('focused');
         }
-
-        // Floating label animation
-        document.querySelectorAll('.modern-input').forEach(input => {
-        input.addEventListener('focus', function () {
-            this.parentElement.classList.add('focused');
-        });
-
-    input.addEventListener('blur', function() {
-                if (!this.value) {
-        this.parentElement.classList.remove('focused');
-                }
-            });
+    });
 
     // Check initial value
     if (input.value) {
         input.parentElement.classList.add('focused');
-            }
-        });
+    }
+});
 
-    // Form submission with animation
-    const loginForm = document.getElementById('loginFormMVC');
-    const loginButton = document.getElementById('loginButton');
+// Form submission with animation
+const loginForm = document.getElementById('loginFormMVC');
+const loginButton = document.getElementById('loginButton');
 
-    if (loginForm && loginButton) {
-        loginForm.addEventListener('submit', function (e) {
-            const buttonText = loginButton.querySelector('.button-text');
-            const buttonIcon = loginButton.querySelector('.button-icon');
-            const buttonLoader = loginButton.querySelector('.button-loader');
+if (loginForm && loginButton) {
+    loginForm.addEventListener('submit', function (e) {
+        const buttonText = loginButton.querySelector('.button-text');
+        const buttonIcon = loginButton.querySelector('.button-icon');
+        const buttonLoader = loginButton.querySelector('.button-loader');
 
-            if (buttonText && buttonIcon && buttonLoader) {
-                // Show loading state
-                buttonText.textContent = 'Authenticating...';
-                buttonIcon.style.opacity = '0';
-                buttonLoader.style.display = 'flex';
-                loginButton.disabled = true;
+        if (buttonText && buttonIcon && buttonLoader) {
+            // Show loading state
+            buttonText.textContent = 'Authenticating...';
+            buttonIcon.style.opacity = '0';
+            buttonLoader.style.display = 'flex';
+            loginButton.disabled = true;
 
-                // Add pulse animation
-                loginButton.classList.add('pulse');
-            }
-        });
+            // Add pulse animation
+            loginButton.classList.add('pulse');
         }
+    });
+}
 
-    // Animate stats on load
-    function animateStats() {
-            const stats = ['stat-students', 'stat-courses', 'stat-exams'];
+// Animate stats on load
+function animateStats() {
+    const stats = ['stat-students', 'stat-courses', 'stat-exams'];
     const targets = [2847, 128, 5234];
-            
-            stats.forEach((statId, index) => {
-                const element = document.getElementById(statId);
-    if (!element) return;
 
-    const target = targets[index];
-    let current = 0;
-    const increment = target / 50;
-    const duration = 1500;
-    const stepTime = duration / 50;
-                
-                const timer = setInterval(() => {
-        current += increment;
-                    if (current >= target) {
-        current = target;
-    clearInterval(timer);
-                    }
-    element.textContent = Math.floor(current).toLocaleString();
-                }, stepTime);
-            });
-        }
+    stats.forEach((statId, index) => {
+        const element = document.getElementById(statId);
+        if (!element) return;
 
-    // Start animations when page loads
-    document.addEventListener('DOMContentLoaded', function() {
-        // Animate stats after a delay
-        setTimeout(animateStats, 1000);
+        const target = targets[index];
+        let current = 0;
+        const increment = target / 50;
+        const duration = 1500;
+        const stepTime = duration / 50;
 
-            // Add hover effects to cards
-            document.querySelectorAll('.preview-card').forEach(card => {
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                current = target;
+                clearInterval(timer);
+            }
+            element.textContent = Math.floor(current).toLocaleString();
+        }, stepTime);
+    });
+}
+
+// Start animations when page loads
+document.addEventListener('DOMContentLoaded', function () {
+    // Animate stats after a delay
+    setTimeout(animateStats, 1000);
+
+    // Add hover effects to cards
+    document.querySelectorAll('.preview-card').forEach(card => {
         card.addEventListener('mouseenter', function () {
             this.style.transform = 'translateY(-8px)';
         });
 
-    card.addEventListener('mouseleave', function() {
-        this.style.transform = 'translateY(0)';
-                });
-            });
+        card.addEventListener('mouseleave', function () {
+            this.style.transform = 'translateY(0)';
         });
+    });
+});
 
-        // Add ripple effect to buttons
-        document.querySelectorAll('.login-button, .social-button').forEach(button => {
-        button.addEventListener('click', function (e) {
-            const x = e.clientX - e.target.getBoundingClientRect().left;
-            const y = e.clientY - e.target.getBoundingClientRect().top;
+// Add ripple effect to buttons
+document.querySelectorAll('.login-button, .social-button').forEach(button => {
+    button.addEventListener('click', function (e) {
+        const x = e.clientX - e.target.getBoundingClientRect().left;
+        const y = e.clientY - e.target.getBoundingClientRect().top;
 
-            const ripple = document.createElement('span');
-            ripple.style.left = x + 'px';
-            ripple.style.top = y + 'px';
-            ripple.classList.add('ripple');
+        const ripple = document.createElement('span');
+        ripple.style.left = x + 'px';
+        ripple.style.top = y + 'px';
+        ripple.classList.add('ripple');
 
-            this.appendChild(ripple);
+        this.appendChild(ripple);
 
-            setTimeout(() => {
-                ripple.remove();
-            }, 600);
-        });
-        });
+        setTimeout(() => {
+            ripple.remove();
+        }, 600);
+    });
+});
+

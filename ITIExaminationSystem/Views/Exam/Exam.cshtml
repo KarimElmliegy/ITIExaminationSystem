@@ -22,9 +22,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@Model.Name - Exam</title>
 
-    <link href="/css/Exam.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/Exam.css" asp-append-version="true" />
 </head>
 <body>
+    <div class="bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
     <div class="container">
         <div class="exam-header">
             <h1 class="exam-title">@Model.Name</h1>

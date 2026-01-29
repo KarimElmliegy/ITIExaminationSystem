@@ -1,12 +1,23 @@
 ﻿using ITIExaminationSystem.Models;
+using ITIExaminationSystem.Models.DTOs.Students;
+using ITIExaminationSystem.Models.ModelView;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ITIExamination.Controllers
 {
     public class StudentController : Controller
     {
-        private readonly ExaminationSystemContext context = new ExaminationSystemContext();
+        private readonly ExaminationSystemContext context;
+
+        public StudentController(ExaminationSystemContext context)
+        {
+            this.context = context;
+        }
 
         public IActionResult Index()
         {
@@ -16,186 +27,137 @@ namespace ITIExamination.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult StudentHome(int id)
         {
-            // 1️⃣ Get student by USER ID
-            var student = context.Students
-                .Include(s => s.User)
-                .Include(s => s.Branch)
-                .Include(s => s.Track)
-                // We don't rely on s.Courses here anymore for the list, 
-                // but we keep the Include just in case you use it elsewhere.
-                .Include(s => s.Courses)
-                .FirstOrDefault(s => s.User.UserId == id);
+            // =========================
+            // 1️⃣ Student Profile
+            // =========================
+            var student = context.StudentProfileDtos
+                .FromSqlRaw(
+                    "EXEC sp_Student_GetProfile @UserId",
+                    new SqlParameter("@UserId", id)
+                )
+                .AsEnumerable()
+                .FirstOrDefault();
 
             if (student == null)
                 return NotFound();
 
-            var now = DateTime.Now;
-            var today = DateOnly.FromDateTime(now);
-
-            // =========================================================
-            // ✅ FIX: Fetch ALL courses in the student's TRACK
-            // =========================================================
-            var trackCourses = context.Courses
-                .Where(c => c.Tracks.Any(t => t.TrackId == student.TrackId)) // Filter by Track
-                .Include(c => c.Topics)
-                .Include(c => c.Exams)
-                    .ThenInclude(e => e.Answers)
-                .Include(c => c.Teaches)
-                    .ThenInclude(t => t.Instructor)
-                        .ThenInclude(i => i.User)
+            // =========================
+            // 2️⃣ Exams (Grouped by Course)
+            // =========================
+            var exams = context.CourseExamDtos
+                .FromSqlRaw(
+                    "EXEC sp_Student_GetCourseExams @StudentId",
+                    new SqlParameter("@StudentId", student.Student_Id)
+                )
+                .AsEnumerable()
                 .ToList();
 
-            // 3️⃣ Map to ViewModel with Expiration & Timer Logic
-            // Notice we iterate over 'trackCourses' now, not 'student.Courses'
-            var result = trackCourses.Select(x => new CourseViewModel
+            var courseGroups = exams
+                .GroupBy(e => new { e.Course_Id, e.Course_Name });
+
+            var courseViewModels = new List<CourseViewModel>();
+
+            foreach (var group in courseGroups)
             {
-                Id = x.CourseId,
-                Title = x.CourseName,
-                Code = x.CourseId,
-                Description = $"A complete module on {x.CourseName} designed for the {student.Track.TrackName} track.",
-                Modules = x.Topics.Count,
-                Exams = x.Exams.Count,
-                Topics = x.Topics.Select(t => t.TopicName).ToList(),
+                var courseId = group.Key.Course_Id;
+                var courseName = group.Key.Course_Name;
 
-                // Status
-                Status = GetCourseStatus(x, student.StudentId),
+                // =========================
+                // 3️⃣ Instructor
+                // =========================
+                var instructor = context.CourseInstructorDtos
+                    .FromSqlRaw(
+                        "EXEC sp_Student_GetCourseInstructor @CourseId, @TrackId",
+                        new SqlParameter("@CourseId", courseId),
+                        new SqlParameter("@TrackId", student.Track_Id)
+                    )
+                    .AsEnumerable()
+                    .FirstOrDefault();
 
-                // Completed exams count
-                Completed = x.Exams.Count(e =>
-                    e.Answers.Any(a => a.StudentId == student.StudentId)
-                ),
-
-                // Instructor
-                Instructor = x.Teaches
-                    .Where(t => t.TrackId == student.TrackId)
-                    .Select(t => t.Instructor.User.UserName)
-                    .FirstOrDefault() ?? "TBA",
-
-                // Exam List
-                ExamList = x.Exams.Select(e =>
+                // =========================
+                // 4️⃣ Exams Mapping
+                // =========================
+                var examSummaries = group.Select(e =>
                 {
-                    // 🕒 CALCULATION LOGIC
+                    DateTime? fullStartDate = null;
                     bool isExpired = false;
-                    DateTime? examStart = null;
 
                     if (e.Date.HasValue && e.Time.HasValue)
                     {
-                        examStart = e.Date.Value.ToDateTime(e.Time.Value);
+                        // Fix: Properly combine DateOnly and TimeOnly into DateTime
+                        var date = e.Date.Value;
+                        var time = e.Time.Value;
+                        fullStartDate = new DateTime(
+                            date.Year,
+                            date.Month,
+                            date.Day,
+                            time.Hour,
+                            time.Minute,
+                            time.Second
+                        );
 
-                        if (e.Duration.HasValue)
+                        if (e.Duration.HasValue &&
+                            DateTime.Now > fullStartDate.Value.AddMinutes(e.Duration.Value))
                         {
-                            var examEnd = examStart.Value.AddMinutes(e.Duration.Value);
-                            if (now > examEnd)
-                            {
-                                isExpired = true;
-                            }
+                            isExpired = true;
                         }
                     }
 
                     return new StudentExamSummaryViewModel
                     {
-                        id = e.ExamId,
-                        Name = $"{x.CourseName} Exam",
+                        id = e.Exam_Id,
+                        Name = $"{courseName} Exam",
                         Type = "Exam",
-                        Date = e.Date.HasValue ? e.Date.Value.ToString("MMMM dd, yyyy") : "TBA",
-                        StartTime = e.Time.HasValue ? DateTime.Today.Add(e.Time.Value.ToTimeSpan()).ToString("h:mm tt") : "TBA",
-                        FullStartDate = examStart,
+                        Date = e.Date?.ToString("MMMM dd, yyyy") ?? "TBA",
+                        StartTime = e.Time.HasValue
+                            ? DateTime.Today.Add(e.Time.Value.ToTimeSpan()).ToString("h:mm tt")
+                            : "TBA",
+                        FullStartDate = fullStartDate,
                         Duration = e.Duration,
-                        QuestionCount = e.Questions.Count,
+                        QuestionCount = e.QuestionCount,
+                        Score = e.StudentScore,
+                        TotalScore = e.Full_Marks,
+                        IsCompleted = e.IsCompleted == 1,
                         IsExpired = isExpired,
-
-                        // Available Logic
-                        Available = !isExpired &&
-                                    examStart.HasValue &&
-                                    now >= examStart.Value &&
-                                    e.Date.Value.AddDays(7) >= today,
-
-                        Score = e.Answers
-                            .Where(a => a.StudentId == student.StudentId)
-                            .Sum(a => a.ScoredMarks),
-                        TotalScore = e.FullMarks,
-                        IsCompleted = e.Answers.Any(a => a.StudentId == student.StudentId)
+                        Available = fullStartDate.HasValue && !isExpired
                     };
-                }).ToList()
+                }).ToList();
 
-            }).ToList();
+                // =========================
+                // 5️⃣ Course ViewModel
+                // =========================
+                courseViewModels.Add(new CourseViewModel
+                {
+                    Id = courseId,
+                    Code = courseId,
+                    Title = courseName,
+                    Instructor = instructor?.InstructorName ?? "TBA",
+                    Modules = 0, // Not available in current DTOs
+                    Exams = examSummaries.Count,
+                    Completed = examSummaries.Count(e => e.IsCompleted),
+                    Status = examSummaries.All(e => e.IsCompleted)
+                        ? "COMPLETED"
+                        : examSummaries.Any(e => e.Available)
+                            ? "ACTIVE"
+                            : "UPCOMING",
+                    Topics = new List<string>(),
+                    Description = $"A complete module on {courseName} for {student.Track_Name}",
+                    ExamList = examSummaries
+                });
+            }
 
-            // 4️⃣ Dashboard values
-            ViewBag.Track = student.Track;
-            ViewBag.Branch = student.Branch;
-            ViewBag.TrackCourses = result.Count;
-            ViewBag.TotalExams = result.Sum(c => c.Exams);
-            ViewBag.CompletedExams = result.Sum(c => c.Completed);
-            ViewBag.IntakeNumber = student.IntakeNumber;
-            ViewBag.Courses = result;
+            // =========================
+            // 6️⃣ Dashboard ViewBag
+            // =========================
+            ViewBag.Track = student.Track_Name;
+            ViewBag.Branch = student.Branch_Name;
+            ViewBag.TrackCourses = courseViewModels.Count;
+            ViewBag.TotalExams = courseViewModels.Sum(c => c.Exams);
+            ViewBag.CompletedExams = courseViewModels.Sum(c => c.Completed);
+            ViewBag.IntakeNumber = student.Intake_Number;
+            ViewBag.Courses = courseViewModels;
 
             return View("StudentHome", student);
         }
-        // ==========================================
-        // COURSE STATUS LOGIC
-        // ==========================================
-        private string GetCourseStatus(Course course, int studentId)
-        {
-            var today = DateOnly.FromDateTime(DateTime.Now);
-            var exams = course.Exams;
-
-            if (!exams.Any())
-                return "UPCOMING";
-
-            var completedExamIds = exams
-                .SelectMany(e => e.Answers)
-                .Where(a => a.StudentId == studentId)
-                .Select(a => a.ExamId)
-                .Distinct()
-                .ToList();
-
-            if (completedExamIds.Count == exams.Count)
-                return "COMPLETED";
-
-            var hasActiveExam = exams.Any(e =>
-                e.Date.HasValue &&
-                e.Date.Value <= today &&
-                e.Date.Value.AddDays(7) >= today);
-
-            if (hasActiveExam)
-                return "ACTIVE";
-
-            return "UPCOMING";
-        }
-    }
-
-    // ==========================================
-    // VIEW MODELS
-    // ==========================================
-    public class CourseViewModel
-    {
-        public int Id { get; set; }
-        public string Title { get; set; }
-        public int Code { get; set; }
-        public string Instructor { get; set; }
-        public int Modules { get; set; }
-        public int Exams { get; set; }
-        public int Completed { get; set; }
-        public string Status { get; set; }
-        public List<string> Topics { get; set; }
-        public string Description { get; set; }
-        public List<StudentExamSummaryViewModel> ExamList { get; set; }
-    }
-
-    public class StudentExamSummaryViewModel
-    {
-        public int id { get; set; }
-        public string Name { get; set; }
-        public string Type { get; set; }
-        public string Date { get; set; }
-        public string StartTime { get; set; }
-        public DateTime? FullStartDate { get; set; } // ✅ ADD THIS for the countdown
-        public bool IsExpired { get; set; } 
-        public double? Duration { get; set; }
-        public int QuestionCount { get; set; }
-        public bool Available { get; set; }
-        public int? Score { get; set; }
-        public int? TotalScore { get; set; }
-        public bool IsCompleted { get; set; }
     }
 }

@@ -1,7 +1,7 @@
 ﻿@{
     Layout = null;
 }
-@model List<Exam>
+@model List<InstructorExamDto>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -108,23 +108,123 @@
         }
 
         @@keyframes float {
-            0%, 100%
-
-        {
-            transform: translate(0, 0) scale(1);
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            33% {
+                transform: translate(30px, -30px) scale(1.1);
+            }
+            66% {
+                transform: translate(-20px, 20px) scale(0.9);
+            }
         }
 
-        33% {
-            transform: translate(30px, -30px) scale(1.1);
+        /* =========================================
+                   CAROUSEL STYLES
+                   ========================================= */
+        /* Circular Button Styles */
+        .carousel-btn-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #667eea;
+            background: #214F72;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
-        66% {
-            transform: translate(-20px, 20px) scale(0.9);
+            .carousel-btn-circle:hover:not(:disabled) {
+                background: #214F72;
+                transform: scale(1.1);
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            }
+
+                .carousel-btn-circle:hover:not(:disabled) svg {
+                    stroke: white;
+                }
+
+            .carousel-btn-circle:disabled {
+                opacity: 0.4;
+                cursor: not-allowed;
+                border-color: #214F72;
+            }
+
+                .carousel-btn-circle:disabled svg {
+                    stroke: #ccc;
+                }
+
+            .carousel-btn-circle:active:not(:disabled) {
+                transform: scale(0.95);
+            }
+
+        .carousel-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 20px 0;
         }
 
+        .carousel-info {
+            min-width: 120px;
+            text-align: center;
         }
 
-        /* Utilities */
+        .carousel-indicator {
+            font-size: 14px;
+            color: #666;
+        }
+
+        #currentPage, #totalPages {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        /* Carousel Dots */
+        .carousel-dots {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+            padding: 15px 0;
+        }
+
+        .carousel-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 0;
+        }
+
+            .carousel-dot:hover {
+                background: rgba(255, 255, 255, 0.5);
+                transform: scale(1.2);
+            }
+
+            .carousel-dot.active {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                width: 30px;
+                border-radius: 5px;
+                box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+            }
+        .table-carousel-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        /* =========================================
+                   REST OF YOUR EXISTING STYLES
+                   ========================================= */
         .hidden {
             display: none !important;
         }
@@ -134,18 +234,14 @@
         }
 
         @@keyframes fadeIn {
-            from
-
-        {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Dashboard Container */
@@ -176,18 +272,14 @@
         }
 
         @@keyframes slideUp {
-            from
-
-        {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .admin-header::before {
@@ -559,18 +651,14 @@
         }
 
         @@keyframes modalSlideIn {
-            from
-
-        {
-            opacity: 0;
-            transform: translateY(-50px) scale(0.95);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
 
         .modal-title {
@@ -697,20 +785,15 @@
         }
 
         @@keyframes pulse {
-            0%
-
-        {
-            transform: scale(1);
-        }
-
-        50% {
-            transform: scale(1.1);
-        }
-
-        100% {
-            transform: scale(1);
-        }
-
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
         }
 
         .delete-confirm-modal h3 {
@@ -757,25 +840,31 @@
 
         /* Responsive */
         @@media (max-width: 768px) {
-            .stats-grid
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
 
-        {
-            grid-template-columns: 1fr;
-        }
+            .nav-links {
+                flex-wrap: wrap;
+            }
 
-        .nav-links {
-            flex-wrap: wrap;
-        }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
 
-        .form-row {
-            grid-template-columns: 1fr;
-        }
+            .modal-box {
+                width: 95%;
+                padding: 25px;
+            }
 
-        .modal-box {
-            width: 95%;
-            padding: 25px;
-        }
+            .carousel-controls {
+                gap: 10px;
+            }
 
+            .carousel-btn-circle {
+                width: 40px;
+                height: 40px;
+            }
         }
     </style>
 </head>
@@ -807,21 +896,21 @@
                     <div class="stat-icon">📝</div>
                     <div class="stat-info">
                         <h3>Total Exams</h3>
-                        <p id="stat-total">12</p>
+                        <p id="stat-total">@Model.Count</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">⏳</div>
                     <div class="stat-info">
                         <h3>Upcoming</h3>
-                        <p id="stat-upcoming">5</p>
+                        <p id="stat-upcoming">@Model.Count(e => e.Date >= DateOnly.FromDateTime(DateTime.Now))</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">✅</div>
                     <div class="stat-info">
                         <h3>Completed</h3>
-                        <p id="stat-completed">7</p>
+                        <p id="stat-completed">@Model.Count(e => e.Date < DateOnly.FromDateTime(DateTime.Now))</p>
                     </div>
                 </div>
                 <div class="stat-card">
@@ -840,52 +929,85 @@
                     <button class="btn-add" onclick="openAddExamModal()">+ Create Exam</button>
                 </div>
 
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Exam ID</th>
-                            <th>Course</th>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Duration</th>
-                            <th>Full Marks</th>
-                            <th>Questions</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="examTableBody">
-                        <!-- Data will be populated from backend -->
-                        @foreach (var exam in Model)
-                        {
-                            <tr>
-                                <td style="font-weight: 600; color: #667eea">#@exam.ExamId.ToString("D3")</td>
-                                <td>@exam.Course?.CourseName</td>
-                                <td>@exam.Date?.ToString("yyyy-MM-dd")</td>
-                                <td>@exam.Time?.ToString("hh:mm tt")</td>
-                                <td>@exam.Duration hrs</td>
-                                <td>@exam.FullMarks</td>
+                <!-- Carousel Navigation with Circular Buttons -->
+                <div class="carousel-controls">
+                    <button class="carousel-btn-circle prev-btn" id="examPrevBtn" onclick="moveCarousel(-1)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                             stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
 
-                                <td><span class="badge badge-purple">@exam.QuestionCount</span></td>
-                                <td>
-                                    @if (exam.Date < DateOnly.FromDateTime(DateTime.Now))
+                    <div class="carousel-info">
+                        <span class="carousel-indicator">
+                            Page <span id="currentPage">1</span> of <span id="totalPages">1</span>
+                        </span>
+                    </div>
+
+                    <button class="carousel-btn-circle next-btn" id="examNextBtn" onclick="moveCarousel(1)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                             stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Carousel Container -->
+                <div class="table-carousel-container">
+                    <div class="table-carousel-wrapper" id="tableCarousel">
+                        <!-- Table will be split into pages here -->
+                        <div class="carousel-page active">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Exam ID</th>
+                                        <th>Course</th>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Duration</th>
+                                        <th>Full Marks</th>
+                                        <th>Questions</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="examTableBody">
+                                    <!-- Data will be populated from backend -->
+                                    @foreach (var exam in Model)
                                     {
-                                        <span class="badge badge-success">Completed</span>
+                                        <tr class="exam-row" data-exam-id="@exam.Exam_Id">
+                                            <td style="font-weight: 600; color: #667eea">#@exam.Exam_Id.ToString("D3")</td>
+                                            <td>@exam.Course_Name</td>
+                                            <td>@exam.Date?.ToString("yyyy-MM-dd")</td>
+                                            <td>@exam.Time?.ToString("hh:mm tt")</td>
+                                            <td>@exam.Duration hrs</td>
+                                            <td>@exam.Full_Marks</td>
+                                            <td><span class="badge badge-purple">@exam.QuestionCount</span></td>
+                                            <td>
+                                                @if (exam.Date < DateOnly.FromDateTime(DateTime.Now))
+                                                {
+                                                    <span class="badge badge-success">Completed</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-warning">Upcoming</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <button class="action-btn btn-view" onclick="viewExam(@exam.Exam_Id)">View</button>
+                                                <button class="action-btn btn-edit" onclick="openEditExamModal(@exam.Exam_Id)">Edit</button>
+                                                <button class="action-btn btn-delete" onclick="showDeleteConfirm(@exam.Exam_Id, '@exam.Course_Name')">Delete</button>
+                                            </td>
+                                        </tr>
                                     }
-                                    else
-                                    {
-                                        <span class="badge badge-warning">Upcoming</span>
-                                    }
-                                </td>
-                                <td>
-                                    <button class="action-btn btn-view" onclick="viewExam(@exam.ExamId)">View</button>
-                                    <button class="action-btn btn-edit" onclick="openEditExamModal(@exam.ExamId)">Edit</button>
-                                    <button class="action-btn btn-delete" onclick="showDeleteConfirm(@exam.ExamId, '@exam.Course?.CourseName')">Delete</button>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                                </tbody>
+                            </table>
+                            <!-- ⭐ CAROUSEL DOTS - ADD THIS! -->
+                            <div class="carousel-dots" id="carouselDots"></div>
+                        </div>
+                    </div>
+                </div>
+=
             </div>
         </main>
     </div>
@@ -911,30 +1033,30 @@
                 </div>
 
                 <div class="stats-grid" style="grid-template-columns: 1fr 1fr; gap: 15px;">
-    <div class="form-group">
-        <label>TARGET BRANCH</label>
-        <select name="BranchId" class="form-input" required 
-                style="background: #2a2a2a; color: white; border: 1px solid #444;">
-            <option value="">Select Branch</option>
-            @foreach (var branch in (List<Branch>)ViewBag.Branches)
-            {
-                <option value="@branch.BranchId">@branch.BranchName</option>
-            }
-        </select>
-    </div>
+                    <div class="form-group">
+                        <label>TARGET BRANCH</label>
+                        <select name="BranchId" class="form-input" required 
+                                style="background: #2a2a2a; color: white; border: 1px solid #444;">
+                            <option value="">Select Branch</option>
+                            @foreach (var branch in (List<Branch>)ViewBag.Branches)
+                            {
+                                <option value="@branch.BranchId">@branch.BranchName</option>
+                            }
+                        </select>
+                    </div>
 
-    <div class="form-group">
-        <label>TARGET TRACK</label>
-        <select name="TrackId" class="form-input" required
-                style="background: #2a2a2a; color: white; border: 1px solid #444;">
-            <option value="">Select Track</option>
-            @foreach (var track in (List<Track>)ViewBag.Tracks)
-            {
-                <option value="@track.TrackId">@track.TrackName</option>
-            }
-        </select>
-    </div>
-</div>
+                    <div class="form-group">
+                        <label>TARGET TRACK</label>
+                        <select name="TrackId" class="form-input" required
+                                style="background: #2a2a2a; color: white; border: 1px solid #444;">
+                            <option value="">Select Track</option>
+                            @foreach (var track in (List<Track>)ViewBag.Tracks)
+                            {
+                                <option value="@track.TrackId">@track.TrackName</option>
+                            }
+                        </select>
+                    </div>
+                </div>
 
                 <div class="form-row">
                     <div class="form-group">
@@ -1001,7 +1123,7 @@
                 </div>
 
                 <div class="modal-actions">
-                    <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button type="button" class="btn-cancel" onclick="closeExamModal()">Cancel</button>
                     <button type="submit" class="btn-add" id="modalSubmitBtn">Create Exam</button>
                 </div>
             </form>
@@ -1032,7 +1154,130 @@
     </div>
 
     <script>
-        // Modal Functions
+        // ===================================================================
+        // CAROUSEL JAVASCRIPT
+        // ===================================================================
+        let currentCarouselPage = 1;
+        let itemsPerPage = 6;
+        let totalItems = 0;
+        let allExamRows = [];
+
+        function initializeCarousel() {
+            const tbody = document.getElementById('examTableBody');
+
+            if (!tbody) {
+                console.error('examTableBody not found!');
+                return;
+            }
+
+            // Get all exam rows
+            allExamRows = Array.from(tbody.querySelectorAll('tr.exam-row'));
+            totalItems = allExamRows.length;
+
+            console.log(`Found ${totalItems} exam rows`);
+
+            if (totalItems === 0) {
+                console.warn('No exam data found');
+                return;
+            }
+
+            // Render first page
+            renderCarouselPage(1);
+        }
+
+          function renderCarouselPage(pageNumber) {
+            currentCarouselPage = pageNumber;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+            // Update page indicators
+            const currentPageEl = document.getElementById('currentPage');
+            const totalPagesEl = document.getElementById('totalPages');
+
+            if (currentPageEl) currentPageEl.textContent = currentCarouselPage;
+            if (totalPagesEl) totalPagesEl.textContent = totalPages;
+
+            const startIndex = (currentCarouselPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+
+            // Show/hide rows
+            allExamRows.forEach((row, index) => {
+                if (index >= startIndex && index < endIndex) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Update navigation buttons
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            if (prevBtn) prevBtn.disabled = currentCarouselPage === 1;
+            if (nextBtn) nextBtn.disabled = currentCarouselPage === totalPages;
+
+            // ⭐ UPDATE DOTS - ADD THIS LINE!
+            renderCarouselDots(totalPages);
+        }
+
+        function moveCarousel(direction) {
+            const totalPages = itemsPerPage === 'all'
+                ? 1
+                : Math.ceil(totalItems / itemsPerPage);
+            const newPage = currentCarouselPage + direction;
+
+            if (newPage >= 1 && newPage <= totalPages) {
+                renderCarouselPage(newPage);
+            }
+        }
+
+        function goToPage(pageNumber) {
+            renderCarouselPage(pageNumber);
+        }
+
+              // Add this function to your carousel JavaScript
+        function renderCarouselDots(totalPages) {
+            const dotsContainer = document.getElementById('carouselDots');
+
+            if (!dotsContainer) {
+                console.error('carouselDots container not found!');
+                return;
+            }
+
+            // Clear existing dots
+            dotsContainer.innerHTML = '';
+
+            // Don't show dots if only 1 page
+            if (totalPages <= 1) return;
+
+            // Create dots for each page
+            for (let i = 1; i <= totalPages; i++) {
+                const dot = document.createElement('button');
+                dot.className = 'carousel-dot';
+
+                // Mark current page as active
+                if (i === currentCarouselPage) {
+                    dot.classList.add('active');
+                }
+
+                // Set click handler
+                dot.onclick = () => goToPage(i);
+
+                // Accessibility
+                dot.setAttribute('aria-label', `Go to page ${i}`);
+                dot.setAttribute('type', 'button');
+
+                dotsContainer.appendChild(dot);
+            }
+        }
+
+        // Add goToPage function
+        function goToPage(pageNumber) {
+            renderCarouselPage(pageNumber);
+        }
+
+        // ===================================================================
+        // MODAL FUNCTIONS
+        // ===================================================================
         let currentExamId = null;
         let isEditMode = false;
 
@@ -1076,7 +1321,7 @@
             modal.classList.remove('hidden');
         }
 
-        function closeModal() {
+        function closeExamModal() {
             document.getElementById('examModal').classList.add('hidden');
             currentExamId = null;
             isEditMode = false;
@@ -1123,54 +1368,36 @@
             }
         });
 
-        // Close modal when clicking outside
-        document.addEventListener('click', function(e) {
-            const modal = document.getElementById('examModal');
-            const deleteModal = document.getElementById('deleteModal');
-
-            if (e.target === modal) {
-                closeModal();
-            }
-            if (e.target === deleteModal) {
-                closeDeleteModal();
-            }
-        });
-
-        // Handle keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeModal();
-                closeDeleteModal();
-            }
-        });
-
         // Auto-calculate total marks based on question types
-             function calculateTotals() {
+        function calculateTotals() {
             const mcqCount = parseInt(document.getElementById('mcqCount').value) || 0;
             const mcqMarks = parseInt(document.getElementById('mcqMarks').value) || 0;
             const tfCount = parseInt(document.getElementById('trueFalseCount').value) || 0;
             const tfMarks = parseInt(document.getElementById('trueFalseMarks').value) || 0;
 
-            // ✅ Total Questions
+            // Total Questions
             const totalQuestions = mcqCount + tfCount;
             document.getElementById('questionCount').value = totalQuestions;
 
-            // ✅ Total Marks
+            // Total Marks
             const totalMarks = (mcqCount * mcqMarks) + (tfCount * tfMarks);
             if (totalMarks > 0) {
                 document.getElementById('fullMarks').value = totalMarks;
             }
         }
 
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize carousel
+            initializeCarousel();
 
-        // Add event listeners for auto-calculation
-                document.getElementById('mcqCount').addEventListener('input', calculateTotals);
-        document.getElementById('mcqMarks').addEventListener('input', calculateTotals);
-        document.getElementById('trueFalseCount').addEventListener('input', calculateTotals);
-        document.getElementById('trueFalseMarks').addEventListener('input', calculateTotals);
+            // Add event listeners for auto-calculation
+            document.getElementById('mcqCount').addEventListener('input', calculateTotals);
+            document.getElementById('mcqMarks').addEventListener('input', calculateTotals);
+            document.getElementById('trueFalseCount').addEventListener('input', calculateTotals);
+            document.getElementById('trueFalseMarks').addEventListener('input', calculateTotals);
 
-        // Initialize with today's date and current time + 1 hour
-        window.onload = function() {
+            // Set default date and time
             const today = new Date();
             const tomorrow = new Date(today);
             tomorrow.setDate(tomorrow.getDate() + 1);
@@ -1182,8 +1409,42 @@
             nextHour.setHours(nextHour.getHours() + 1);
             nextHour.setMinutes(0);
             document.getElementById('examTime').value = nextHour.toTimeString().slice(0, 5);
-        };
-    </script>
+        });
 
+        // Close modal when clicking outside
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('examModal');
+            const deleteModal = document.getElementById('deleteModal');
+
+            if (e.target === modal) {
+                closeExamModal();
+            }
+            if (e.target === deleteModal) {
+                closeDeleteModal();
+            }
+        });
+
+        // Handle keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeExamModal();
+                closeDeleteModal();
+            }
+            
+            // Carousel keyboard navigation
+            if (e.target.tagName !== 'INPUT' &&
+                e.target.tagName !== 'TEXTAREA' &&
+                e.target.tagName !== 'SELECT') {
+                
+                if (e.key === 'ArrowLeft') {
+                    moveCarousel(-1);
+                } else if (e.key === 'ArrowRight') {
+                    moveCarousel(1);
+                }
+            }
+        });
+
+        console.log('Exams carousel script loaded successfully');
+    </script>
 </body>
 </html>

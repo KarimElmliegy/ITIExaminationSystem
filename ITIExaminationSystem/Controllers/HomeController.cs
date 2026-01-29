@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
 using ITIExaminationSystem.Models;
+using ITIExaminationSystem.Models.Login;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace ITIExaminationSystem.Controllers
@@ -10,7 +12,6 @@ namespace ITIExaminationSystem.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly ExaminationSystemContext _context;
 
-        // ✅ Inject DbContext properly
         public HomeController(
             ILogger<HomeController> logger,
             ExaminationSystemContext context)
@@ -19,24 +20,20 @@ namespace ITIExaminationSystem.Controllers
             _context = context;
         }
 
-        public IActionResult Index()
-        {
-            return View();
-        }
+        public IActionResult Index() => View();
 
-        public IActionResult LoginPage()
-        {
-            return View("Login");
-        }
+        public IActionResult LoginPage() => View("Login");
 
         public IActionResult CheckLoginUser(string Email, string Password)
         {
-            // ✅ Use injected DbContext
-            var user = _context.Users
-                .Include(u => u.BranchManagers).Include(ins=>ins.Instructor)
-                .FirstOrDefault(u =>
-                    u.UserEmail == Email &&
-                    u.UserPassword == Password);
+            var user = _context.LoginUserDtos
+                .FromSqlRaw(
+                    "EXEC sp_LoginUser @Email,@Password",
+                    new SqlParameter("@Email", Email),
+                    new SqlParameter("@Password", Password)
+                )
+                .AsEnumerable()
+                .FirstOrDefault();
 
             if (user == null)
             {
@@ -44,49 +41,35 @@ namespace ITIExaminationSystem.Controllers
                 return View("Login");
             }
 
-            // ========= ROLE REDIRECTION =========
+            // ================= ROLE REDIRECTION =================
 
-            if (user.Role == "Instructor")
+            return user.Role switch
             {
-                return RedirectToAction("insDiplayStudents", "Instructor");
-            }
+                "Instructor" => RedirectToAction("insDiplayStudents", "Instructor"),
 
-            if (user.Role == "Admin")
-            {
-                return RedirectToAction("DashBoard", "Admin");
-            }
+                "Admin" => RedirectToAction("DashBoard", "Admin"),
 
-            if (user.Role == "Student")
-            {
-                return RedirectToAction("StudentHome", "Student",new { id = user.UserId});
-            }
+                "Student" => RedirectToAction(
+                    "StudentHome",
+                    "Student",
+                    new { id = user.User_Id }
+                ),
 
-            if (user.Role == "Branch Manager") // ✅ Correct role name
-            {
-                var branchId = user.BranchManagers
-                    .Select(bm => bm.BranchId)
-                    .FirstOrDefault();
+                "Branch Manager" when user.Branch_Id.HasValue =>
+                    RedirectToAction(
+                        "DashBoard",
+                        "BranchManager",
+                        new { branchId = user.Branch_Id }
+                    ),
 
-                if (branchId == null)
-                {
-                    return Content("This manager is not assigned to any branch");
-                }
+                "Branch Manager" =>
+                    Content("This manager is not assigned to any branch"),
 
-                return RedirectToAction(
-                    "DashBoard",
-                    "BranchManager",
-                    new { branchId = branchId }
-                );
-            }
-
-            // Fallback
-            return RedirectToAction("Index", "Home");
+                _ => RedirectToAction("Index", "Home")
+            };
         }
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
+        public IActionResult Privacy() => View();
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

@@ -949,6 +949,16 @@ body {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border-radius: 10px;
     }
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #13225f 0%, #255a23 100%);
+    border-radius: 10px;
+}
+
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #5b85b3 0%, #5ead6f 100%);
+    }
+
 
 .review-question {
     background: rgba(255, 255, 255, 0.08);
@@ -1253,4 +1263,15 @@ html {
 
     ::-webkit-scrollbar-thumb:hover {
         background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    table th,
+    table td {
+        text-align: center;
+        vertical-align: middle;
     }

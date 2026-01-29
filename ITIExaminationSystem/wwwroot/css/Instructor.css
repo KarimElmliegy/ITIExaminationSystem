@@ -60,14 +60,22 @@ body {
         pointer-events: none;
     }
 
-/* Animated Shapes */
-.shape {
+.bg-shapes {
     position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.shape {
+    position: absolute;
     border-radius: 50%;
     filter: blur(60px);
     opacity: 0.3;
     animation: float 20s infinite ease-in-out;
-    z-index: 0;
 }
 
 .shape-1 {
@@ -110,6 +118,20 @@ body {
     66% {
         transform: translate(-20px, 20px) scale(0.9);
     }
+}
+
+/* Grid Pattern Overlay */
+.grid-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px), linear-gradient(rgba(99, 102, 241, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(99, 102, 241, 0.02) 1px, transparent 1px);
+    background-size: 50px 50px, 50px 50px, 100px 100px, 100px 100px;
+    z-index: 2;
+    pointer-events: none;
+    animation: gridPulse 20s infinite alternate;
 }
 
 /* =========================================
@@ -625,50 +647,9 @@ tbody tr:hover td {
     color: #ffffff;
 }
 
-/* =========================================
-           10. ROLLER (INTAKE SELECTOR) - Updated
-           ========================================= */
-.roller {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 14px;
-    padding: 8px 12px;
-    color: rgba(255, 255, 255, 0.8);
-    font-weight: 600;
-    user-select: none;
-    backdrop-filter: blur(10px);
-}
 
-    .roller:hover {
-        border-color: #667eea;
-        background: rgba(102, 126, 234, 0.15);
-    }
 
-.roller-btn {
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.8);
-    border: none;
-    cursor: pointer;
-    font-size: 0.9rem;
-    padding: 6px 10px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-}
 
-    .roller-btn:hover {
-        background: #667eea;
-        color: white;
-    }
-
-#rollerValue {
-    min-width: 26px;
-    text-align: center;
-    font-size: 14px;
-    color: white;
-}
 
 /* =========================================
            11. BADGES - Updated
@@ -1303,12 +1284,16 @@ tbody tr:hover td {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #13225f 0%, #255a23 100%);
     border-radius: 10px;
+    border: 3px solid transparent;
+    background-clip: content-box;
 }
 
     ::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        background: linear-gradient(135deg, #5b85b3 0%, #5ead6f 100%);
+        border: 3px solid transparent; /* 👈 force same size */
+        background-clip: content-box; /* 👈 force same clip */
     }
 
 /* =========================================
@@ -2124,3 +2109,225 @@ tbody tr:hover td {
         .delete-modal-container .btn-delete-red:hover {
             background-color: #b91c1c !important;
         }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    table th,
+    table td {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+/* Carousel Container */
+.table-carousel-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: 24px;
+    margin: 20px 0;
+}
+
+.table-carousel-wrapper {
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Carousel Controls */
+.carousel-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 15px;
+}
+
+.carousel-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 0.95rem;
+}
+
+    .carousel-btn:hover:not(:disabled) {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    }
+
+    .carousel-btn:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .carousel-btn i {
+        width: 18px;
+        height: 18px;
+    }
+
+.carousel-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.carousel-indicator {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 10px 20px;
+    border-radius: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+    .carousel-indicator span {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 800;
+        font-size: 1.1rem;
+    }
+
+/* Carousel Dots */
+.carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 25px 0;
+    padding: 15px;
+}
+
+.carousel-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: all 0.3s;
+    padding: 0;
+}
+
+    .carousel-dot:hover {
+        background: rgba(102, 126, 234, 0.5);
+        transform: scale(1.3);
+    }
+
+    .carousel-dot.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+        width: 32px;
+        border-radius: 6px;
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+/* Items Per Page Selector */
+.items-per-page {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding: 15px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+    .items-per-page label {
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    .items-per-page select {
+        padding: 10px 16px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-family: 'Inter', sans-serif;
+    }
+
+        .items-per-page select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .items-per-page select option {
+            background: #1a1f3a;
+            color: white;
+        }
+
+/* Header Controls */
+.header-controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .carousel-controls {
+        flex-direction: column;
+    }
+
+    .carousel-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .items-per-page {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+        .items-per-page select {
+            width: 100%;
+        }
+}
+.bg-shapes,
+.bg-shapes * {
+    pointer-events: none;
+}
+.content-tab {
+    pointer-events: auto; /* Allow clicks */
+}
+
+    .content-tab.hidden {
+        display: none;
+        pointer-events: none; /* Only disable when hidden */
+    }

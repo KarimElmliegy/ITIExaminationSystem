@@ -1,7 +1,7 @@
 ﻿@{
     Layout = null;
 }
-@model List<Course>
+@model List<InstructorCourseDto>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,6 +12,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="icon" type="image/png" href="/images/Gemini_Generated_Image_vi5243vi5243vi52.png">
     <link rel="stylesheet" href="/css/Instructor.css" asp-append-version="true" />
+
 </head>
 <body>
     <div id="dashboard-view">
@@ -30,7 +31,11 @@
 
 
         </header>
-
+        <div class="bg-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+        </div>
         <main class="main-content">
             <!-- Stats Cards -->
             <div class="stats-grid">
@@ -97,32 +102,25 @@
                              
 
                                     <!-- Course ID -->
-                                    <td>@course.CourseId</td>
+                                    <td>@course.Course_Id</td>
 
                                     <!-- Course Name -->
                                     <td style="font-weight: 600; color: #667eea">
-                                        @course.CourseName
+                                        @course.Course_Name
                                     </td>
 
                                     <!-- Instructor Names -->
                                     <td>
-                                            @(course.Teaches?.FirstOrDefault()?.Instructor?.User?.UserName ?? "No Instructor")
+                                        @(string.IsNullOrEmpty(course.InstructorName)
+                                            ? "No Instructor"
+                                            : course.InstructorName)
                                     </td>
 
                                     <!-- Instructor Emails -->
                                     <td>
-                                        @if (course.Teaches != null && course.Teaches.Any())
-                                        {
-                                            // Get the first item safely
-                                            var firstTeach = course.Teaches.FirstOrDefault();
-
-                                            // Display it
-                                            <div>@firstTeach?.Instructor?.User?.UserEmail</div>
-                                        }
-                                        else
-                                        {
-                                            <span style="color:#999;">-</span>
-                                        }
+                                        @(string.IsNullOrEmpty(course.InstructorEmail)
+                                            ? "-"
+                                            : course.InstructorEmail)
                                     </td>
 
                                     <!-- Tries Limit -->
@@ -133,15 +131,15 @@
                                     <!-- Actions -->
                                     <td>
                                         <button class="action-btn btn-edit"
-                                                data-course-id="@course.CourseId"
-                                                data-course-name="@course.CourseName"
+                                                data-course-id="@course.Course_Id"
+                                                data-course-name="@course.Course_Name"
                                                 data-duration="@course.Duration">
                                             Edit
                                         </button>
 
                                         <button class="action-btn btn-delete"
-                                                data-course-id="@course.CourseId"
-                                                data-course-name="@course.CourseName">
+                                                data-course-id="@course.Course_Id"
+                                                data-course-name="@course.Course_Name">
                                             Delete
                                         </button>
 

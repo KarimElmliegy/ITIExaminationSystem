@@ -1,14 +1,79 @@
 ﻿using System;
 using System.Collections.Generic;
+using ITIExaminationSystem.Models.DTOs.AdminDashBoard;
+using ITIExaminationSystem.Models.DTOs.Exam;
+using ITIExaminationSystem.Models.DTOs.Instructor;
+using ITIExaminationSystem.Models.DTOs.Students;
+using ITIExaminationSystem.Models.Login;
 using Microsoft.EntityFrameworkCore;
 
 namespace ITIExaminationSystem.Models;
+
 
 public partial class ExaminationSystemContext : DbContext
 {
     public ExaminationSystemContext()
     {
     }
+
+
+    /// <summary>
+    /// 
+    /// public DbSet<StudentDashboardDto> StudentDashboardDtos { get; set; }
+    ///public DbSet<InstructorDashboardDto> InstructorDashboardDtos { get; set; }
+    ///public DbSet<DashboardCountDto> DashboardCountDtos { get; set; }
+    /// </summary>
+    /// 
+    public DbSet<StudentDashboardDto> StudentDashboardDtos { get; set; }
+    public DbSet<InstructorDashboardDto> InstructorDashboardDtos { get; set; }
+    public DbSet<DashboardCountDto> DashboardCountDtos { get; set; }
+
+    public DbSet<StudentProfileDto> StudentProfileDtos { get; set; }
+    public DbSet<CourseInstructorDto> CourseInstructorDtos { get; set; }
+    public DbSet<CourseExamDto> CourseExamDtos { get; set; }
+
+    public DbSet<InstructorStudentDto> InstructorStudentDtos { get; set; }
+    public DbSet<InstructorExamDto> InstructorExamDtos { get; set; }
+    public DbSet<LoginUserDto> LoginUserDtos { get; set; }
+
+    public DbSet<ExamAccessDto> ExamAccessDtos { get; set; }
+    public DbSet<QuestionChoiceDto> QuestionChoiceDtos { get; set; }
+
+    public DbSet<InstructorCourseDto> InstructorCourseDtos { get; set; }
+
+    public DbSet<TrackCourseCountDto> TrackCourseCountDtos { get; set; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public ExaminationSystemContext(DbContextOptions<ExaminationSystemContext> options)
         : base(options)
@@ -53,6 +118,27 @@ public partial class ExaminationSystemContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+
+
+        modelBuilder.Entity<StudentDashboardDto>().HasNoKey();
+        modelBuilder.Entity<InstructorDashboardDto>().HasNoKey();
+        modelBuilder.Entity<DashboardCountDto>().HasNoKey();
+
+        modelBuilder.Entity<CourseExamDto>().HasNoKey();
+        modelBuilder.Entity<CourseInstructorDto>().HasNoKey();
+        modelBuilder.Entity<StudentProfileDto>().HasNoKey();
+
+        modelBuilder.Entity<InstructorStudentDto>().HasNoKey();
+        modelBuilder.Entity<InstructorCourseDto>().HasNoKey();
+        modelBuilder.Entity<InstructorExamDto>().HasNoKey();
+        modelBuilder.Entity<LoginUserDto>().HasNoKey();
+        modelBuilder.Entity<ExamAccessDto>().HasNoKey();
+        modelBuilder.Entity<QuestionChoiceDto>().HasNoKey();
+        modelBuilder.Entity<InstructorCourseDto>().HasNoKey();
+
+        modelBuilder.Entity<TrackCourseCountDto>().HasNoKey();
+
+
         modelBuilder.Entity<Admin>(entity =>
         {
             entity.HasKey(e => e.AdminId).HasName("PK__Admin__4A3006F760C3DE7A");
@@ -68,6 +154,7 @@ public partial class ExaminationSystemContext : DbContext
                 .HasForeignKey<Admin>(d => d.UserId)
                 .HasConstraintName("FK__Admin__User_Id__3B75D760");
         });
+
 
         modelBuilder.Entity<Answer>(entity =>
         {

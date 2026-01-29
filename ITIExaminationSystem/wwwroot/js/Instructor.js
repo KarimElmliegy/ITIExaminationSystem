@@ -23,8 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Setup table actions using event delegation
     setupTableActions();
 
-    // Setup intake roller
-    setupIntakeRoller();
+
 
     // Add ripple effects to buttons
     document.querySelectorAll('button:not(.btn-delete), .action-btn:not(.btn-delete)').forEach(button => {
@@ -672,33 +671,6 @@ function performDeleteCourse() {
 // ==========================================
 // OTHER UTILITY FUNCTIONS
 // ==========================================
-function setupIntakeRoller() {
-    const valueSpan = document.getElementById("rollerValue");
-    const upBtn = document.querySelector(".roller-btn[data-step='1']");
-    const downBtn = document.querySelector(".roller-btn[data-step='-1']");
-
-    if (!valueSpan || !upBtn || !downBtn) return;
-
-    const min = 1;
-    const max = 46;
-    let currentIntake = parseInt(valueSpan.textContent);
-
-    upBtn.addEventListener("click", function (e) {
-        e.preventDefault();
-        let newIntake = currentIntake + 1;
-        if (newIntake <= max) {
-            window.location.href = `/Instructor/FilterByIntake?intake=${newIntake}`;
-        }
-    });
-
-    downBtn.addEventListener("click", function (e) {
-        e.preventDefault();
-        let newIntake = currentIntake - 1;
-        if (newIntake >= min) {
-            window.location.href = `/Instructor/FilterByIntake?intake=${newIntake}`;
-        }
-    });
-}
 
 function showStep2() {
     const step1 = document.getElementById('step-1');
@@ -807,3 +779,4 @@ function createRippleEffect(button, event) {
         }
     }, 600);
 }
+
