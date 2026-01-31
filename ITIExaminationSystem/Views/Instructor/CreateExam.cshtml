@@ -220,7 +220,13 @@
             overflow-x: auto;
             border-radius: 12px;
             margin: 20px 0;
+            overflow: hidden; /* ⭐ ADD THIS */
         }
+
+        .table-carousel-wrapper {
+            overflow: hidden; /* ⭐ ADD THIS */
+        }
+
 
         /* =========================================
                    REST OF YOUR EXISTING STYLES
@@ -536,12 +542,14 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             background: rgba(255, 255, 255, 0.03);
+            overflow: hidden; /* ⭐ ADD THIS */
         }
 
             tbody tr:hover {
                 background: rgba(255, 255, 255, 0.08);
                 transform: translateX(8px);
                 box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                overflow: hidden; /* ⭐ ADD THIS */
             }
 
         td {
