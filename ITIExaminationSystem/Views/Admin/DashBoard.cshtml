@@ -70,6 +70,53 @@
             color: rgba(255, 255, 255, 0.8);
         }
 
+        /* ============================= */
+        /* DARK THEME SELECT DROPDOWN */
+        /* ============================= */
+
+        select.form-input {
+            background-color: #0f172a; /* dark background */
+            color: #ffffff; /* white text */
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 0.95rem;
+            appearance: none;
+            cursor: pointer;
+        }
+
+            /* Dropdown options */
+            select.form-input option {
+                background-color: #0f172a; /* dark dropdown list */
+                color: #ffffff; /* visible text */
+                padding: 10px;
+            }
+
+                /* Hover effect */
+                select.form-input option:hover {
+                    background-color: #1e293b;
+                }
+
+                /* Selected option */
+                select.form-input option:checked {
+                    background-color: #2563eb;
+                    color: #ffffff;
+                }
+
+            /* Focus state */
+            select.form-input:focus {
+                outline: none;
+                border-color: #667eea;
+                box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.35);
+            }
+
+            /* Disabled */
+            select.form-input:disabled {
+                background-color: #020617;
+                color: #64748b;
+                cursor: not-allowed;
+            }
+
         /* Carousel Dots */
         .carousel-dots {
             display: flex;
@@ -1152,21 +1199,33 @@
             openModal('delete-confirm');
         }
 
-        // ================= API CALLS =================
+    // ================= API CALLS =================
         async function handleAddStudent() {
-            const fullName = document.getElementById('inp-stud-name').value;
-            const email = document.getElementById('inp-stud-email').value;
+            const fullName = document.getElementById('inp-stud-name').value.trim();
+            const email = document.getElementById('inp-stud-email').value.trim();
             const password = document.getElementById('inp-stud-password').value;
             const confirmPassword = document.getElementById('inp-stud-confirm').value;
             const branchId = document.getElementById('inp-stud-branch').value;
             const trackId = document.getElementById('inp-stud-track').value;
             const intakeNumber = document.getElementById('inp-stud-intake').value;
 
+            // ================= VALIDATION =================
+            if (!fullName || !email || !password || !confirmPassword) {
+                alert('Please fill all required fields');
+                return;
+            }
+
             if (password !== confirmPassword) {
                 alert('Passwords do not match');
                 return;
             }
 
+            if (!branchId || !trackId || !intakeNumber) {
+                alert('Please select branch, track, and enter intake number');
+                return;
+            }
+
+            // ================= REQUEST BODY =================
             const data = {
                 FullName: fullName,
                 Email: email,
@@ -1179,24 +1238,29 @@
             try {
                 const response = await fetch('/Admin/AddStudent', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify(data)
                 });
 
-                if (response.ok) {
-                    alert('Student added successfully');
+                const result = await response.json();
+
+                if (result.success) {
+                    // ✅ SUCCESS
+                    alert(result.message || 'Student added successfully');
                     closeModal();
+                    // ✅ RELOAD PAGE TO SHOW NEW STUDENT
                     window.location.reload();
                 } else {
-                    const error = await response.text();
-                    alert('Error: ' + error);
+                    // ❌ SERVER ERROR MESSAGE
+                    alert(result.message || 'Failed to add student');
                 }
-            } catch (err) {
-                console.error(err);
-                alert('Error adding student');
+            } catch (error) {
+                console.error('Add student error:', error);
+                alert('Unexpected error occurred: ' + error.message);
             }
         }
-
         async function handleUpdateStudent() {
             const studentId = document.getElementById('edit-student-id').value;
             const fullName = document.getElementById('edit-stud-name').value;

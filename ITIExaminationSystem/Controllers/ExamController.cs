@@ -53,6 +53,7 @@ namespace ITIExamination.Controllers
                 return BadRequest("No questions found.");
 
             // 3️⃣ Group questions with choices
+            // 3️⃣ Group questions with SHUFFLED choices
             var questions = rawQuestions
                 .GroupBy(q => new { q.Question_Id, q.Question_Text, q.Question_Type })
                 .Select(g => new ExamQuestionViewModel
@@ -67,6 +68,7 @@ namespace ITIExamination.Controllers
                             ChoiceId = c.Choice_Id!.Value,
                             Text = c.Choice_Text!
                         })
+                        .OrderBy(_ => Guid.NewGuid())  // ✅ Shuffle choices randomly
                         .ToList()
                 })
                 .ToList();

@@ -1,0 +1,1029 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ITI Admin – Question Bank</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="/images/Gemini_Generated_Image_vi5243vi5243vi52.png">
+    <link href="/css/Admin.css" rel="stylesheet" />
+
+    <style>
+        /* ── additional question-page styles ─────────────────────────── */
+
+        /* search/filter bar */
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(255,255,255,0.02);
+            align-items: center;
+        }
+        a{
+            text-decoration : none ;
+        }
+            .filter-bar input,
+            .filter-bar select {
+                background: rgba(255,255,255,0.08);
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                color: #fff;
+                padding: 0.65rem 1rem;
+                font-family: 'Inter', sans-serif;
+                font-size: 0.9rem;
+                transition: border-color .25s, box-shadow .25s;
+                flex: 1 1 180px;
+                min-width: 140px;
+            }
+
+                .filter-bar input::placeholder {
+                    color: rgba(255,255,255,.35);
+                }
+
+                .filter-bar input:focus,
+                .filter-bar select:focus {
+                    outline: none;
+                    border-color: var(--primary);
+                    box-shadow: 0 0 0 3px rgba(102,126,234,.15);
+                    background: rgba(255,255,255,.12);
+                }
+
+                .filter-bar select option {
+                    background: #0f172a;
+                    color: #fff;
+                }
+
+        .filter-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            border: none;
+            padding: 0.65rem 1.4rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            transition: all .3s;
+            white-space: nowrap;
+            box-shadow: 0 6px 20px rgba(102,126,234,.3);
+        }
+
+            .filter-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 28px rgba(102,126,234,.4);
+            }
+
+            .filter-btn.reset {
+                background: rgba(255,255,255,.08);
+                border: 1px solid var(--border-color);
+                box-shadow: none;
+            }
+
+                .filter-btn.reset:hover {
+                    background: rgba(255,255,255,.14);
+                }
+
+        /* result count badge */
+        .result-count {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,.5);
+            margin-left: auto;
+            white-space: nowrap;
+        }
+
+        /* loading overlay for the table area */
+        .table-loading {
+            text-align: center;
+            padding: 3rem;
+            color: rgba(255,255,255,.5);
+            font-size: 0.95rem;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            border: 3px solid rgba(102,126,234,.25);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin .7s linear infinite;
+            margin-bottom: 0.75rem;
+        }
+
+        @@keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* empty state */
+        .empty-state {
+            padding: 4rem 2rem;
+            text-align: center;
+            color: rgba(255,255,255,.45);
+        }
+
+            .empty-state .empty-icon {
+                font-size: 3.5rem;
+                margin-bottom: 1rem;
+            }
+
+            .empty-state p {
+                font-size: 1rem;
+            }
+
+        /* type badge colour variants */
+        .badge-mcq {
+            background: linear-gradient(135deg,#667eea,#764ba2);
+            color: #fff;
+        }
+
+        .badge-tf {
+            background: linear-gradient(135deg,#10b981,#059669);
+            color: #fff;
+        }
+
+        /* question text cell – truncate long text */
+        .q-text-cell {
+            max-width: 360px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ── Detail / Edit Modal ─────────────────────────────────────── */
+        .modal-box.detail-modal {
+            max-width: 680px;
+            width: 95%;
+            max-height: 88vh;
+            overflow-y: auto;
+            padding: 2.5rem;
+        }
+
+        .modal-section-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,.45);
+            margin: 1.5rem 0 0.5rem;
+        }
+
+        .edit-field {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: rgba(255,255,255,.07);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            transition: border-color .25s, box-shadow .25s;
+            resize: vertical;
+        }
+
+            .edit-field:focus {
+                outline: none;
+                border-color: var(--primary);
+                box-shadow: 0 0 0 3px rgba(102,126,234,.15);
+                background: rgba(255,255,255,.1);
+            }
+
+            .edit-field::placeholder {
+                color: rgba(255,255,255,.3);
+            }
+
+            .edit-field option {
+                background: #0f172a;
+                color: #fff;
+            }
+
+        /* TF radio toggle */
+        .tf-toggle {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .tf-option {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            border-radius: 10px;
+            border: 2px solid var(--border-color);
+            cursor: pointer;
+            transition: all .25s;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+            .tf-option.true-opt {
+                color: #10b981;
+            }
+
+            .tf-option.false-opt {
+                color: #ef4444;
+            }
+
+            .tf-option input[type=radio] {
+                display: none;
+            }
+
+            .tf-option.selected.true-opt {
+                border-color: #10b981;
+                background: rgba(16,185,129,.1);
+            }
+
+            .tf-option.selected.false-opt {
+                border-color: #ef4444;
+                background: rgba(239,68,68,.1);
+            }
+
+            .tf-option:hover {
+                border-color: rgba(255,255,255,.25);
+            }
+
+        /* MCQ choice rows */
+        .choice-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            margin-top: 0.5rem;
+        }
+
+        .choice-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem 0.8rem;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: rgba(255,255,255,.04);
+            transition: border-color .2s;
+        }
+
+            .choice-row.correct-row {
+                border-color: #10b981;
+                background: rgba(16,185,129,.07);
+            }
+
+            .choice-row.deleted-row {
+                opacity: 0.4;
+                text-decoration: line-through;
+            }
+
+        .choice-correct-cb {
+            width: 18px;
+            height: 18px;
+            accent-color: #10b981;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .choice-text-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            padding: 0;
+        }
+
+            .choice-text-input:focus {
+                outline: none;
+            }
+
+            .choice-text-input:disabled {
+                cursor: not-allowed;
+            }
+
+        .choice-delete-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: rgba(239,68,68,.7);
+            font-size: 1.1rem;
+            line-height: 1;
+            transition: color .2s;
+            padding: 2px 4px;
+        }
+
+            .choice-delete-btn:hover {
+                color: #ef4444;
+            }
+
+        .btn-add-choice {
+            margin-top: 0.5rem;
+            background: rgba(102,126,234,.12);
+            border: 1px dashed rgba(102,126,234,.4);
+            color: #a8b3ff;
+            border-radius: 10px;
+            padding: 0.6rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .25s;
+            width: 100%;
+        }
+
+            .btn-add-choice:hover {
+                background: rgba(102,126,234,.2);
+                border-color: var(--primary);
+            }
+
+        /* modal action strip */
+        .modal-footer {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.75rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            transition: all .3s;
+            box-shadow: 0 8px 24px rgba(102,126,234,.3);
+        }
+
+            .btn-save:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 12px 32px rgba(102,126,234,.45);
+            }
+
+            .btn-save:disabled {
+                opacity: .5;
+                cursor: not-allowed;
+                transform: none;
+            }
+
+        .btn-danger-outline {
+            background: rgba(239,68,68,.08);
+            border: 1px solid rgba(239,68,68,.3);
+            color: #fca5a5;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            transition: all .3s;
+        }
+
+            .btn-danger-outline:hover {
+                background: rgba(239,68,68,.18);
+                border-color: #ef4444;
+            }
+
+        /* pagination controls (same carousel style as Admin.css) */
+        .page-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.25rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .page-info {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,.6);
+            font-weight: 600;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        /* dark select inside modal */
+        select.edit-field option {
+            background: #0f172a;
+            color: #fff;
+        }
+
+        /* toast notification */
+        #toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 9999;
+            padding: 0.9rem 1.6rem;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #fff;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 12px 40px rgba(0,0,0,.35);
+            transition: opacity .35s, transform .35s;
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+        }
+
+            #toast.show {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            #toast.success {
+                background: rgba(16,185,129,.85);
+                border: 1px solid #10b981;
+            }
+
+            #toast.error {
+                background: rgba(239,68,68,.85);
+                border: 1px solid #ef4444;
+            }
+    </style>
+</head>
+<body>
+
+    <!-- ── Background decoration (same as Admin.css) ────────────────── -->
+    <div class="bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <!-- ═══════════════ HEADER ═══════════════════════════════════════ -->
+    <header class="admin-header">
+        <div class="header-left">
+            <div class="nav-logo-box"></div>
+            <span class="header-title">Question Bank</span>
+        </div>
+        <nav class="nav-links">
+            <a href="/Instructor/insDiplayStudents" class="nav-link">Dashboard</a>
+            <a href="/Question/Index" class="nav-link active">Questions</a>
+        </nav>
+        <a href="/Home/LoginPage" class="nav-link logout-btn">Logout</a>
+    </header>
+
+    <!-- ═══════════════ MAIN CONTENT ═════════════════════════════════ -->
+    <main class="main-content">
+
+        <!-- ── Stats strip ──────────────────────────────────────────── -->
+        <div class="stats-grid" style="margin-bottom:1.5rem;">
+            <div class="stat-card">
+                <div class="stat-icon">❓</div>
+                <div class="stat-info">
+                    <h3>Total Questions</h3>
+                    <p id="stat-total">–</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🔢</div>
+                <div class="stat-info">
+                    <h3>MCQ</h3>
+                    <p id="stat-mcq">–</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✔️</div>
+                <div class="stat-info">
+                    <h3>True / False</h3>
+                    <p id="stat-tf">–</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📚</div>
+                <div class="stat-info">
+                    <h3>Courses Covered</h3>
+                    <p id="stat-courses">–</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Data Panel ────────────────────────────────────────────── -->
+        <div class="data-panel">
+
+            <!-- Panel Header -->
+            <div class="panel-header">
+                <h2 class="panel-title">❓ Question Management</h2>
+                <span class="result-count" id="result-label">Loading…</span>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <input type="text" id="f-search" placeholder="🔍 Search question text…" />
+                <select id="f-course">
+                    <option value="">All Courses</option>
+                    @foreach (var c in ViewBag.Courses)
+                    {
+                        <option value="@c.CourseId">@c.CourseName</option>
+                    }
+                </select>
+                <select id="f-type">
+                    <option value="">All Types</option>
+                    <option value="MCQ">MCQ</option>
+                    <option value="TF">True / False</option>
+                </select>
+                <select id="f-instructor">
+                    <option value="">All Instructors</option>
+                    @foreach (var i in ViewBag.Instructors)
+                    {
+                        <option value="@i.InstructorId">@i.User?.UserName</option>
+                    }
+                </select>
+                <button class="filter-btn" onclick="runSearch()">Search</button>
+                <button class="filter-btn reset" onclick="resetFilters()">Reset</button>
+            </div>
+
+            <!-- Table -->
+            <div id="table-wrapper">
+                <div class="table-loading" id="loading-state">
+                    <div class="spinner"></div>
+                    <p>Loading questions…</p>
+                </div>
+                <div id="empty-state" class="empty-state" style="display:none;">
+                    <div class="empty-icon">🔍</div>
+                    <p>No questions match your filters.</p>
+                </div>
+                <div id="table-area" style="display:none;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th style="width:40%">Question</th>
+                                <th>Type</th>
+                                <th>Course</th>
+                                <th>Instructor</th>
+                                <th>Choices</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="q-tbody"></tbody>
+                    </table>
+                    <!-- Pagination -->
+                    <div class="page-controls">
+                        <button class="carousel-btn-circle" id="prevBtn" onclick="changePage(-1)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                                 stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="15 18 9 12 15 6"></polyline>
+                            </svg>
+                        </button>
+                        <span class="page-info" id="page-info">Page 1 of 1</span>
+                        <button class="carousel-btn-circle" id="nextBtn" onclick="changePage(1)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                                 stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ═══════════════ DETAIL / EDIT MODAL ══════════════════════════ -->
+    <div id="modal-overlay" class="modal-overlay hidden" onclick="handleOverlayClick(event)">
+        <div id="modal-detail" class="modal-box detail-modal hidden">
+
+            <!-- Modal Title -->
+            <h2 class="modal-title" id="modal-heading">Question Details</h2>
+
+            <!-- Question Text -->
+            <div class="modal-section-label">Question Text</div>
+            <textarea id="m-text" class="edit-field" rows="3" placeholder="Enter question text…"></textarea>
+
+            <!-- Course -->
+            <div class="modal-section-label">Course</div>
+            <select id="m-course" class="edit-field">
+                @foreach (var c in ViewBag.Courses)
+                {
+                    <option value="@c.CourseId">@c.CourseName</option>
+                }
+            </select>
+
+            <!-- Question Type -->
+            <div class="modal-section-label">Question Type</div>
+            <select id="m-type" class="edit-field" onchange="onTypeChange()">
+                <option value="MCQ">MCQ – Multiple Choice</option>
+                <option value="TF">True / False</option>
+            </select>
+
+            <!-- TF Section -->
+            <div id="section-tf" style="display:none;">
+                <div class="modal-section-label">Correct Answer</div>
+                <div class="tf-toggle">
+                    <label class="tf-option true-opt" id="lbl-true">
+                        <input type="radio" name="tf-answer" value="true" onchange="selectTF(true)" />
+                        ✅ True
+                    </label>
+                    <label class="tf-option false-opt" id="lbl-false">
+                        <input type="radio" name="tf-answer" value="false" onchange="selectTF(false)" />
+                        ❌ False
+                    </label>
+                </div>
+            </div>
+
+            <!-- MCQ Section -->
+            <div id="section-mcq" style="display:none;">
+                <div class="modal-section-label">Choices <small style="text-transform:none;font-size:.7rem;opacity:.6;">(check = correct answer)</small></div>
+                <div class="choice-list" id="choice-list"></div>
+                <button class="btn-add-choice" onclick="addChoiceRow()">+ Add Choice</button>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="modal-footer">
+                <button class="btn-danger-outline" onclick="deleteQuestion()">🗑 Delete</button>
+                <button type="button" class="btn-cancel" onclick="closeDetailModal()">Cancel</button>
+                <button class="btn-save" id="btn-save" onclick="saveQuestion()">💾 Save Changes</button>
+            </div>
+
+            <!-- hidden state -->
+            <input type="hidden" id="m-question-id" />
+        </div>
+    </div>
+
+    <!-- ── Toast ─────────────────────────────────────────────────── -->
+    <div id="toast"></div>
+
+    <!-- ═══════════════ JAVASCRIPT ═══════════════════════════════════ -->
+    <script>
+        // ─────────────────────────────────────────────────────────────────
+        // STATE
+        // ─────────────────────────────────────────────────────────────────
+        const PAGE_SIZE = 8;
+        let allQuestions = [];
+        let filtered     = [];
+        let currentPage  = 1;
+
+        // ─────────────────────────────────────────────────────────────────
+        // INIT
+        // ─────────────────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            loadQuestions();
+
+            // live search on Enter key
+            document.getElementById('f-search').addEventListener('keydown', e => {
+                if (e.key === 'Enter') runSearch();
+            });
+        });
+
+        // ─────────────────────────────────────────────────────────────────
+        // DATA LOADING
+        // ─────────────────────────────────────────────────────────────────
+        async function loadQuestions() {
+            showLoading(true);
+            try {
+                const resp = await fetch('/Question/GetAll');
+                allQuestions = await resp.json();
+                applyFilters();
+                updateStats();
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to load questions', 'error');
+            }
+            showLoading(false);
+        }
+
+        function updateStats() {
+            const total   = allQuestions.length;
+            const mcq     = allQuestions.filter(q => q.questionType === 'MCQ').length;
+            const tf      = allQuestions.filter(q => q.questionType === 'TF').length;
+            const courses  = new Set(allQuestions.map(q => q.courseId)).size;
+
+            document.getElementById('stat-total').textContent   = total;
+            document.getElementById('stat-mcq').textContent     = mcq;
+            document.getElementById('stat-tf').textContent      = tf;
+            document.getElementById('stat-courses').textContent = courses;
+        }
+
+        // ─────────────────────────────────────────────────────────────────
+        // SEARCH & FILTER
+        // ─────────────────────────────────────────────────────────────────
+        function runSearch() {
+            const search = document.getElementById('f-search').value.toLowerCase().trim();
+            const course = document.getElementById('f-course').value;
+            const type   = document.getElementById('f-type').value;
+            const instr  = document.getElementById('f-instructor').value;
+
+            filtered = allQuestions.filter(q => {
+                const matchText  = !search || q.questionText.toLowerCase().includes(search);
+                const matchCrs   = !course || String(q.courseId) === course;
+                const matchType  = !type   || q.questionType === type;
+                const matchInstr = !instr  || String(q.instructorId) === instr;
+                return matchText && matchCrs && matchType && matchInstr;
+            });
+
+            currentPage = 1;
+            renderTable();
+        }
+
+        function applyFilters() {
+            filtered = [...allQuestions];
+            renderTable();
+        }
+
+        function resetFilters() {
+            document.getElementById('f-search').value    = '';
+            document.getElementById('f-course').value    = '';
+            document.getElementById('f-type').value      = '';
+            document.getElementById('f-instructor').value = '';
+            applyFilters();
+        }
+
+        // ─────────────────────────────────────────────────────────────────
+        // RENDER TABLE
+        // ─────────────────────────────────────────────────────────────────
+        function renderTable() {
+            const total     = filtered.length;
+            const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            document.getElementById('result-label').textContent =
+                `${total} question${total !== 1 ? 's' : ''} found`;
+
+            if (total === 0) {
+                document.getElementById('table-area').style.display  = 'none';
+                document.getElementById('empty-state').style.display = 'block';
+                return;
+            }
+
+            document.getElementById('empty-state').style.display = 'none';
+            document.getElementById('table-area').style.display  = '';
+
+            const start = (currentPage - 1) * PAGE_SIZE;
+            const page  = filtered.slice(start, start + PAGE_SIZE);
+
+            const tbody = document.getElementById('q-tbody');
+            tbody.innerHTML = page.map(q => `
+                <tr>
+                    <td style="color:rgba(255,255,255,.5);font-size:.85rem;">#${q.questionId}</td>
+                    <td class="q-text-cell" title="${escHtml(q.questionText)}">${escHtml(q.questionText)}</td>
+                    <td>
+                        <span class="badge ${q.questionType === 'MCQ' ? 'badge-mcq' : 'badge-tf'}">
+                            ${q.questionType}
+                        </span>
+                    </td>
+                    <td style="color:rgba(255,255,255,.75);font-size:.9rem;">${escHtml(q.courseName)}</td>
+                    <td style="color:#a8b3ff;font-size:.85rem;font-weight:600;">${escHtml(q.instructorName)}</td>
+                    <td style="text-align:center;color:rgba(255,255,255,.6);">${q.choiceCount}</td>
+                    <td>
+                        <button class="action-btn btn-edit"
+                                onclick="openDetail(${q.questionId})">View / Edit</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            // pagination
+            document.getElementById('page-info').textContent = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage === totalPages;
+        }
+
+        function changePage(dir) {
+            const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+            const newPage = currentPage + dir;
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                renderTable();
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────────
+        // DETAIL / EDIT MODAL
+        // ─────────────────────────────────────────────────────────────────
+        async function openDetail(questionId) {
+            // show overlay + clear
+            document.getElementById('modal-overlay').classList.remove('hidden');
+            document.getElementById('modal-detail').classList.remove('hidden');
+            document.getElementById('m-question-id').value = questionId;
+            document.getElementById('modal-heading').textContent = `Question #${questionId}`;
+            document.getElementById('btn-save').disabled = true;
+            document.getElementById('choice-list').innerHTML = '';
+
+            try {
+                const resp = await fetch(`/Question/GetDetail/${questionId}`);
+                if (!resp.ok) throw new Error('Not found');
+                const q = await resp.json();
+                populateModal(q);
+            } catch (err) {
+                showToast('Failed to load question detail', 'error');
+                closeDetailModal();
+            }
+
+            document.getElementById('btn-save').disabled = false;
+        }
+
+        function populateModal(q) {
+            document.getElementById('m-text').value   = q.questionText;
+            document.getElementById('m-course').value = q.courseId;
+            document.getElementById('m-type').value   = q.questionType;
+
+            onTypeChange(q);   // show correct section
+
+            if (q.questionType === 'TF') {
+                selectTF(q.correctTf, true);
+            } else {
+                buildChoiceList(q.choices);
+            }
+        }
+
+        function onTypeChange(q = null) {
+            const type = document.getElementById('m-type').value;
+            document.getElementById('section-tf').style.display  = type === 'TF'  ? '' : 'none';
+            document.getElementById('section-mcq').style.display = type === 'MCQ' ? '' : 'none';
+
+            if (type === 'MCQ' && q && q.choices) buildChoiceList(q.choices);
+        }
+
+        // ── TF helpers ────────────────────────────────────────────────
+        function selectTF(val, fromServer = false) {
+            document.getElementById('lbl-true').classList.toggle('selected',  val === true);
+            document.getElementById('lbl-false').classList.toggle('selected', val === false);
+            if (fromServer) {
+                const radios = document.querySelectorAll('input[name="tf-answer"]');
+                radios.forEach(r => r.checked = (r.value === String(val)));
+            }
+        }
+
+        function getTFValue() {
+            const checked = document.querySelector('input[name="tf-answer"]:checked');
+            return checked ? checked.value === 'true' : null;
+        }
+
+        // ── MCQ choice list ───────────────────────────────────────────
+        function buildChoiceList(choices) {
+            const list = document.getElementById('choice-list');
+            list.innerHTML = '';
+            choices.forEach(c => appendChoiceRow(c.choiceId, c.choiceText, c.isCorrect));
+        }
+
+        function appendChoiceRow(choiceId = null, text = '', isCorrect = false) {
+            const list = document.getElementById('choice-list');
+            const row  = document.createElement('div');
+            row.className = 'choice-row' + (isCorrect ? ' correct-row' : '');
+            row.dataset.choiceId  = choiceId ?? '';
+            row.dataset.isDeleted = 'false';
+
+            row.innerHTML = `
+                <input class="choice-correct-cb" type="checkbox" title="Mark as correct answer"
+                       ${isCorrect ? 'checked' : ''}
+                       onchange="toggleCorrect(this)" />
+                <input class="choice-text-input edit-field" type="text"
+                       value="${escHtml(text)}" placeholder="Choice text…" />
+                <button class="choice-delete-btn" title="Remove choice" onclick="removeChoice(this)">✕</button>
+            `;
+            list.appendChild(row);
+        }
+
+        function addChoiceRow() {
+            appendChoiceRow(null, '', false);
+        }
+
+        function toggleCorrect(cb) {
+            cb.closest('.choice-row').classList.toggle('correct-row', cb.checked);
+        }
+
+        function removeChoice(btn) {
+            const row = btn.closest('.choice-row');
+            row.dataset.isDeleted = 'true';
+            row.classList.add('deleted-row');
+            row.querySelector('.choice-correct-cb').disabled = true;
+            row.querySelector('.choice-text-input').disabled  = true;
+            btn.disabled = true;
+        }
+
+        // ─────────────────────────────────────────────────────────────────
+        // SAVE
+        // ─────────────────────────────────────────────────────────────────
+        async function saveQuestion() {
+            const btn = document.getElementById('btn-save');
+            btn.disabled = true;
+            btn.textContent = 'Saving…';
+
+            const type       = document.getElementById('m-type').value;
+            const questionId = parseInt(document.getElementById('m-question-id').value);
+            const courseId   = parseInt(document.getElementById('m-course').value);
+            const text       = document.getElementById('m-text').value.trim();
+
+            if (!text) {
+                showToast('Question text cannot be empty', 'error');
+                btn.disabled = false; btn.textContent = '💾 Save Changes'; return;
+            }
+
+            const payload = {
+                QuestionId:   questionId,
+                QuestionText: text,
+                QuestionType: type,
+                CourseId:     courseId,
+                CorrectTf:    type === 'TF' ? getTFValue() : null,
+                Choices:      []
+            };
+
+            if (type === 'MCQ') {
+                const rows = document.querySelectorAll('#choice-list .choice-row');
+                rows.forEach(row => {
+                    const cid  = row.dataset.choiceId ? parseInt(row.dataset.choiceId) : null;
+                    const del  = row.dataset.isDeleted === 'true';
+                    const corr = row.querySelector('.choice-correct-cb').checked;
+                    const txt  = row.querySelector('.choice-text-input').value.trim();
+                    if (del && !cid) return;   // new row that was removed – skip
+                    payload.Choices.push({ ChoiceId: cid, ChoiceText: txt, IsCorrect: corr, IsDeleted: del });
+                });
+            }
+
+            try {
+                const resp = await fetch('/Question/Update', {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body:    JSON.stringify(payload)
+                });
+                const result = await resp.json();
+                if (result.success) {
+                    showToast('Question updated successfully ✔', 'success');
+                    closeDetailModal();
+                    loadQuestions();
+                } else {
+                    showToast(result.message || 'Update failed', 'error');
+                }
+            } catch (err) {
+                showToast('Network error: ' + err.message, 'error');
+            }
+
+            btn.disabled = false;
+            btn.textContent = '💾 Save Changes';
+        }
+
+        // ─────────────────────────────────────────────────────────────────
+        // DELETE
+        // ─────────────────────────────────────────────────────────────────
+        async function deleteQuestion() {
+            const id = document.getElementById('m-question-id').value;
+            if (!confirm(`Delete question #${id}? This cannot be undone.`)) return;
+
+            try {
+                const resp = await fetch(`/Question/Delete/${id}`, { method: 'POST' });
+                const res  = await resp.json();
+                if (res.success) {
+                    showToast('Question deleted', 'success');
+                    closeDetailModal();
+                    loadQuestions();
+                } else {
+                    showToast(res.message || 'Delete failed', 'error');
+                }
+            } catch (err) {
+                showToast('Error: ' + err.message, 'error');
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────────
+        // MODAL HELPERS
+        // ─────────────────────────────────────────────────────────────────
+        function closeDetailModal() {
+            document.getElementById('modal-overlay').classList.add('hidden');
+            document.getElementById('modal-detail').classList.add('hidden');
+        }
+
+        function handleOverlayClick(e) {
+            if (e.target === document.getElementById('modal-overlay')) closeDetailModal();
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeDetailModal();
+        });
+
+        // ─────────────────────────────────────────────────────────────────
+        // UI UTILITIES
+        // ─────────────────────────────────────────────────────────────────
+        function showLoading(state) {
+            document.getElementById('loading-state').style.display  = state ? '' : 'none';
+            document.getElementById('table-area').style.display     = state ? 'none' : '';
+            document.getElementById('empty-state').style.display    = 'none';
+        }
+
+        function escHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        let toastTimer;
+        function showToast(msg, type = 'success') {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className   = `show ${type}`;
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => { t.className = ''; }, 3200);
+        }
+    </script>
+</body>
+</html>

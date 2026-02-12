@@ -1569,3 +1569,218 @@ table {
         text-align: center;
         vertical-align: middle;
     }
+/* ============================================================ */
+/* ADD THESE ENHANCED COUNTDOWN TIMER STYLES TO YOUR <style> TAG */
+/* ============================================================ */
+
+/* Base Countdown Timer */
+.countdown-timer {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    color: white;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Normal countdown (more than 2 hours away) */
+.countdown-normal {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    box-shadow: 0 4px 15px rgba(52, 152, 217, 0.4);
+}
+
+/* Urgent countdown (less than 2 hours) */
+.countdown-urgent {
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+    box-shadow: 0 4px 15px rgba(243, 156, 18, 0.5);
+    animation: pulse-warning 2s ease-in-out infinite;
+}
+
+/* Critical countdown (less than 10 minutes) */
+.countdown-critical {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.6);
+    animation: pulse-critical 1s ease-in-out infinite;
+}
+
+.countdown-timer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.countdown-timer:hover::before {
+    left: 100%;
+}
+
+.countdown-timer:hover {
+    transform: translateY(-3px) scale(1.05);
+}
+
+.countdown-timer i {
+    font-size: 1.1rem;
+    animation: tick 1s ease-in-out infinite;
+}
+
+@keyframes tick {
+    0%, 100% {
+        transform: rotate(0deg);
+    }
+
+    25% {
+        transform: rotate(-10deg);
+    }
+
+    75% {
+        transform: rotate(10deg);
+    }
+}
+
+@keyframes pulse-warning {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 4px 15px rgba(243, 156, 18, 0.5);
+    }
+
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(243, 156, 18, 0.7);
+    }
+}
+
+@keyframes pulse-critical {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 4px 15px rgba(231, 76, 60, 0.6);
+    }
+
+    50% {
+        transform: scale(1.08);
+        box-shadow: 0 8px 25px rgba(231, 76, 60, 0.9);
+    }
+}
+
+.countdown-text {
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1px;
+    min-width: 100px;
+    text-align: center;
+    font-weight: 900;
+}
+
+/* Exam Action Container */
+.exam-action-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+/* Enhanced Start Exam Button */
+.exam-start-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+    .exam-start-btn::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s ease, height 0.6s ease;
+    }
+
+    .exam-start-btn:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+
+    .exam-start-btn i {
+        font-size: 1.1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .exam-start-btn span {
+        position: relative;
+        z-index: 1;
+    }
+
+    .exam-start-btn:not([style*="pointer-events: none"]):hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+    }
+
+/* Pulse animation for available exams */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+    }
+
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 15px rgba(102, 126, 234, 0);
+    }
+}
+
+/* Card states */
+.exam-item.card-upcoming {
+    background: linear-gradient(135deg, rgba(52, 152, 219, 0.05) 0%, rgba(52, 152, 219, 0.02) 100%);
+    border-color: rgba(52, 152, 219, 0.2);
+}
+
+.exam-item.card-active {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.05) 100%);
+    border: 2px solid rgba(102, 126, 234, 0.4);
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+}
+
+    .exam-item.card-active::before {
+        opacity: 1;
+        width: 5px;
+        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        box-shadow: 0 0 20px rgba(102, 126, 234, 0.6);
+    }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .exam-action-container {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .countdown-timer,
+    .exam-start-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

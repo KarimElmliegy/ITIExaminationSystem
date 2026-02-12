@@ -1645,6 +1645,21 @@
 			document.getElementById('viewExamModal').classList.add('hidden');
 		}
 
+				// Add this function to shuffle choices when the page loads
+		function shuffleChoices() {
+			document.querySelectorAll('.question-choices').forEach(choiceContainer => {
+				const choices = Array.from(choiceContainer.children);
+
+				// Fisher-Yates shuffle
+				for (let i = choices.length - 1; i > 0; i--) {
+					const j = Math.floor(Math.random() * (i + 1));
+					choiceContainer.appendChild(choices[j]);
+				}
+			});
+		}
+
+		// Call on page load
+		document.addEventListener('DOMContentLoaded', shuffleChoices);
 	</script>
 </body>
 </html>

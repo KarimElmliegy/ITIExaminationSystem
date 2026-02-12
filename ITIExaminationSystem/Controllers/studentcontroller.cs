@@ -45,8 +45,8 @@ namespace ITIExamination.Controllers
             // 2️⃣ Exams (Grouped by Course)
             // =========================
             var exams = context.CourseExamDtos
-                .FromSqlRaw(
-                    "EXEC sp_Student_GetCourseExams @StudentId",
+               .FromSqlRaw(
+                    "EXEC sp_Student_GetTrackCoursesWithExams @StudentId",
                     new SqlParameter("@StudentId", student.Student_Id)
                 )
                 .AsEnumerable()
@@ -84,7 +84,6 @@ namespace ITIExamination.Controllers
 
                     if (e.Date.HasValue && e.Time.HasValue)
                     {
-                        // Fix: Properly combine DateOnly and TimeOnly into DateTime
                         var date = e.Date.Value;
                         var time = e.Time.Value;
                         fullStartDate = new DateTime(
@@ -105,7 +104,12 @@ namespace ITIExamination.Controllers
 
                     return new StudentExamSummaryViewModel
                     {
-                        id = e.Exam_Id,
+                        // ✅ OPTION 1: If Exam_Id in DTO is int (non-nullable)
+                        id = e.Exam_Id ?? 0 ,
+
+                        // ✅ OPTION 2: If Exam_Id in DTO is int? (nullable) - uncomment this instead:
+                        // id = e.Exam_Id ?? 0,
+
                         Name = $"{courseName} Exam",
                         Type = "Exam",
                         Date = e.Date?.ToString("MMMM dd, yyyy") ?? "TBA",
@@ -117,7 +121,7 @@ namespace ITIExamination.Controllers
                         QuestionCount = e.QuestionCount,
                         Score = e.StudentScore,
                         TotalScore = e.Full_Marks,
-                        IsCompleted = e.IsCompleted == 1,
+                        IsCompleted = e.IsCompleted,
                         IsExpired = isExpired,
                         Available = fullStartDate.HasValue && !isExpired
                     };
@@ -132,7 +136,7 @@ namespace ITIExamination.Controllers
                     Code = courseId,
                     Title = courseName,
                     Instructor = instructor?.InstructorName ?? "TBA",
-                    Modules = 0, // Not available in current DTOs
+                    Modules = 0,
                     Exams = examSummaries.Count,
                     Completed = examSummaries.Count(e => e.IsCompleted),
                     Status = examSummaries.All(e => e.IsCompleted)

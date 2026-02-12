@@ -53,8 +53,17 @@ namespace ITIExaminationSystem.Controllers
         {
             try
             {
-                // Logic moved to SP: checks email, inserts User, gets ID, inserts Student
-                _context.Database.ExecuteSqlRaw("EXEC sp_Admin_AddStudent @FullName, @Email, @Password, @BranchId, @TrackId, @IntakeNumber",
+                // Validate the request
+                if (string.IsNullOrWhiteSpace(request.FullName) ||
+                    string.IsNullOrWhiteSpace(request.Email) ||
+                    string.IsNullOrWhiteSpace(request.Password))
+                {
+                    return Json(new { success = false, message = "Please fill all required fields" });
+                }
+
+                // Execute the stored procedure
+                _context.Database.ExecuteSqlRaw(
+                    "EXEC sp_Admin_AddStudent @FullName, @Email, @Password, @BranchId, @TrackId, @IntakeNumber",
                     new SqlParameter("@FullName", request.FullName),
                     new SqlParameter("@Email", request.Email),
                     new SqlParameter("@Password", request.Password),
@@ -63,15 +72,17 @@ namespace ITIExaminationSystem.Controllers
                     new SqlParameter("@IntakeNumber", request.IntakeNumber)
                 );
 
-                return Json(new { success = true, message = "Student created successfully" });
+                return Json(new { success = true, message = "Student added successfully" });
             }
             catch (Exception ex)
             {
-                // SQL errors (like duplicate email) will be caught here
-                return Json(new { success = false, message = "Error: " + ex.InnerException?.Message ?? ex.Message });
+                return Json(new
+                {
+                    success = false,
+                    message = ex.InnerException?.Message ?? ex.Message
+                });
             }
         }
-
         [HttpPost]
         public IActionResult UpdateStudent([FromBody] UpdateStudentRequest request)
         {

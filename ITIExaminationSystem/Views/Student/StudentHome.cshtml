@@ -10,7 +10,7 @@
         return (currentController == controller && currentAction == action) ? "active" : "";
     }
 }
-
+    
 @using System.Text.Json
 @model StudentProfileDto
 
@@ -750,7 +750,7 @@
         // COURSES CAROUSEL MANAGEMENT
         // ============================================================
         let currentCoursePage = 1;
-        let coursesPerPage = 6; // 2 rows × 3 columns (adjust based on your grid)
+        let coursesPerPage = 6;
         let allCourseCards = [];
         let filteredCourseCards = [];
 
@@ -760,13 +760,11 @@
 
             console.log("📚 Total courses:", allCourseCards.length);
 
-            // Calculate courses per page based on grid layout
             const gridContainer = document.getElementById('coursesGrid');
             if (gridContainer && allCourseCards.length > 0) {
-                // Get computed columns to determine items per row
                 const computedStyle = window.getComputedStyle(gridContainer);
                 const columns = computedStyle.gridTemplateColumns.split(' ').length;
-                coursesPerPage = columns * 2; // 2 rows
+                coursesPerPage = columns * 2;
                 console.log("📊 Courses per page (2 rows):", coursesPerPage);
             }
 
@@ -777,30 +775,22 @@
             currentCoursePage = pageNumber;
             const totalPages = Math.ceil(filteredCourseCards.length / coursesPerPage);
 
-            // Update page indicators
             document.getElementById('currentCoursePage').textContent = currentCoursePage;
             document.getElementById('totalCoursePages').textContent = totalPages;
 
             const startIndex = (currentCoursePage - 1) * coursesPerPage;
             const endIndex = Math.min(startIndex + coursesPerPage, filteredCourseCards.length);
 
-            // Show/hide course cards
             filteredCourseCards.forEach((card, index) => {
-                if (index >= startIndex && index < endIndex) {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = 'none';
-                }
+                card.style.display = (index >= startIndex && index < endIndex) ? 'flex' : 'none';
             });
 
-            // Update navigation buttons
             const prevBtn = document.getElementById('prevCourseBtn');
             const nextBtn = document.getElementById('nextCourseBtn');
 
             if (prevBtn) prevBtn.disabled = currentCoursePage === 1;
             if (nextBtn) nextBtn.disabled = currentCoursePage === totalPages || totalPages === 0;
 
-            // Update dots navigation
             renderCarouselDots(totalPages);
         }
 
@@ -810,8 +800,6 @@
 
             if (newPage >= 1 && newPage <= totalPages) {
                 renderCoursesPage(newPage);
-
-                // Smooth scroll to courses section
                 document.getElementById('coursesGrid').scrollIntoView({
                     behavior: 'smooth',
                     block: 'nearest'
@@ -828,8 +816,6 @@
             if (!dotsContainer) return;
 
             dotsContainer.innerHTML = '';
-
-            // Only show dots if there's more than 1 page
             if (totalPages <= 1) return;
 
             for (let i = 1; i <= totalPages; i++) {
@@ -843,7 +829,7 @@
         }
 
         // ============================================================
-        // COUNTDOWN TIMER MANAGEMENT
+        // COUNTDOWN TIMER MANAGEMENT (ENHANCED)
         // ============================================================
         let countdownInterval = null;
 
@@ -869,54 +855,95 @@
                     const startTime = new Date(startTimeStr).getTime();
                     const distance = startTime - now;
 
-                    if (distance < 0) {
-                        const actionSection = document.getElementById(`exam-action-${examId}`);
-                        if (actionSection && !actionSection.classList.contains('transformed')) {
-                            actionSection.classList.add('transformed');
-                            actionSection.innerHTML = `
-                                <a href="/Exam/Start?examId=${examId}&studentId=${currentStudentId}"
-                                   class="exam-btn"
-                                   style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); animation: pulse 2s infinite;">
-                                    <i class="fas fa-play-circle"></i>
-                                    <span>Start Exam Now!</span>
-                                </a>`;
+                    const startButton = document.getElementById(`start-btn-${examId}`);
+                    const parentCard = element.closest('.exam-item');
 
-                            const parentCard = actionSection.closest('.exam-item');
-                            if (parentCard) {
-                                parentCard.classList.add('card-active');
-                                const statusBadge = parentCard.querySelector('.exam-status');
-                                if (statusBadge) {
-                                    statusBadge.className = 'exam-status status-available';
-                                    statusBadge.innerHTML = `<i class="fas fa-unlock"></i> Available Now`;
-                                }
+                    if (distance < 0) {
+                        // ✅ COUNTDOWN REACHED ZERO - UNLOCK THE EXAM!
+                        element.style.display = 'none';
+
+                        if (startButton) {
+                            startButton.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                            startButton.style.cursor = 'pointer';
+                            startButton.style.pointerEvents = 'auto';
+                            startButton.style.animation = 'pulse 2s infinite';
+                            startButton.onclick = null;
+
+                            startButton.innerHTML = `
+                                <i class="fas fa-play-circle"></i>
+                                <span>Start Exam Now!</span>
+                            `;
+                        }
+
+                        if (parentCard) {
+                            parentCard.classList.remove('card-upcoming');
+                            parentCard.classList.add('card-active');
+
+                            const statusBadge = parentCard.querySelector('.exam-status');
+                            if (statusBadge) {
+                                statusBadge.className = 'exam-status status-available';
+                                statusBadge.innerHTML = '<i class="fas fa-unlock"></i> Available Now';
                             }
                         }
+
+                        if (!element.classList.contains('unlocked-notification-shown')) {
+                            element.classList.add('unlocked-notification-shown');
+                            showExamUnlockedNotification(examId);
+                        }
+
                     } else {
+                        // ⏰ COUNTDOWN STILL RUNNING
                         const days = Math.floor(distance / (1000 * 60 * 60 * 24));
                         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
                         let timeString = '';
+                        let urgencyClass = '';
+
                         if (days > 0) {
                             timeString = `${days}d ${hours}h ${minutes}m`;
+                            urgencyClass = 'countdown-normal';
                         } else if (hours > 0) {
                             timeString = `${hours}h ${minutes}m ${seconds}s`;
+                            urgencyClass = hours < 2 ? 'countdown-urgent' : 'countdown-normal';
                         } else if (minutes > 0) {
                             timeString = `${minutes}m ${seconds}s`;
+                            urgencyClass = minutes < 10 ? 'countdown-critical' : 'countdown-urgent';
                         } else {
                             timeString = `${seconds}s`;
+                            urgencyClass = 'countdown-critical';
                         }
 
                         const textSpan = element.querySelector('.countdown-text');
                         if (textSpan) {
                             textSpan.textContent = timeString;
                         }
+
+                        element.className = `countdown-timer ${urgencyClass}`;
+
+                        if (startButton) {
+                            startButton.style.background = '#6c757d';
+                            startButton.style.cursor = 'not-allowed';
+                            startButton.style.pointerEvents = 'none';
+                            startButton.onclick = () => false;
+                        }
                     }
                 } catch (error) {
                     console.error('Error updating countdown for exam', examId, ':', error);
                 }
             });
+        }
+
+        function showExamUnlockedNotification(examId) {
+            console.log(`🎉 Exam ${examId} is now available!`);
+
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('Exam Available!', {
+                    body: 'Your exam is now ready to start.',
+                    icon: '/images/Gemini_Generated_Image_vi5243vi5243vi52.png'
+                });
+            }
         }
 
         // ============================================================
@@ -931,14 +958,12 @@
                 const searchTerm = this.value.toLowerCase().trim();
 
                 if (searchTerm === '') {
-                    // Show all courses with carousel
                     isSearching = false;
                     filteredCourseCards = [...allCourseCards];
                     showCarouselNavigation(true);
                     renderCoursesPage(1);
                     updateSearchResults(filteredCourseCards.length);
                 } else {
-                    // Filter and show ALL matching courses (no pagination)
                     isSearching = true;
                     filteredCourseCards = allCourseCards.filter(card => {
                         const title = card.dataset.courseTitle;
@@ -949,10 +974,7 @@
                                instructor.includes(searchTerm);
                     });
 
-                    // Hide carousel navigation when searching
                     showCarouselNavigation(false);
-
-                    // Show all filtered results
                     displaySearchResults();
                     updateSearchResults(filteredCourseCards.length);
                 }
@@ -968,12 +990,10 @@
         }
 
         function displaySearchResults() {
-            // Hide all cards first
             allCourseCards.forEach(card => {
                 card.style.display = 'none';
             });
 
-            // Show only filtered cards
             filteredCourseCards.forEach(card => {
                 card.style.display = 'flex';
             });
@@ -983,12 +1003,8 @@
             const carouselNav = document.querySelector('.carousel-navigation');
             const carouselDots = document.getElementById('carouselDots');
 
-            if (carouselNav) {
-                carouselNav.style.display = show ? 'flex' : 'none';
-            }
-            if (carouselDots) {
-                carouselDots.style.display = show ? 'flex' : 'none';
-            }
+            if (carouselNav) carouselNav.style.display = show ? 'flex' : 'none';
+            if (carouselDots) carouselDots.style.display = show ? 'flex' : 'none';
         }
 
         function updateSearchResults(count) {
@@ -1055,6 +1071,11 @@
             document.querySelectorAll('.tab-pane').forEach(pane => {
                 pane.classList.toggle('active', pane.id === `${tabName}-tab`);
             });
+        }
+
+        function closeModal() {
+            document.getElementById("courseModal").classList.remove("active");
+            document.body.style.overflow = 'auto';
         }
 
         // ============================================================
@@ -1130,7 +1151,6 @@
             const completedExams = course.examList.filter(e => e.isCompleted);
             const scheduledExams = course.examList.filter(e => !e.isCompleted);
 
-            // Sort completed exams: most recently completed first
             completedExams.sort((a, b) => {
                 if (a.fullStartDate && b.fullStartDate) {
                     return new Date(b.fullStartDate) - new Date(a.fullStartDate);
@@ -1138,16 +1158,12 @@
                 return 0;
             });
 
-            // Sort scheduled exams: newest first (most recent date at top)
             scheduledExams.sort((a, b) => {
-                // If both have fullStartDate, sort by date (newest first)
                 if (a.fullStartDate && b.fullStartDate) {
                     return new Date(b.fullStartDate) - new Date(a.fullStartDate);
                 }
-                // If only one has a date, put the one with date first
                 if (a.fullStartDate) return -1;
                 if (b.fullStartDate) return 1;
-                // If neither has a date, maintain original order
                 return 0;
             });
 
@@ -1186,8 +1202,18 @@
 
                 scheduledExams.forEach((exam) => {
                     const isExpired = exam.isExpired || false;
-                    const isAvailable = exam.available || false;
                     const fullStartDate = exam.fullStartDate;
+                    const now = new Date().getTime();
+                    const startTime = fullStartDate ? new Date(fullStartDate).getTime() : null;
+
+                    let isAvailable = false;
+                    let isComingSoon = false;
+
+                    if (startTime) {
+                        const distance = startTime - now;
+                        isAvailable = distance <= 0;
+                        isComingSoon = distance > 0;
+                    }
 
                     let cardClass = "exam-item";
                     let statusBadge = "";
@@ -1196,26 +1222,50 @@
                     if (isExpired) {
                         cardClass += " card-expired";
                         statusBadge = `<span class="exam-status status-expired"><i class="fas fa-times-circle"></i> Expired</span>`;
-                        actionSection = `<button class="exam-btn" style="background-color: #95a5a6; cursor: not-allowed;" disabled><i class="fas fa-ban"></i><span>Expired</span></button>`;
+                        actionSection = `
+                            <button class="exam-btn" style="background-color: #95a5a6; cursor: not-allowed;" disabled>
+                                <i class="fas fa-ban"></i><span>Expired</span>
+                            </button>`;
+
                     } else if (isAvailable) {
                         cardClass += " card-active";
                         statusBadge = `<span class="exam-status status-available"><i class="fas fa-unlock"></i> Available Now</span>`;
-                        actionSection = `<a href="/Exam/Start?examId=${exam.id}&studentId=${currentStudentId}" class="exam-btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); animation: pulse 2s infinite;"><i class="fas fa-play-circle"></i><span>Start Exam</span></a>`;
-                    } else if (fullStartDate) {
+                        actionSection = `
+                            <a href="/Exam/Start?examId=${exam.id}&studentId=${currentStudentId}"
+                               class="exam-btn exam-start-btn"
+                               id="start-btn-${exam.id}"
+                               style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); animation: pulse 2s infinite;">
+                                <i class="fas fa-play-circle"></i>
+                                <span>Start Exam Now!</span>
+                            </a>`;
+
+                    } else if (isComingSoon && fullStartDate) {
                         statusBadge = `<span class="exam-status status-upcoming"><i class="fas fa-hourglass-half"></i> Not Available Yet</span>`;
                         actionSection = `
-                            <div id="exam-action-${exam.id}" style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
-                                <div id="countdown-${exam.id}" class="countdown-timer" data-start-time="${fullStartDate}" data-exam-id="${exam.id}">
+                            <div id="exam-action-${exam.id}" class="exam-action-container">
+                                <div id="countdown-${exam.id}"
+                                     class="countdown-timer"
+                                     data-start-time="${fullStartDate}"
+                                     data-exam-id="${exam.id}">
                                     <i class="fas fa-clock"></i>
                                     <span class="countdown-text">Loading...</span>
                                 </div>
-                                <button class="exam-btn" style="background-color: #6c757d; cursor: not-allowed;" disabled>
-                                    <i class="fas fa-lock"></i><span>Coming Soon</span>
-                                </button>
+                                <a href="/Exam/Start?examId=${exam.id}&studentId=${currentStudentId}"
+                                   class="exam-btn exam-start-btn"
+                                   id="start-btn-${exam.id}"
+                                   style="background-color: #6c757d; cursor: not-allowed; pointer-events: none;"
+                                   onclick="return false;">
+                                    <i class="fas fa-lock"></i>
+                                    <span>Locked</span>
+                                </a>
                             </div>`;
+
                     } else {
-                        statusBadge = `<span class="exam-status status-upcoming"><i class="fas fa-hourglass-half"></i> Not Available Yet</span>`;
-                        actionSection = `<button class="exam-btn" style="background-color: #6c757d; cursor: not-allowed;" disabled><i class="fas fa-lock"></i><span>Coming Soon</span></button>`;
+                        statusBadge = `<span class="exam-status status-upcoming"><i class="fas fa-calendar-times"></i> Not Scheduled</span>`;
+                        actionSection = `
+                            <button class="exam-btn" style="background-color: #6c757d; cursor: not-allowed;" disabled>
+                                <i class="fas fa-calendar-times"></i><span>Not Scheduled</span>
+                            </button>`;
                     }
 
                     html += `
@@ -1228,6 +1278,7 @@
                             </div>
                             <div class="exam-details">
                                 <div class="exam-detail-item"><i class="fas fa-calendar-alt"></i> ${exam.date || 'Not scheduled'}</div>
+                                <div class="exam-detail-item"><i class="fas fa-clock"></i> ${exam.startTime || 'TBA'}</div>
                                 <div class="exam-detail-item"><i class="fas fa-stopwatch"></i> ${exam.duration || 'N/A'} minutes</div>
                                 <div class="exam-detail-item"><i class="fas fa-list-ol"></i> ${exam.questionCount || 'N/A'} Questions</div>
                             </div>
@@ -1241,11 +1292,6 @@
             }
 
             return html;
-        }
-
-        function closeModal() {
-            document.getElementById("courseModal").classList.remove("active");
-            document.body.style.overflow = 'auto';
         }
 
         function scrollToTop() {
@@ -1263,7 +1309,6 @@
         // KEYBOARD NAVIGATION
         // ============================================================
         document.addEventListener('keydown', function(e) {
-            // Only navigate if not typing in an input and modal is not open and not searching
             const modalOpen = document.getElementById('courseModal').classList.contains('active');
 
             if (!modalOpen &&
@@ -1290,17 +1335,14 @@
         document.addEventListener('DOMContentLoaded', function() {
             setupSearch();
 
-            // Animate stat cards
             document.querySelectorAll('.stat-card').forEach((card, index) => {
                 card.style.animationDelay = `${index * 0.1}s`;
             });
 
-            // Animate course cards
             document.querySelectorAll('.course-card').forEach((card, index) => {
                 card.style.animationDelay = `${index * 0.05}s`;
             });
 
-            // Initialize carousel after a small delay to ensure grid is rendered
             setTimeout(() => {
                 initializeCoursesCarousel();
             }, 100);
@@ -1308,7 +1350,6 @@
             startCountdownTimers();
         });
 
-        // Handle window resize to recalculate courses per page
         window.addEventListener('resize', function() {
             const gridContainer = document.getElementById('coursesGrid');
             if (gridContainer && allCourseCards.length > 0) {
@@ -1318,7 +1359,7 @@
 
                 if (newCoursesPerPage !== coursesPerPage) {
                     coursesPerPage = newCoursesPerPage;
-                    renderCoursesPage(1); // Reset to page 1 on resize
+                    renderCoursesPage(1);
                 }
             }
         });
