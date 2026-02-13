@@ -74,15 +74,17 @@ namespace ITIExamination.Controllers
                 .ToList();
 
             // 4️⃣ Build ViewModel
+            // 4️⃣ Build ViewModel
             var vm = new TakeExamViewModel
             {
                 id = exam.Exam_Id,
                 Name = "Exam",
-                Duration = exam.Duration ?? 60,
+                Duration = (exam.Duration ?? 1) * 60,  // ← Convert hours to minutes HERE
                 TotalScore = exam.Full_Marks,
-                QuestionList = questions
+                QuestionList = questions,
+                McqMarks = exam.McqMarks ?? 1,
+                TrueFalseMarks = exam.TrueFalseMarks ?? 1
             };
-
             ViewBag.StudentId = studentId;
             ViewBag.ExamId = examId;
 
@@ -99,10 +101,11 @@ namespace ITIExamination.Controllers
                 return BadRequest("No answers submitted.");
 
             context.Database.ExecuteSqlRaw(
-                "EXEC dbo.sp_Exam_Submit @Exam, @Student, @Json",
+                "EXEC dbo.sp_Exam_Submit @Exam, @Student, @Json",  // ← only 3 params
                 new SqlParameter("@Exam", model.ExamId),
                 new SqlParameter("@Student", model.StudentId),
                 new SqlParameter("@Json", model.AnswersJson)
+            // ← REMOVE @McqMarks and @TfMarks
             );
 
             return RedirectToAction("StudentHome", "Student", new { id = model.StudentId });

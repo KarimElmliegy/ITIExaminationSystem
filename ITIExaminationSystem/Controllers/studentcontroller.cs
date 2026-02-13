@@ -1,9 +1,9 @@
 ﻿using ITIExaminationSystem.Models;
-using ITIExaminationSystem.Models.DTOs.Students;
 using ITIExaminationSystem.Models.ModelView;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using ITIExaminationSystem.Models.DTOs.Students;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -104,12 +104,7 @@ namespace ITIExamination.Controllers
 
                     return new StudentExamSummaryViewModel
                     {
-                        // ✅ OPTION 1: If Exam_Id in DTO is int (non-nullable)
-                        id = e.Exam_Id ?? 0 ,
-
-                        // ✅ OPTION 2: If Exam_Id in DTO is int? (nullable) - uncomment this instead:
-                        // id = e.Exam_Id ?? 0,
-
+                        id = e.Exam_Id ?? 0,
                         Name = $"{courseName} Exam",
                         Type = "Exam",
                         Date = e.Date?.ToString("MMMM dd, yyyy") ?? "TBA",
@@ -118,7 +113,7 @@ namespace ITIExamination.Controllers
                             : "TBA",
                         FullStartDate = fullStartDate,
                         Duration = e.Duration,
-                        QuestionCount = e.QuestionCount,
+                        QuestionCount = e.QuestionCount??0,
                         Score = e.StudentScore,
                         TotalScore = e.Full_Marks,
                         IsCompleted = e.IsCompleted,
@@ -128,7 +123,19 @@ namespace ITIExamination.Controllers
                 }).ToList();
 
                 // =========================
-                // 5️⃣ Course ViewModel
+                // 5️⃣ Topics for this course   ← NEW
+                // =========================
+                var topics = context.CourseTopicDtos
+                    .FromSqlRaw(
+                        "EXEC sp_Student_GetCourseTopics @CourseId",
+                        new SqlParameter("@CourseId", courseId)
+                    )
+                    .AsEnumerable()
+                    .Select(t => t.TopicName)
+                    .ToList();
+
+                // =========================
+                // 6️⃣ Course ViewModel
                 // =========================
                 courseViewModels.Add(new CourseViewModel
                 {
@@ -136,7 +143,7 @@ namespace ITIExamination.Controllers
                     Code = courseId,
                     Title = courseName,
                     Instructor = instructor?.InstructorName ?? "TBA",
-                    Modules = 0,
+                    Modules = topics.Count,         // ← real count from DB
                     Exams = examSummaries.Count,
                     Completed = examSummaries.Count(e => e.IsCompleted),
                     Status = examSummaries.All(e => e.IsCompleted)
@@ -144,14 +151,14 @@ namespace ITIExamination.Controllers
                         : examSummaries.Any(e => e.Available)
                             ? "ACTIVE"
                             : "UPCOMING",
-                    Topics = new List<string>(),
+                    Topics = topics,                // ← real topics from DB
                     Description = $"A complete module on {courseName} for {student.Track_Name}",
                     ExamList = examSummaries
                 });
             }
 
             // =========================
-            // 6️⃣ Dashboard ViewBag
+            // 7️⃣ Dashboard ViewBag
             // =========================
             ViewBag.Track = student.Track_Name;
             ViewBag.Branch = student.Branch_Name;

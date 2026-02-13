@@ -8,5 +8,8 @@
         public int? TrueFalseCount { get; set; }
         public double? Duration { get; set; }
         public int Full_Marks { get; set; }
+
+        public int? McqMarks { get; set; }
+        public int? TrueFalseMarks { get; set; }
     }
 }

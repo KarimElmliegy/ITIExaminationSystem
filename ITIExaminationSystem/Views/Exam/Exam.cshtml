@@ -144,6 +144,8 @@
         <input type="hidden" name="ExamId" value="@Model.id" />
         <input type="hidden" name="StudentId" value="@ViewBag.StudentId" />
         <input type="hidden" name="AnswersJson" id="answers-input" />
+        <input type="hidden" name="McqMarks" value="@Model.McqMarks" />
+        <input type="hidden" name="TrueFalseMarks" value="@Model.TrueFalseMarks" />
     </form>
     <script>
         // FIXED: Use the pre-serialized JSON from C# which handles CamelCase

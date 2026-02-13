@@ -11,7 +11,7 @@
         public double? Duration { get; set; }
 
         public int? Full_Marks { get; set; }
-        public int QuestionCount { get; set; }
+        public int? QuestionCount { get; set; }
 
         public int? StudentScore { get; set; }
         public bool IsCompleted { get; set; }
