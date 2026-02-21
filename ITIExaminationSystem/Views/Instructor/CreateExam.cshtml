@@ -1,4 +1,4 @@
-﻿@{
+@{
 	Layout = null;
 }
 @model List<InstructorExamDto>
@@ -258,20 +258,16 @@
 								   HEADER
 						========================================= */
 		.admin-header {
+			position: relative;
 			background: rgba(255, 255, 255, 0.05);
 			backdrop-filter: blur(20px);
-			border: 1px solid rgba(255, 255, 255, 0.1);
-			border-radius: 32px;
-			padding: 20px 30px;
-			margin: 20px;
+			border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+			padding: 1.25rem 2.5rem;
 			display: flex;
-			align-items: center;
 			justify-content: space-between;
+			align-items: center;
 			box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-			position: sticky;
-			top: 20px;
-			z-index: 50;
-			animation: slideUp 0.6s ease-out;
+			animation: slideDown 0.5s ease-out;
 		}
 
 		@@keyframes slideUp {
@@ -329,34 +325,38 @@
 		.nav-links {
 			display: flex;
 			gap: 0.5rem;
+			background: rgba(255, 255, 255, 0.08);
+			padding: 0.5rem;
+			border-radius: 16px;
+			border: 1px solid rgba(255, 255, 255, 0.1);
 		}
 
 		.nav-link {
-			background: rgba(255, 255, 255, 0.08);
-			border: 2px solid rgba(255, 255, 255, 0.1);
-			color: rgba(255, 255, 255, 0.8);
-			padding: 10px 24px;
-			border-radius: 14px;
-			cursor: pointer;
+			padding: 0.75rem 1.5rem;
+			border: none;
+			background: transparent;
+			color: rgba(255, 255, 255, 0.7);
 			font-weight: 600;
+			border-radius: 12px;
+			cursor: pointer;
+			transition: all 0.3s ease;
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+			font-family: 'Inter', sans-serif;
 			font-size: 0.95rem;
-			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 			text-decoration: none;
-			position: relative;
 		}
 
 			.nav-link:hover {
+				background: rgba(255, 255, 255, 0.12);
 				color: white;
-				border-color: #667eea;
-				background: rgba(102, 126, 234, 0.15);
-				transform: translateY(-2px);
 			}
 
 			.nav-link.active {
 				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 				color: white;
-				border-color: #667eea;
-				box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+				box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
 			}
 
 		.logout-btn {
@@ -899,6 +899,7 @@
 				<a href="/Instructor/insDiplayStudents" class="nav-link">Students</a>
 				<a href="/Instructor/Courses" class="nav-link">Courses</a>
 				<a href="/Instructor/Exams" class="nav-link active">Exams</a>
+				<a href="/Question/Index" class="nav-link">Questions</a>
 			</nav>
 			<a href="/Home/LoginPage" class="nav-link logout-btn">Logout</a>
 		</header>
@@ -908,28 +909,28 @@
 			<!-- Stats Cards -->
 			<div class="stats-grid">
 				<div class="stat-card">
-					<div class="stat-icon">📝</div>
+					<div class="stat-icon">??</div>
 					<div class="stat-info">
 						<h3>Total Exams</h3>
 						<p id="stat-total">@Model.Count</p>
 					</div>
 				</div>
 				<div class="stat-card">
-					<div class="stat-icon">⏳</div>
+					<div class="stat-icon">?</div>
 					<div class="stat-info">
 						<h3>Upcoming</h3>
 						<p id="stat-upcoming">@Model.Count(e => e.Date >= DateOnly.FromDateTime(DateTime.Now))</p>
 					</div>
 				</div>
 				<div class="stat-card">
-					<div class="stat-icon">✅</div>
+					<div class="stat-icon">?</div>
 					<div class="stat-info">
 						<h3>Completed</h3>
 						<p id="stat-completed">@Model.Count(e => e.Date < DateOnly.FromDateTime(DateTime.Now))</p>
 					</div>
 				</div>
 				<div class="stat-card">
-					<div class="stat-icon">👥</div>
+					<div class="stat-icon">??</div>
 					<div class="stat-info">
 						<h3>Avg. Students</h3>
 						<p id="stat-avg">45</p>
@@ -940,7 +941,7 @@
 			<!-- Exams Table -->
 			<div class="data-panel">
 				<div class="panel-header">
-					<h2 class="panel-title">📝 Exam Management</h2>
+					<h2 class="panel-title">?? Exam Management</h2>
 					<button class="btn-add" onclick="openAddExamModal()">+ Create Exam</button>
 				</div>
 
@@ -1141,7 +1142,7 @@
 	<!-- Delete Confirmation Modal -->
 	<div id="deleteModal" class="modal-overlay hidden">
 		<div class="modal-box delete-confirm-modal">
-			<div class="warning-icon">⚠️</div>
+			<div class="warning-icon">??</div>
 			<h3>Delete Exam</h3>
 			<p>
 				Are you sure you want to delete this exam?<br>
@@ -1164,7 +1165,7 @@
 	<!-- View Exam Details Modal -->
 	<div id="viewExamModal" class="modal-overlay hidden">
 		<div class="modal-box" style="max-width: 700px;">
-			<h2 class="modal-title">📋 Exam Details</h2>
+			<h2 class="modal-title">?? Exam Details</h2>
 
 			<div style="background: rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 20px;">
 				<!-- Exam ID and Course -->
@@ -1185,11 +1186,11 @@
 				<div style="margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
 					<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
 						<div>
-							<label style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 8px; display: block;">📍 Branch</label>
+							<label style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 8px; display: block;">?? Branch</label>
 							<p id="viewBranchName" style="color: white; font-size: 1.1rem; font-weight: 600; margin: 0;">-</p>
 						</div>
 						<div>
-							<label style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 8px; display: block;">🎯 Track</label>
+							<label style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 8px; display: block;">?? Track</label>
 							<p id="viewTrackName" style="color: white; font-size: 1.1rem; font-weight: 600; margin: 0;">-</p>
 						</div>
 					</div>
@@ -1199,15 +1200,15 @@
 				<div style="margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
 					<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
 						<div>
-							<label style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 8px; display: block;">📅 Date</label>
+							<label style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 8px; display: block;">?? Date</label>
 							<p id="viewExamDate" style="color: white; font-weight: 600; margin: 0;">-</p>
 						</div>
 						<div>
-							<label style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 8px; display: block;">🕐 Time</label>
+							<label style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 8px; display: block;">?? Time</label>
 							<p id="viewExamTime" style="color: white; font-weight: 600; margin: 0;">-</p>
 						</div>
 						<div>
-							<label style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 8px; display: block;">⏱️ Duration</label>
+							<label style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 8px; display: block;">?? Duration</label>
 							<p id="viewDuration" style="color: white; font-weight: 600; margin: 0;">-</p>
 						</div>
 					</div>
@@ -1215,7 +1216,7 @@
 
 				<!-- Question Breakdown -->
 				<div style="margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
-					<label style="color: rgba(255, 255, 255, 0.7); font-size: 0.95rem; text-transform: uppercase; margin-bottom: 15px; display: block; font-weight: 700;">📝 Question Breakdown</label>
+					<label style="color: rgba(255, 255, 255, 0.7); font-size: 0.95rem; text-transform: uppercase; margin-bottom: 15px; display: block; font-weight: 700;">?? Question Breakdown</label>
 					<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
 						<!-- MCQ -->
 						<div style="background: rgba(102, 126, 234, 0.1); padding: 15px; border-radius: 12px; border: 2px solid rgba(102, 126, 234, 0.3);">
@@ -1326,7 +1327,7 @@
 					dotsContainer.innerHTML = '';
 					if (totalPages <= 1) return;
 
-					for (let i = 1; i <= totalPages; i++) {
+					const MAX_DOTS = 10; let startPage, endPage; if (totalPages <= MAX_DOTS) { startPage = 1; endPage = totalPages; } else { const halfWindow = Math.floor(MAX_DOTS / 2); if (currentCarouselPage <= halfWindow) { startPage = 1; endPage = MAX_DOTS; } else if (currentCarouselPage >= totalPages - halfWindow) { startPage = totalPages - MAX_DOTS + 1; endPage = totalPages; } else { startPage = currentCarouselPage - halfWindow; endPage = currentCarouselPage + halfWindow - 1; } } for (let i = startPage; i <= endPage; i++) {
 						const dot = document.createElement('button');
 						dot.className = 'carousel-dot' + (i === currentCarouselPage ? ' active' : '');
 						dot.type = 'button';
@@ -1359,7 +1360,7 @@
 					document.getElementById('modalTitle').textContent = 'Create New Exam';
 					form.reset();
 
-					// ✅ CRITICAL FIX: Explicitly set action to CreateExam
+					// ? CRITICAL FIX: Explicitly set action to CreateExam
 					form.action = '/Instructor/CreateExam';
 
 					document.getElementById('examId').value = '0';
@@ -1392,7 +1393,7 @@
 							document.getElementById('fullMarks').value = data.fullMarks;
 							document.getElementById('questionCount').value = data.questionCount;
 
-							// ⭐ ADD THESE - Populate Branch and Track
+							// ? ADD THESE - Populate Branch and Track
 							const branchSelect = document.querySelector('select[name="BranchId"]');
 							const trackSelect = document.querySelector('select[name="TrackId"]');
 
@@ -1403,7 +1404,7 @@
 								trackSelect.value = data.trackId;
 							}
 
-							// ⭐ ADD THESE - Populate MCQ/TF fields if available
+							// ? ADD THESE - Populate MCQ/TF fields if available
 							if (data.mcqCount !== undefined) {
 								document.getElementById('mcqCount').value = data.mcqCount || 0;
 							}
@@ -1417,7 +1418,7 @@
 								document.getElementById('trueFalseMarks').value = data.trueFalseMarks || 0;
 							}
 
-							// ⭐ CRITICAL: Set form action to UpdateExam
+							// ? CRITICAL: Set form action to UpdateExam
 							document.getElementById('examForm').action = '/Instructor/UpdateExam';
 							document.getElementById('modalSubmitBtn').textContent = 'Update Exam';
 							document.getElementById('modalTitle').textContent = 'Edit Exam';

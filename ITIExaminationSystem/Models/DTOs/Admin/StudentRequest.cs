@@ -1,6 +1,5 @@
 ﻿namespace ITIExaminationSystem.Models.DTOs.Admin
 {
-    // ================= STUDENT DTOs =================
     public class StudentRequest
     {
         public string FullName { get; set; }

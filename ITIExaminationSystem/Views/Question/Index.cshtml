@@ -1,15 +1,10 @@
 ﻿@{
-    Layout = null;
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    ViewBag.UserRole = "Instructor";
+    ViewBag.Title = "Questions";
 }
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ITI Admin – Question Bank</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    <link rel="icon" type="image/png" href="/images/Gemini_Generated_Image_vi5243vi5243vi52.png">
+@section Styles {
     <link href="/css/Admin.css" rel="stylesheet" />
 
     <style>
@@ -451,110 +446,111 @@
                 border: 1px solid #ef4444;
             }
     </style>
-</head>
-<body>
+}
 
-    <!-- ── Background decoration (same as Admin.css) ────────────────── -->
-    <div class="bg-shapes">
-        <div class="shape shape-1"></div>
-        <div class="shape shape-2"></div>
-        <div class="shape shape-3"></div>
+<!-- ── Stats strip ──────────────────────────────────────────── -->
+<div class="stats-grid" style="margin-bottom:1.5rem;">
+    <div class="stat-card">
+        <div class="stat-icon">❓</div>
+        <div class="stat-info">
+            <h3>Total Questions</h3>
+            <p id="stat-total">–</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">🔢</div>
+        <div class="stat-info">
+            <h3>MCQ</h3>
+            <p id="stat-mcq">–</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">✔️</div>
+        <div class="stat-info">
+            <h3>True / False</h3>
+            <p id="stat-tf">–</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">📚</div>
+        <div class="stat-info">
+            <h3>Courses Covered</h3>
+            <p id="stat-courses">–</p>
+        </div>
+    </div>
+</div>
+
+<!-- ── Data Panel ────────────────────────────────────────────── -->
+<div class="data-panel">
+
+    <!-- Panel Header -->
+    <div class="panel-header">
+        <h2 class="panel-title">❓ Question Management</h2>
+        <span class="result-count" id="result-label">Loading…</span>
     </div>
 
-    <!-- ═══════════════ HEADER ═══════════════════════════════════════ -->
-    <header class="admin-header">
-        <div class="header-left">
-            <div class="nav-logo-box"></div>
-            <span class="header-title">Question Bank</span>
-        </div>
-        <nav class="nav-links">
-            <a href="/Instructor/insDiplayStudents" class="nav-link">Dashboard</a>
-            <a href="/Question/Index" class="nav-link active">Questions</a>
-        </nav>
-        <a href="/Home/LoginPage" class="nav-link logout-btn">Logout</a>
-    </header>
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <input type="text" id="f-search" placeholder="🔍 Search question text…" />
+        <select id="f-course">
+            <option value="">All Courses</option>
+            @foreach (var c in ViewBag.Courses)
+            {
+                <option value="@c.CourseId">@c.CourseName</option>
+            }
+        </select>
+        <select id="f-type">
+            <option value="">All Types</option>
+            <option value="MCQ">MCQ</option>
+            <option value="TF">True / False</option>
+        </select>
+        <select id="f-instructor">
+            <option value="">All Instructors</option>
+            @foreach (var i in ViewBag.Instructors)
+            {
+                <option value="@i.InstructorId">@i.User?.UserName</option>
+            }
+        </select>
+        <button class="filter-btn" onclick="runSearch()">Search</button>
+        <button class="filter-btn reset" onclick="resetFilters()">Reset</button>
+    </div>
 
-    <!-- ═══════════════ MAIN CONTENT ═════════════════════════════════ -->
-    <main class="main-content">
+    <!-- Carousel Navigation with Circular Buttons -->
+    <div class="carousel-controls">
+        <button class="carousel-btn-circle prev-btn" id="prevBtn" onclick="changePage(-1)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                 stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        </button>
 
-        <!-- ── Stats strip ──────────────────────────────────────────── -->
-        <div class="stats-grid" style="margin-bottom:1.5rem;">
-            <div class="stat-card">
-                <div class="stat-icon">❓</div>
-                <div class="stat-info">
-                    <h3>Total Questions</h3>
-                    <p id="stat-total">–</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">🔢</div>
-                <div class="stat-info">
-                    <h3>MCQ</h3>
-                    <p id="stat-mcq">–</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">✔️</div>
-                <div class="stat-info">
-                    <h3>True / False</h3>
-                    <p id="stat-tf">–</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">📚</div>
-                <div class="stat-info">
-                    <h3>Courses Covered</h3>
-                    <p id="stat-courses">–</p>
-                </div>
-            </div>
+        <div class="carousel-info">
+            <span class="carousel-indicator">
+                Page <span id="currentPage">1</span> of <span id="totalPages">1</span>
+            </span>
         </div>
 
-        <!-- ── Data Panel ────────────────────────────────────────────── -->
-        <div class="data-panel">
+        <button class="carousel-btn-circle next-btn" id="nextBtn" onclick="changePage(1)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                 stroke="#667eea" stroke="width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+        </button>
+    </div>
 
-            <!-- Panel Header -->
-            <div class="panel-header">
-                <h2 class="panel-title">❓ Question Management</h2>
-                <span class="result-count" id="result-label">Loading…</span>
-            </div>
-
-            <!-- Filter Bar -->
-            <div class="filter-bar">
-                <input type="text" id="f-search" placeholder="🔍 Search question text…" />
-                <select id="f-course">
-                    <option value="">All Courses</option>
-                    @foreach (var c in ViewBag.Courses)
-                    {
-                        <option value="@c.CourseId">@c.CourseName</option>
-                    }
-                </select>
-                <select id="f-type">
-                    <option value="">All Types</option>
-                    <option value="MCQ">MCQ</option>
-                    <option value="TF">True / False</option>
-                </select>
-                <select id="f-instructor">
-                    <option value="">All Instructors</option>
-                    @foreach (var i in ViewBag.Instructors)
-                    {
-                        <option value="@i.InstructorId">@i.User?.UserName</option>
-                    }
-                </select>
-                <button class="filter-btn" onclick="runSearch()">Search</button>
-                <button class="filter-btn reset" onclick="resetFilters()">Reset</button>
-            </div>
-
-            <!-- Table -->
-            <div id="table-wrapper">
-                <div class="table-loading" id="loading-state">
-                    <div class="spinner"></div>
-                    <p>Loading questions…</p>
-                </div>
-                <div id="empty-state" class="empty-state" style="display:none;">
-                    <div class="empty-icon">🔍</div>
-                    <p>No questions match your filters.</p>
-                </div>
-                <div id="table-area" style="display:none;">
+    <!-- Table -->
+    <div id="table-wrapper">
+        <div class="table-loading" id="loading-state">
+            <div class="spinner"></div>
+            <p>Loading questions…</p>
+        </div>
+        <div id="empty-state" class="empty-state" style="display:none;">
+            <div class="empty-icon">🔍</div>
+            <p>No questions match your filters.</p>
+        </div>
+        <div id="table-area" style="display:none;">
+            <div class="table-carousel-container">
+                <div class="table-carousel-wrapper" id="tableCarousel">
                     <table>
                         <thead>
                             <tr>
@@ -569,98 +565,87 @@
                         </thead>
                         <tbody id="q-tbody"></tbody>
                     </table>
-                    <!-- Pagination -->
-                    <div class="page-controls">
-                        <button class="carousel-btn-circle" id="prevBtn" onclick="changePage(-1)">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
-                                 stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="15 18 9 12 15 6"></polyline>
-                            </svg>
-                        </button>
-                        <span class="page-info" id="page-info">Page 1 of 1</span>
-                        <button class="carousel-btn-circle" id="nextBtn" onclick="changePage(1)">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
-                                 stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="9 18 15 12 9 6"></polyline>
-                            </svg>
-                        </button>
+                    <!-- Carousel Dots Navigation -->
+                    <div class="carousel-dots" id="carouselDots">
+                        <!-- Dots will be generated by JavaScript -->
                     </div>
                 </div>
             </div>
-
-        </div>
-    </main>
-
-    <!-- ═══════════════ DETAIL / EDIT MODAL ══════════════════════════ -->
-    <div id="modal-overlay" class="modal-overlay hidden" onclick="handleOverlayClick(event)">
-        <div id="modal-detail" class="modal-box detail-modal hidden">
-
-            <!-- Modal Title -->
-            <h2 class="modal-title" id="modal-heading">Question Details</h2>
-
-            <!-- Question Text -->
-            <div class="modal-section-label">Question Text</div>
-            <textarea id="m-text" class="edit-field" rows="3" placeholder="Enter question text…"></textarea>
-
-            <!-- Course -->
-            <div class="modal-section-label">Course</div>
-            <select id="m-course" class="edit-field">
-                @foreach (var c in ViewBag.Courses)
-                {
-                    <option value="@c.CourseId">@c.CourseName</option>
-                }
-            </select>
-
-            <!-- Question Type -->
-            <div class="modal-section-label">Question Type</div>
-            <select id="m-type" class="edit-field" onchange="onTypeChange()">
-                <option value="MCQ">MCQ – Multiple Choice</option>
-                <option value="TF">True / False</option>
-            </select>
-
-            <!-- TF Section -->
-            <div id="section-tf" style="display:none;">
-                <div class="modal-section-label">Correct Answer</div>
-                <div class="tf-toggle">
-                    <label class="tf-option true-opt" id="lbl-true">
-                        <input type="radio" name="tf-answer" value="true" onchange="selectTF(true)" />
-                        ✅ True
-                    </label>
-                    <label class="tf-option false-opt" id="lbl-false">
-                        <input type="radio" name="tf-answer" value="false" onchange="selectTF(false)" />
-                        ❌ False
-                    </label>
-                </div>
-            </div>
-
-            <!-- MCQ Section -->
-            <div id="section-mcq" style="display:none;">
-                <div class="modal-section-label">Choices <small style="text-transform:none;font-size:.7rem;opacity:.6;">(check = correct answer)</small></div>
-                <div class="choice-list" id="choice-list"></div>
-                <button class="btn-add-choice" onclick="addChoiceRow()">+ Add Choice</button>
-            </div>
-
-            <!-- Footer Actions -->
-            <div class="modal-footer">
-                <button class="btn-danger-outline" onclick="deleteQuestion()">🗑 Delete</button>
-                <button type="button" class="btn-cancel" onclick="closeDetailModal()">Cancel</button>
-                <button class="btn-save" id="btn-save" onclick="saveQuestion()">💾 Save Changes</button>
-            </div>
-
-            <!-- hidden state -->
-            <input type="hidden" id="m-question-id" />
         </div>
     </div>
 
-    <!-- ── Toast ─────────────────────────────────────────────────── -->
-    <div id="toast"></div>
+</div>
 
-    <!-- ═══════════════ JAVASCRIPT ═══════════════════════════════════ -->
+<!-- ═══════════════ DETAIL / EDIT MODAL ══════════════════════════ -->
+<div id="modal-overlay" class="modal-overlay hidden" onclick="handleOverlayClick(event)">
+    <div id="modal-detail" class="modal-box detail-modal hidden">
+
+        <!-- Modal Title -->
+        <h2 class="modal-title" id="modal-heading">Question Details</h2>
+
+        <!-- Question Text -->
+        <div class="modal-section-label">Question Text</div>
+        <textarea id="m-text" class="edit-field" rows="3" placeholder="Enter question text…"></textarea>
+
+        <!-- Course -->
+        <div class="modal-section-label">Course</div>
+        <select id="m-course" class="edit-field">
+            @foreach (var c in ViewBag.Courses)
+            {
+                <option value="@c.CourseId">@c.CourseName</option>
+            }
+        </select>
+
+        <!-- Question Type -->
+        <div class="modal-section-label">Question Type</div>
+        <select id="m-type" class="edit-field" onchange="onTypeChange()">
+            <option value="MCQ">MCQ – Multiple Choice</option>
+            <option value="TF">True / False</option>
+        </select>
+
+        <!-- TF Section -->
+        <div id="section-tf" style="display:none;">
+            <div class="modal-section-label">Correct Answer</div>
+            <div class="tf-toggle">
+                <label class="tf-option true-opt" id="lbl-true">
+                    <input type="radio" name="tf-answer" value="true" onchange="selectTF(true)" />
+                    ✅ True
+                </label>
+                <label class="tf-option false-opt" id="lbl-false">
+                    <input type="radio" name="tf-answer" value="false" onchange="selectTF(false)" />
+                    ❌ False
+                </label>
+            </div>
+        </div>
+
+        <!-- MCQ Section -->
+        <div id="section-mcq" style="display:none;">
+            <div class="modal-section-label">Choices <small style="text-transform:none;font-size:.7rem;opacity:.6;">(check = correct answer)</small></div>
+            <div class="choice-list" id="choice-list"></div>
+            <button class="btn-add-choice" onclick="addChoiceRow()">+ Add Choice</button>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="modal-footer">
+            <button class="btn-danger-outline" onclick="deleteQuestion()">🗑 Delete</button>
+            <button type="button" class="btn-cancel" onclick="closeDetailModal()">Cancel</button>
+            <button class="btn-save" id="btn-save" onclick="saveQuestion()">💾 Save Changes</button>
+        </div>
+
+        <!-- hidden state -->
+        <input type="hidden" id="m-question-id" />
+    </div>
+</div>
+
+<!-- ── Toast ─────────────────────────────────────────────────── -->
+<div id="toast"></div>
+
+@section Scripts {
     <script>
         // ─────────────────────────────────────────────────────────────────
         // STATE
         // ─────────────────────────────────────────────────────────────────
-        const PAGE_SIZE = 8;
+        const PAGE_SIZE = 6;
         let allQuestions = [];
         let filtered     = [];
         let currentPage  = 1;
@@ -783,10 +768,15 @@
                 </tr>
             `).join('');
 
+
             // pagination
-            document.getElementById('page-info').textContent = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById('currentPage').textContent = currentPage;
+            document.getElementById('totalPages').textContent = totalPages;
             document.getElementById('prevBtn').disabled = currentPage === 1;
             document.getElementById('nextBtn').disabled = currentPage === totalPages;
+            
+            // Update dots navigation
+            renderCarouselDots(totalPages);
         }
 
         function changePage(dir) {
@@ -795,6 +785,57 @@
             if (newPage >= 1 && newPage <= totalPages) {
                 currentPage = newPage;
                 renderTable();
+            }
+        }
+
+        function goToPage(pageNumber) {
+            currentPage = pageNumber;
+            renderTable();
+        }
+
+        function renderCarouselDots(totalPages) {
+            const dotsContainer = document.getElementById('carouselDots');
+            
+            if (!dotsContainer) return;
+            
+            dotsContainer.innerHTML = '';
+            
+            // Only show dots if there's more than 1 page
+            if (totalPages <= 1) return;
+            
+            const MAX_DOTS = 10;
+            let startPage, endPage;
+
+            if (totalPages <= MAX_DOTS) {
+                // Show all dots if total pages is less than or equal to MAX_DOTS
+                startPage = 1;
+                endPage = totalPages;
+            } else {
+                // Smart windowing: keep active dot at the end when navigating
+                const windowSize = MAX_DOTS - 1; // Leave one spot at the end for active
+                
+                if (currentPage <= MAX_DOTS) {
+                    // Near the start - show first MAX_DOTS pages
+                    startPage = 1;
+                    endPage = MAX_DOTS;
+                } else if (currentPage >= totalPages - windowSize) {
+                    // Near the end - show last MAX_DOTS pages
+                    startPage = totalPages - MAX_DOTS + 1;
+                    endPage = totalPages;
+                } else {
+                    // In the middle - active dot at the end of visible window
+                    startPage = currentPage - windowSize;
+                    endPage = currentPage;
+                }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const dot = document.createElement('button');
+                dot.className = 'carousel-dot' + (i === currentPage ? ' active' : '');
+                dot.type = 'button';
+                dot.onclick = () => goToPage(i);
+                dot.setAttribute('aria-label', `Go to page ${i}`);
+                dotsContainer.appendChild(dot);
             }
         }
 
@@ -1025,5 +1066,4 @@
             toastTimer = setTimeout(() => { t.className = ''; }, 3200);
         }
     </script>
-</body>
-</html>
+}

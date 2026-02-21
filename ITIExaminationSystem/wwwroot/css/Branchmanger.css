@@ -1,0 +1,82 @@
+﻿/* =================================================== */
+/* BRANCH MANAGER CSS - BRANCH MANAGER-SPECIFIC ONLY */
+/* Common styles moved to shared.css                  */
+/* =================================================== */
+
+/* ============ BRANCH MANAGER SPECIFIC BUTTON STYLES ============ */
+.btn-assign {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-assign:hover {
+    background-color: #218838;
+}
+
+.btn-remove {
+    background-color: #ffc107;
+    color: black;
+}
+
+.btn-remove:hover {
+    background-color: #e0a800;
+}
+
+.btn-primary {
+    background-color: #667eea;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #5a67d8;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.btn-next {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-next:hover {
+    background-color: #5a67d8;
+}
+
+/* ============ TRACK TABLE SPECIFIC STYLES ============ */
+#tracksTableBody div {
+    display: flex;
+    gap: 5px;
+}
+
+/* ============ FORM INPUT READONLY STATE ============ */
+.form-input[readonly] {
+    background: rgba(0, 0, 0, 0.3);
+    color: rgba(255, 255, 255, 0.7);
+}

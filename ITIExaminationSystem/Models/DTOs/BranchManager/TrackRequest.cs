@@ -3,5 +3,6 @@
     public class TrackRequest
     {
         public string TrackName { get; set; }
+        public int? BranchId { get; set; }  // Add this
     }
 }

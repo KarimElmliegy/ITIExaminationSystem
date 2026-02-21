@@ -1,17 +1,11 @@
 ﻿@{
-    Layout = null;
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    ViewBag.UserRole = "Instructor";
+    ViewBag.Title = "Courses";
 }
 @model List<InstructorCourseDto>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ITI Instructor - Courses</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="icon" type="image/png" href="/images/Gemini_Generated_Image_vi5243vi5243vi52.png">
+@section Styles {
     <link rel="stylesheet" href="/css/Instructor.css" asp-append-version="true" />
     <style>
         /* Circular Button Styles for Carousel */
@@ -29,29 +23,29 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
-            .carousel-btn-circle:hover:not(:disabled) {
-                background: #214F72;
-                transform: scale(1.1);
-                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-            }
+        .carousel-btn-circle:hover:not(:disabled) {
+            background: #214F72;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
 
-                .carousel-btn-circle:hover:not(:disabled) svg {
-                    stroke: white;
-                }
+        .carousel-btn-circle:hover:not(:disabled) svg {
+            stroke: white;
+        }
 
-            .carousel-btn-circle:disabled {
-                opacity: 0.4;
-                cursor: not-allowed;
-                border-color: #214F72;
-            }
+        .carousel-btn-circle:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            border-color: #214F72;
+        }
 
-                .carousel-btn-circle:disabled svg {
-                    stroke: #ccc;
-                }
+        .carousel-btn-circle:disabled svg {
+            stroke: #ccc;
+        }
 
-            .carousel-btn-circle:active:not(:disabled) {
-                transform: scale(0.95);
-            }
+        .carousel-btn-circle:active:not(:disabled) {
+            transform: scale(0.95);
+        }
 
         .carousel-controls {
             display: flex;
@@ -94,14 +88,14 @@
             transition: all 0.3s ease;
         }
 
-            .carousel-dot.active {
-                background: #667eea;
-                transform: scale(1.2);
-            }
+        .carousel-dot.active {
+            background: #667eea;
+            transform: scale(1.2);
+        }
 
-            .carousel-dot:hover:not(.active) {
-                background: #aaa;
-            }
+        .carousel-dot:hover:not(.active) {
+            background: #aaa;
+        }
 
         /* Modal Styles for Delete Confirmation */
         .delete-modal-container {
@@ -120,11 +114,11 @@
             margin: 0 auto 1.5rem;
         }
 
-            .icon-box svg {
-                width: 30px;
-                height: 30px;
-                color: #dc2626;
-            }
+        .icon-box svg {
+            width: 30px;
+            height: 30px;
+            color: #dc2626;
+        }
 
         .confirm-text {
             color: #666;
@@ -162,235 +156,216 @@
             transition: background 0.2s;
         }
 
-            .btn-delete-red:hover {
-                background: #b91c1c;
-            }
+        .btn-delete-red:hover {
+            background: #b91c1c;
+        }
     </style>
-</head>
-<body>
-    <div id="dashboard-view">
-        <header class="admin-header">
-            <div class="header-left">
-                <div class="nav-logo-box"></div>
-                <span class="header-title">Instructor Portal</span>
-            </div>
-            <nav class="nav-links">
-                <a style="text-decoration: none;" href="/Instructor/insDiplayStudents" class="nav-link">Students</a>
-                <a style="text-decoration: none;" href="/Instructor/Courses" class="nav-link active">Courses</a>
-                <a style="text-decoration: none;" href="/Instructor/Exams" class="nav-link">Exams</a>
-            </nav>
-            <a style="text-decoration: none;" href="/Home/LoginPage" id="logoutBtn" class="nav-link logout-btn">Logout</a>
-        </header>
+}
 
-        <div class="bg-shapes">
-            <div class="shape shape-1"></div>
-            <div class="shape shape-2"></div>
-            <div class="shape shape-3"></div>
+<!-- Stats Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">👨‍🎓</div>
+        <div class="stat-info">
+            <h3>Total Students</h3>
+            <p id="stat-students">@ViewBag.StudentCount</p>
         </div>
-
-        <main class="main-content">
-            <!-- Stats Cards -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon">👨‍🎓</div>
-                    <div class="stat-info">
-                        <h3>Total Students</h3>
-                        <p id="stat-students">@ViewBag.StudentCount</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">👨‍🏫</div>
-                    <div class="stat-info">
-                        <h3>Instructors</h3>
-                        <p id="stat-instructors">@ViewBag.instractors</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">📚</div>
-                    <div class="stat-info">
-                        <h3>Active Courses</h3>
-                        <p id="stat-courses">@ViewBag.CourseCount</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">📝</div>
-                    <div class="stat-info">
-                        <h3>Exams Scheduled</h3>
-                        <p>1</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- COURSES TAB -->
-            <div id="tab-courses">
-                <div class="data-panel">
-                    <div class="panel-header">
-                        <h2 class="panel-title">📚 Course Management</h2>
-                        <button class="btn-add" onclick="openModal('course')">
-                            + Add Course
-                        </button>
-                    </div>
-
-                    <!-- Carousel Navigation with Circular Buttons -->
-                    <div class="carousel-controls">
-                        <button class="carousel-btn-circle prev-btn" id="prevBtn" onclick="moveCarousel(-1)">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                 stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="15 18 9 12 15 6"></polyline>
-                            </svg>
-                        </button>
-
-                        <div class="carousel-info">
-                            <span class="carousel-indicator">
-                                Page <span id="currentPage">1</span> of <span id="totalPages">1</span>
-                            </span>
-                        </div>
-
-                        <button class="carousel-btn-circle next-btn" id="nextBtn" onclick="moveCarousel(1)">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                 stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="9 18 15 12 9 6"></polyline>
-                            </svg>
-                        </button>
-                    </div>
-
-                    <!-- Courses Table -->
-                    <table id="table-courses">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Course Name</th>
-                                <th>Instructor</th>
-                                <th>Email</th>
-                                <th>Duration</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="coursesTableBody">
-                            @{
-                                int rowNumber = 1;
-                            }
-                            @foreach (var course in Model)
-                            {
-                                <tr class="course-row" data-course-id="@course.Course_Id">
-                                    <td>@course.Course_Id</td>
-                                    <td style="font-weight: 600; color: #667eea">
-                                        @course.Course_Name
-                                    </td>
-                                    <td>
-                                        @(string.IsNullOrEmpty(course.InstructorName)
-                                            ? "No Instructor"
-                                            : course.InstructorName)
-                                    </td>
-                                    <td>
-                                        @(string.IsNullOrEmpty(course.InstructorEmail)
-                                            ? "-"
-                                            : course.InstructorEmail)
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-purple">@course.Duration</span>
-                                    </td>
-                                    <td>
-                                        <button class="action-btn btn-edit"
-                                                data-course-id="@course.Course_Id"
-                                                data-course-name="@course.Course_Name"
-                                                data-duration="@course.Duration">
-                                            Edit
-                                        </button>
-
-                                        <button class="action-btn btn-delete"
-                                                data-course-id="@course.Course_Id"
-                                                data-course-name="@course.Course_Name">
-                                            Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                                rowNumber++;
-                            }
-                        </tbody>
-                    </table>
-
-                    <!-- Carousel Dots Navigation -->
-                    <div class="carousel-dots" id="carouselDots">
-                        <!-- Dots will be generated by JavaScript -->
-                    </div>
-                </div>
-            </div>
-        </main>
     </div>
+    <div class="stat-card">
+        <div class="stat-icon">👨‍🏫</div>
+        <div class="stat-info">
+            <h3>Instructors</h3>
+            <p id="stat-instructors">@ViewBag.instractors</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">📚</div>
+        <div class="stat-info">
+            <h3>Active Courses</h3>
+            <p id="stat-courses">@ViewBag.CourseCount</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">📝</div>
+        <div class="stat-info">
+            <h3>Exams Scheduled</h3>
+            <p>1</p>
+        </div>
+    </div>
+</div>
 
-    <!-- MODALS -->
-    <div id="modal-overlay" class="modal-overlay hidden">
-        <!-- Add Course Modal -->
-        <div id="modal-course" class="modal-box hidden">
-            <h2 class="modal-title">Add New Course</h2>
-            <form onsubmit="handleAddCourse(event)">
-                <div class="form-group">
-                    <label>Course Name</label>
-                    <input type="text" id="inp-course-name" class="form-input" required />
-                </div>
-                <div class="form-group">
-                    <label>Duration</label>
-                    <input type="text" id="inp-course-dur" class="form-input" required />
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
-                    <button type="submit" class="btn-add">Save Course</button>
-                </div>
-            </form>
+<!-- COURSES TAB -->
+<div id="tab-courses">
+    <div class="data-panel">
+        <div class="panel-header">
+            <h2 class="panel-title">📚 Course Management</h2>
+            <button class="btn-add" onclick="openModal('course')">
+                + Add Course
+            </button>
         </div>
 
-        <!-- Edit Course Modal -->
-        <div id="modal-edit-course" class="modal-box hidden">
-            <h2 class="modal-title">Edit Course</h2>
-            <form onsubmit="handleEditCourse(event)">
-                <input type="hidden" id="edit-course-id" />
-                <div class="form-group">
-                    <label>Course Name</label>
-                    <input type="text" id="edit-course-name" class="form-input" required />
-                </div>
-                <div class="form-group">
-                    <label>Duration</label>
-                    <input type="text" id="edit-course-dur" class="form-input" required />
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
-                    <button type="submit" class="btn-add">Update Course</button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Delete Course Confirmation Modal -->
-        <div id="modal-delete-course" class="modal-box hidden delete-modal-container">
-            <div class="icon-box">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                    <line x1="12" y1="9" x2="12" y2="13"></line>
-                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        <!-- Carousel Navigation with Circular Buttons -->
+        <div class="carousel-controls">
+            <button class="carousel-btn-circle prev-btn" id="prevBtn" onclick="moveCarousel(-1)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                     stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
                 </svg>
+            </button>
+
+            <div class="carousel-info">
+                <span class="carousel-indicator">
+                    Page <span id="currentPage">1</span> of <span id="totalPages">1</span>
+                </span>
             </div>
 
-            <h2>Delete Course</h2>
-            <p class="confirm-text">Are you sure you want to delete</p>
-            <strong class="target-text" id="delete-course-name">Course Name</strong>
+            <button class="carousel-btn-circle next-btn" id="nextBtn" onclick="moveCarousel(1)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                     stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </button>
+        </div>
 
-            <p class="warning-details">
-                This action cannot be undone. This will permanently delete the course
-                and remove all associated data from the system.
-            </p>
+        <!-- Table Carousel Container -->
+        <div class="table-carousel-container">
+            <div class="table-carousel-wrapper" id="tableCarousel">
+                <table id="table-courses">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Course Name</th>
+                            <th>Instructor</th>
+                            <th>Email</th>
+                            <th>Duration</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="coursesTableBody">
+                        @{
+                            int rowNumber = 1;
+                        }
+                        @foreach (var course in Model)
+                        {
+                            <tr class="course-row" data-course-id="@course.Course_Id">
+                                <td>@course.Course_Id</td>
+                                <td style="font-weight: 600; color: #667eea">
+                                    @course.Course_Name
+                                </td>
+                                <td>
+                                    @(string.IsNullOrEmpty(course.InstructorName)
+                                        ? "No Instructor"
+                                        : course.InstructorName)
+                                </td>
+                                <td>
+                                    @(string.IsNullOrEmpty(course.InstructorEmail)
+                                        ? "-"
+                                        : course.InstructorEmail)
+                                </td>
+                                <td>
+                                    <span class="badge badge-purple">@course.Duration</span>
+                                </td>
+                                <td>
+                                    <button class="action-btn btn-edit"
+                                            data-course-id="@course.Course_Id"
+                                            data-course-name="@course.Course_Name"
+                                            data-duration="@course.Duration">
+                                        Edit
+                                    </button>
 
-            <form id="deleteCourseForm" method="post" action="/Instructor/DeleteCourse">
-                <input type="hidden" id="delete-course-id" name="courseId" />
-
-                <div class="button-row">
-                    <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
-                    <button type="submit" class="btn-delete-red">Delete Course</button>
+                                    <button class="action-btn btn-delete"
+                                            data-course-id="@course.Course_Id"
+                                            data-course-name="@course.Course_Name">
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                            rowNumber++;
+                        }
+                    </tbody>
+                </table>
+                <!-- Carousel Dots Navigation -->
+                <div class="carousel-dots" id="carouselDots">
+                    <!-- Dots will be generated by JavaScript -->
                 </div>
-            </form>
-
+            </div>
         </div>
     </div>
+</div>
 
+<!-- MODALS -->
+<div id="modal-overlay" class="modal-overlay hidden">
+    <!-- Add Course Modal -->
+    <div id="modal-course" class="modal-box hidden">
+        <h2 class="modal-title">Add New Course</h2>
+        <form onsubmit="handleAddCourse(event)">
+            <div class="form-group">
+                <label>Course Name</label>
+                <input type="text" id="inp-course-name" class="form-input" required />
+            </div>
+            <div class="form-group">
+                <label>Duration</label>
+                <input type="text" id="inp-course-dur" class="form-input" required />
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn-add">Save Course</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Edit Course Modal -->
+    <div id="modal-edit-course" class="modal-box hidden">
+        <h2 class="modal-title">Edit Course</h2>
+        <form onsubmit="handleEditCourse(event)">
+            <input type="hidden" id="edit-course-id" />
+            <div class="form-group">
+                <label>Course Name</label>
+                <input type="text" id="edit-course-name" class="form-input" required />
+            </div>
+            <div class="form-group">
+                <label>Duration</label>
+                <input type="text" id="edit-course-dur" class="form-input" required />
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn-add">Update Course</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Delete Course Confirmation Modal -->
+    <div id="modal-delete-course" class="modal-box hidden delete-modal-container">
+        <div class="icon-box">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+        </div>
+
+        <h2>Delete Course</h2>
+        <p class="confirm-text">Are you sure you want to delete</p>
+        <strong class="target-text" id="delete-course-name">Course Name</strong>
+
+        <p class="warning-details">
+            This action cannot be undone. This will permanently delete the course
+            and remove all associated data from the system.
+        </p>
+
+        <form id="deleteCourseForm" method="post" action="/Instructor/DeleteCourse">
+            <input type="hidden" id="delete-course-id" name="courseId" />
+
+            <div class="button-row">
+                <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn-delete-red">Delete Course</button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+@section Scripts {
     <script src="/js/Instructor.js"></script>
     <script>
         // ===================================================================
@@ -493,7 +468,33 @@
             // Only show dots if there's more than 1 page
             if (totalPages <= 1) return;
 
-            for (let i = 1; i <= totalPages; i++) {
+            const MAX_DOTS = 10;
+            let startPage, endPage;
+
+            if (totalPages <= MAX_DOTS) {
+                // Show all dots if total pages is less than or equal to MAX_DOTS
+                startPage = 1;
+                endPage = totalPages;
+            } else {
+                // Smart windowing: keep active dot visible
+                const halfWindow = Math.floor(MAX_DOTS / 2);
+                
+                if (currentCarouselPage <= halfWindow) {
+                    // Near the start
+                    startPage = 1;
+                    endPage = MAX_DOTS;
+                } else if (currentCarouselPage >= totalPages - halfWindow) {
+                    // Near the end
+                    startPage = totalPages - MAX_DOTS + 1;
+                    endPage = totalPages;
+                } else {
+                    // In the middle
+                    startPage = currentCarouselPage - halfWindow;
+                    endPage = currentCarouselPage + halfWindow - 1;
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
                 const dot = document.createElement('button');
                 dot.className = 'carousel-dot' + (i === currentCarouselPage ? ' active' : '');
                 dot.type = 'button';
@@ -655,5 +656,4 @@
         });
 
     </script>
-</body>
-</html>
+}

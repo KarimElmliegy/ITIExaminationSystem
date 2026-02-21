@@ -15,7 +15,7 @@ namespace ITIExaminationSystem
 
             builder.Services.AddDbContext<ExaminationSystemContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("ExaminationSystem")
+        builder.Configuration.GetConnectionString("ExaminationSystem2003")
     )
 );
 

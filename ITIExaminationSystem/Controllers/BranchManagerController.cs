@@ -1,157 +1,357 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ITIExaminationSystem.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Linq;
-using System.Collections.Generic;
-using ITIExaminationSystem.Models.DTOs.BranchManager;
+using System.Threading.Tasks;
+using System.Data;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
+using System.Collections.Generic;
+using System.ComponentModel;
+using  ITIExaminationSystem.Models.DTOs.BranchManager;
 
 namespace ITIExaminationSystem.Controllers
 {
     public class BranchManagerController : Controller
     {
         private readonly ExaminationSystemContext _context;
+        private readonly string _connectionString;
 
-        public BranchManagerController(ExaminationSystemContext context)
+        public BranchManagerController(ExaminationSystemContext context, IConfiguration configuration)
         {
             _context = context;
+            _connectionString = configuration.GetConnectionString("ExaminationSystem");
         }
 
-        // GET: BranchManager/Dashboard
-        public IActionResult Dashboard(int branchId)
+        // ================= DASHBOARD =================
+
+        private async Task<List<TrackCourseDto>> GetTrackCoursesFromProcedure(int trackId)
         {
-            var branch = _context.Branches.Find(branchId);
+            var trackCourses = new List<TrackCourseDto>();
 
-            if (branch == null)
-                return View("~/Views/BranchManager/Dashboard.cshtml");
+            try
+            {
+                using var connection = new SqlConnection(_connectionString);
+                using var cmd = new SqlCommand("sp_BranchManager_GetTrackCourses", connection);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@TrackId", trackId);  // CHANGED FROM BRANCHID TO TRACKID
 
-            ViewBag.Role = "BranchManager";
-            ViewBag.BranchId = branchId;
-            ViewBag.BranchName = branch.BranchName;
+                await connection.OpenAsync();
+                using var reader = await cmd.ExecuteReaderAsync();
 
-            // Get counts
-            ViewBag.StudentCount = _context.Students.Count(s => s.BranchId == branchId);
-            ViewBag.InstructorCount = _context.Instructors.Count();
-            ViewBag.CourseCount = _context.Courses.Count();
-            ViewBag.BranchCount = 1; // Only their branch
-            ViewBag.TrackCount = _context.Tracks.Count();
+                while (await reader.ReadAsync())
+                {
+                    trackCourses.Add(new TrackCourseDto
+                    {
+                        TrackId = reader.GetInt32(0),
+                        CourseId = reader.GetInt32(1),
+                        CourseName = reader.GetString(2),
+                        TrackName = reader.GetString(3)
+                    });
+                }
 
-            // Get data
-            ViewBag.Students = _context.Students
-                .Include(s => s.User)
-                .Include(s => s.Branch)
-                .Include(s => s.Track)
-                .Where(s => s.BranchId == branchId)
-                .ToList();
+                System.Diagnostics.Debug.WriteLine($"GetTrackCoursesFromProcedure (Track {trackId}): Found {trackCourses.Count} courses");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"ERROR in GetTrackCoursesFromProcedure (Track {trackId}): {ex.Message}");
+            }
 
-            ViewBag.Instructors = _context.Instructors
-                .Include(i => i.User)
-                .ToList();
+            return trackCourses;
+        }
+        public async Task<IActionResult> Dashboard(int branchId)
+        {
+            try
+            {
+                var branch = await _context.Branches.FindAsync(branchId);
 
-            ViewBag.Courses = _context.Courses.ToList();
-            ViewBag.Branches = _context.Branches
-                .Where(b => b.BranchId == branchId)
-                .ToList();
+                if (branch == null)
+                {
+                    return View("~/Views/BranchManager/Dashboard.cshtml");
+                }
 
-            ViewBag.Tracks = _context.Tracks.ToList();
+                ViewBag.BranchId = branchId;
+                ViewBag.BranchName = branch.BranchName;
+
+                // Get dashboard counts
+                using var connection = new SqlConnection(_connectionString);
+                using var cmd = new SqlCommand("sp_BranchManager_GetDashboardCounts", connection);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@BranchId", branchId);
+
+                await connection.OpenAsync();
+                using var reader = await cmd.ExecuteReaderAsync();
+                if (await reader.ReadAsync())
+                {
+                    ViewBag.StudentCount = reader["StudentCount"];
+                    ViewBag.InstructorCount = reader["InstructorCount"];
+                    ViewBag.CourseCount = reader["CourseCount"];
+                    ViewBag.TrackCount = reader["TrackCount"];
+                }
+
+                // Get students
+                ViewBag.Students = await GetStudentsFromProcedure(branchId);
+
+                // Get instructors
+                ViewBag.Instructors = await GetInstructorsFromProcedure();
+
+                // Get courses
+                ViewBag.Courses = await _context.Courses.ToListAsync();
+
+                // ============ CRITICAL FIX: Get tracks for this branch ============
+                var tracks = await GetTracksForBranch(branchId);
+                ViewBag.Tracks = tracks;
+
+                // ============ CRITICAL FIX: Get track-course assignments for EACH TRACK ============
+                var allTrackCourses = new List<TrackCourseDto>();
+
+                if (tracks != null && tracks.Any())
+                {
+                    foreach (var track in tracks)
+                    {
+                        // Get courses for this specific track
+                        var trackCourses = await GetTrackCoursesFromProcedure(track.TrackId);
+                        allTrackCourses.AddRange(trackCourses);
+
+                        // DEBUG: Write to output window
+                        System.Diagnostics.Debug.WriteLine($"Track {track.TrackId}: {track.TrackName} - {trackCourses.Count} courses");
+
+                        foreach (var tc in trackCourses)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"  └─ Course: {tc.CourseName} (ID: {tc.CourseId})");
+                        }
+                    }
+                }
+
+                // ============ STORE IN VIEWBAG ============
+                ViewBag.TrackCourses = allTrackCourses;
+
+                // ============ FINAL DEBUG ============
+                System.Diagnostics.Debug.WriteLine("========== DASHBOARD FINAL ==========");
+                System.Diagnostics.Debug.WriteLine($"BranchId: {branchId}");
+                System.Diagnostics.Debug.WriteLine($"Tracks found: {tracks?.Count() ?? 0}");
+                System.Diagnostics.Debug.WriteLine($"Total TrackCourses: {allTrackCourses.Count}");
+                System.Diagnostics.Debug.WriteLine("=====================================");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"ERROR in Dashboard: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack Trace: {ex.StackTrace}");
+                ViewBag.TrackCourses = new List<TrackCourseDto>();
+            }
 
             return View("~/Views/BranchManager/Dashboard.cshtml");
         }
 
-        // ================= STUDENT OPERATIONS =================
+        // ================= PROCEDURE DATA FETCH METHODS =================
+        private async Task<List<StudentViewModel>> GetStudentsFromProcedure(int branchId)
+        {
+            var students = new List<StudentViewModel>();
 
+            using var connection = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("sp_BranchManager_GetStudents", connection);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@BranchId", branchId);
+
+            await connection.OpenAsync();
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                students.Add(new StudentViewModel
+                {
+                    StudentId = reader.GetInt32(0),
+                    TrackId = reader.IsDBNull(1) ? 0 : reader.GetInt32(1),
+                    BranchId = reader.GetInt32(2),
+                    UserId = reader.GetInt32(3),
+                    UserName = reader.GetString(4),
+                    UserEmail = reader.GetString(5),
+                    IntakeNumber = reader.IsDBNull(6) ? 0 : reader.GetInt32(6),
+                    TrackName = reader.IsDBNull(7) ? null : reader.GetString(7)
+                });
+            }
+
+            return students;
+        }
+
+        private async Task<List<InstructorViewModel>> GetInstructorsFromProcedure()
+        {
+            var instructors = new List<InstructorViewModel>();
+
+            using var connection = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("sp_BranchManager_GetInstructors", connection);
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            await connection.OpenAsync();
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                instructors.Add(new InstructorViewModel
+                {
+                    InstructorId = reader.GetInt32(0),
+                    UserId = reader.GetInt32(1),
+                    UserName = reader.GetString(2),
+                    UserEmail = reader.GetString(3)
+                });
+            }
+
+            return instructors;
+        }
+
+        private async Task<List<TrackViewModel>> GetTracksForBranch(int branchId)
+        {
+            var tracks = new List<TrackViewModel>();
+
+            using var connection = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("sp_BranchManager_GetTracks", connection);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@BranchId", branchId);
+
+            await connection.OpenAsync();
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                tracks.Add(new TrackViewModel
+                {
+                    TrackId = reader.GetInt32(0),
+                    TrackName = reader.GetString(1),
+                    StudentCount = reader.IsDBNull(2) ? 0 : reader.GetInt32(2)
+                });
+            }
+
+            return tracks;
+        }
+
+        // ================= STUDENT OPERATIONS =================
         [HttpPost]
-        public IActionResult AddStudent([FromBody] StudentRequest request)
+        public async Task<IActionResult> AddStudent([FromBody] StudentRequest request)
         {
             try
             {
-                // Use existing sp_Admin_AddStudent stored procedure
-                _context.Database.ExecuteSqlRaw(
-                    "EXEC sp_Admin_AddStudent @FullName, @Email, @Password, @BranchId, @TrackId, @IntakeNumber",
-                    new SqlParameter("@FullName", request.FullName),
-                    new SqlParameter("@Email", request.Email),
-                    new SqlParameter("@Password", request.Password),
-                    new SqlParameter("@BranchId", request.BranchId),
-                    new SqlParameter("@TrackId", request.TrackId),
-                    new SqlParameter("@IntakeNumber", request.IntakeNumber)
-                );
+                using var connection = new SqlConnection(_connectionString);
+                using var cmd = new SqlCommand("sp_BranchManager_AddStudent", connection);
+                cmd.CommandType = CommandType.StoredProcedure;
 
-                return Json(new { success = true, message = "Student added successfully" });
+                cmd.Parameters.AddWithValue("@UserName", request.FullName);
+                cmd.Parameters.AddWithValue("@UserEmail", request.Email);
+                cmd.Parameters.AddWithValue("@UserPassword", request.Password);
+                cmd.Parameters.AddWithValue("@TrackId", request.TrackId);
+                cmd.Parameters.AddWithValue("@BranchId", request.BranchId);
+                cmd.Parameters.AddWithValue("@IntakeNumber", request.IntakeNumber);
+
+                var pUserId = new SqlParameter("@UserId", SqlDbType.Int) { Direction = ParameterDirection.Output };
+                var pStudentId = new SqlParameter("@StudentId", SqlDbType.Int) { Direction = ParameterDirection.Output };
+                var pError = new SqlParameter("@ErrorMessage", SqlDbType.NVarChar, -1) { Direction = ParameterDirection.Output };
+
+                cmd.Parameters.Add(pUserId);
+                cmd.Parameters.Add(pStudentId);
+                cmd.Parameters.Add(pError);
+
+                await connection.OpenAsync();
+                await cmd.ExecuteNonQueryAsync();
+
+                string errorMessage = pError.Value?.ToString();
+                if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    return Json(new { success = false, message = errorMessage });
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    message = "Student created successfully",
+                    studentId = pStudentId.Value,
+                    userId = pUserId.Value
+                });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error: " + ex.InnerException?.Message ?? ex.Message });
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
 
         [HttpPost]
-        public IActionResult UpdateStudent([FromBody] UpdateStudentRequest request)
+        public async Task<IActionResult> UpdateStudent([FromBody] UpdateStudentRequest request)
         {
             try
             {
-                // Check if student belongs to branch manager's branch
-                var student = _context.Students.Find(request.StudentId);
-                if (student == null)
-                    return Json(new { success = false, message = "Student not found" });
+                using var connection = new SqlConnection(_connectionString);
+                using var cmd = new SqlCommand("sp_BranchManager_UpdateStudent", connection);
+                cmd.CommandType = CommandType.StoredProcedure;
 
-                // Get branchId from session/route
-                var branchId = HttpContext.Session.GetInt32("BranchId") ?? 0;
-                if (student.BranchId != branchId)
-                    return Json(new { success = false, message = "Unauthorized: Student not in your branch" });
+                cmd.Parameters.AddWithValue("@StudentId", request.StudentId);
+                cmd.Parameters.AddWithValue("@FullName", request.FullName);
+                cmd.Parameters.AddWithValue("@Email", request.Email);
+                cmd.Parameters.AddWithValue("@TrackId", request.TrackId);
+                cmd.Parameters.AddWithValue("@IntakeNumber", request.IntakeNumber);
 
-                // Update using EF (simpler than SP for updates)
-                var dbStudent = _context.Students
-                    .Include(s => s.User)
-                    .FirstOrDefault(s => s.StudentId == request.StudentId);
+                var pSuccess = new SqlParameter("@Success", SqlDbType.Bit) { Direction = ParameterDirection.Output };
+                var pError = new SqlParameter("@ErrorMessage", SqlDbType.NVarChar, -1) { Direction = ParameterDirection.Output };
 
-                if (dbStudent != null)
+                cmd.Parameters.Add(pSuccess);
+                cmd.Parameters.Add(pError);
+
+                await connection.OpenAsync();
+                await cmd.ExecuteNonQueryAsync();
+
+                bool success = pSuccess.Value != DBNull.Value && (bool)pSuccess.Value;
+                string errorMessage = pError.Value?.ToString();
+
+                if (!success || !string.IsNullOrEmpty(errorMessage))
                 {
-                    dbStudent.User.UserName = request.FullName;
-                    dbStudent.User.UserEmail = request.Email;
-                    dbStudent.TrackId = request.TrackId;
-                    dbStudent.IntakeNumber = request.IntakeNumber;
-                    _context.SaveChanges();
+                    return Json(new { success = false, message = errorMessage ?? "Update failed" });
                 }
 
                 return Json(new { success = true, message = "Student updated successfully" });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error: " + ex.InnerException?.Message ?? ex.Message });
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
 
         [HttpPost]
-        public IActionResult DeleteStudent(int studentId)
+        public async Task<IActionResult> DeleteStudent(int studentId)
         {
             try
             {
-                // Check if student belongs to branch manager's branch
-                var student = _context.Students.Find(studentId);
-                if (student == null)
-                    return Json(new { success = false, message = "Student not found" });
+                using var connection = new SqlConnection(_connectionString);
+                using var cmd = new SqlCommand("sp_BranchManager_DeleteStudent", connection);
+                cmd.CommandType = CommandType.StoredProcedure;
 
-                // Get branchId from session/route
-                var branchId = HttpContext.Session.GetInt32("BranchId") ?? 0;
-                if (student.BranchId != branchId)
-                    return Json(new { success = false, message = "Unauthorized: Student not in your branch" });
+                cmd.Parameters.AddWithValue("@StudentId", studentId);
 
-                // Use existing sp_Instructor_DeleteStudent
-                _context.Database.ExecuteSqlRaw("EXEC sp_Instructor_DeleteStudent @UserId",
-                    new SqlParameter("@UserId", student.UserId));
+                var pSuccess = new SqlParameter("@Success", SqlDbType.Bit) { Direction = ParameterDirection.Output };
+                var pError = new SqlParameter("@ErrorMessage", SqlDbType.NVarChar, -1) { Direction = ParameterDirection.Output };
+
+                cmd.Parameters.Add(pSuccess);
+                cmd.Parameters.Add(pError);
+
+                await connection.OpenAsync();
+                await cmd.ExecuteNonQueryAsync();
+
+                bool success = pSuccess.Value != DBNull.Value && (bool)pSuccess.Value;
+                string errorMessage = pError.Value?.ToString();
+
+                if (!success || !string.IsNullOrEmpty(errorMessage))
+                {
+                    return Json(new { success = false, message = errorMessage ?? "Delete failed" });
+                }
 
                 return Json(new { success = true, message = "Student deleted successfully" });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error: " + ex.InnerException?.Message ?? ex.Message });
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
 
         // ================= INSTRUCTOR OPERATIONS =================
-
         [HttpPost]
-        public IActionResult AddInstructor([FromBody] InstructorRequest request)
+        public async Task<IActionResult> AddInstructor([FromBody] InstructorRequest request)
         {
             try
             {
@@ -160,216 +360,519 @@ namespace ITIExaminationSystem.Controllers
                     return Json(new { success = false, message = "Passwords do not match" });
                 }
 
-                // Use existing sp_Admin_AddInstructor
-                _context.Database.ExecuteSqlRaw("EXEC sp_Admin_AddInstructor @FullName, @Email, @Password",
-                    new SqlParameter("@FullName", request.FullName),
-                    new SqlParameter("@Email", request.Email),
-                    new SqlParameter("@Password", request.Password)
-                );
+                using var connection = new SqlConnection(_connectionString);
+                using var cmd = new SqlCommand("sp_BranchManager_AddInstructor", connection);
+                cmd.CommandType = CommandType.StoredProcedure;
 
-                return Json(new { success = true, message = "Instructor added successfully" });
+                cmd.Parameters.AddWithValue("@UserName", request.FullName);
+                cmd.Parameters.AddWithValue("@UserEmail", request.Email);
+                cmd.Parameters.AddWithValue("@UserPassword", request.Password);
+
+                var pUserId = new SqlParameter("@UserId", SqlDbType.Int) { Direction = ParameterDirection.Output };
+                var pInstructorId = new SqlParameter("@InstructorId", SqlDbType.Int) { Direction = ParameterDirection.Output };
+                var pError = new SqlParameter("@ErrorMessage", SqlDbType.NVarChar, -1) { Direction = ParameterDirection.Output };
+
+                cmd.Parameters.Add(pUserId);
+                cmd.Parameters.Add(pInstructorId);
+                cmd.Parameters.Add(pError);
+
+                await connection.OpenAsync();
+                await cmd.ExecuteNonQueryAsync();
+
+                string errorMessage = pError.Value?.ToString();
+                if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    return Json(new { success = false, message = errorMessage });
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    message = "Instructor created successfully",
+                    instructorId = pInstructorId.Value,
+                    userId = pUserId.Value
+                });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error: " + ex.InnerException?.Message ?? ex.Message });
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
 
         [HttpPost]
-        public IActionResult UpdateInstructor([FromBody] UpdateInstructorRequest request)
+        public async Task<IActionResult> UpdateInstructor([FromBody] UpdateInstructorRequest request)
         {
             try
             {
-                // Use existing sp_Admin_UpdateInstructor
-                var passwordParam = new SqlParameter("@Password", (object)request.Password ?? DBNull.Value);
+                using var connection = new SqlConnection(_connectionString);
+                using var cmd = new SqlCommand("sp_BranchManager_UpdateInstructor", connection);
+                cmd.CommandType = CommandType.StoredProcedure;
 
-                _context.Database.ExecuteSqlRaw("EXEC sp_Admin_UpdateInstructor @InstructorId, @FullName, @Email, @Password",
-                    new SqlParameter("@InstructorId", request.InstructorId),
-                    new SqlParameter("@FullName", request.FullName),
-                    new SqlParameter("@Email", request.Email),
-                    passwordParam
-                );
+                cmd.Parameters.AddWithValue("@InstructorId", request.InstructorId);
+                cmd.Parameters.AddWithValue("@FullName", request.FullName);
+                cmd.Parameters.AddWithValue("@Email", request.Email);
+                cmd.Parameters.AddWithValue("@Password", (object)request.Password ?? DBNull.Value);
+
+                var pSuccess = new SqlParameter("@Success", SqlDbType.Bit) { Direction = ParameterDirection.Output };
+                var pError = new SqlParameter("@ErrorMessage", SqlDbType.NVarChar, -1) { Direction = ParameterDirection.Output };
+
+                cmd.Parameters.Add(pSuccess);
+                cmd.Parameters.Add(pError);
+
+                await connection.OpenAsync();
+                await cmd.ExecuteNonQueryAsync();
+
+                bool success = pSuccess.Value != DBNull.Value && (bool)pSuccess.Value;
+                string errorMessage = pError.Value?.ToString();
+
+                if (!success || !string.IsNullOrEmpty(errorMessage))
+                {
+                    return Json(new { success = false, message = errorMessage ?? "Update failed" });
+                }
 
                 return Json(new { success = true, message = "Instructor updated successfully" });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error: " + ex.InnerException?.Message ?? ex.Message });
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
 
         [HttpPost]
-        public IActionResult DeleteInstructor(int instructorId)
+        public async Task<IActionResult> DeleteInstructor(int instructorId)
         {
             try
             {
-                // Use existing sp_Admin_DeleteInstructor
-                _context.Database.ExecuteSqlRaw("EXEC sp_Admin_DeleteInstructor @InstructorId",
-                    new SqlParameter("@InstructorId", instructorId));
+                using var connection = new SqlConnection(_connectionString);
+                using var cmd = new SqlCommand("sp_BranchManager_DeleteInstructor", connection);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@InstructorId", instructorId);
+
+                var pSuccess = new SqlParameter("@Success", SqlDbType.Bit) { Direction = ParameterDirection.Output };
+                var pError = new SqlParameter("@ErrorMessage", SqlDbType.NVarChar, -1) { Direction = ParameterDirection.Output };
+
+                cmd.Parameters.Add(pSuccess);
+                cmd.Parameters.Add(pError);
+
+                await connection.OpenAsync();
+                await cmd.ExecuteNonQueryAsync();
+
+                bool success = pSuccess.Value != DBNull.Value && (bool)pSuccess.Value;
+                string errorMessage = pError.Value?.ToString();
+
+                if (!success || !string.IsNullOrEmpty(errorMessage))
+                {
+                    return Json(new { success = false, message = errorMessage ?? "Delete failed" });
+                }
 
                 return Json(new { success = true, message = "Instructor deleted successfully" });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error: " + ex.InnerException?.Message ?? ex.Message });
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
 
         // ================= COURSE OPERATIONS =================
-
         [HttpPost]
-        public IActionResult AddCourse([FromBody] CourseRequest request)
+        public async Task<IActionResult> AddCourse([FromBody] CourseRequest request)
         {
             try
             {
-                // Use existing sp_Admin_AddCourse
-                _context.Database.ExecuteSqlRaw("EXEC sp_Admin_AddCourse @CourseName, @TriesLimit",
-                    new SqlParameter("@CourseName", request.CourseName),
-                    new SqlParameter("@TriesLimit", request.TriesLimit ?? 0)
-                );
+                using var connection = new SqlConnection(_connectionString);
+                using var cmd = new SqlCommand("sp_BranchManager_AddCourse", connection);
+                cmd.CommandType = CommandType.StoredProcedure;
 
-                return Json(new { success = true, message = "Course added successfully" });
+                cmd.Parameters.AddWithValue("@CourseName", request.CourseName);
+                cmd.Parameters.AddWithValue("@TriesLimit", request.TriesLimit ?? 3);
+                cmd.Parameters.AddWithValue("@Duration", request.Duration ?? 40);
+
+                var pCourseId = new SqlParameter("@CourseId", SqlDbType.Int) { Direction = ParameterDirection.Output };
+                var pError = new SqlParameter("@ErrorMessage", SqlDbType.NVarChar, -1) { Direction = ParameterDirection.Output };
+
+                cmd.Parameters.Add(pCourseId);
+                cmd.Parameters.Add(pError);
+
+                await connection.OpenAsync();
+                await cmd.ExecuteNonQueryAsync();
+
+                string errorMessage = pError.Value?.ToString();
+                if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    return Json(new { success = false, message = errorMessage });
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    message = "Course created successfully",
+                    courseId = pCourseId.Value
+                });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error: " + ex.Message });
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
 
         [HttpPost]
-        public IActionResult UpdateCourse([FromBody] UpdateCourseRequest request)
+        public async Task<IActionResult> UpdateCourse([FromBody] UpdateCourseRequest request)
         {
             try
             {
-                // Use existing sp_Admin_UpdateCourse
-                _context.Database.ExecuteSqlRaw("EXEC sp_Admin_UpdateCourse @CourseId, @CourseName, @TriesLimit",
-                    new SqlParameter("@CourseId", request.CourseId),
-                    new SqlParameter("@CourseName", request.CourseName),
-                    new SqlParameter("@TriesLimit", request.TriesLimit ?? 0)
-                );
+                using var connection = new SqlConnection(_connectionString);
+                using var cmd = new SqlCommand("sp_BranchManager_UpdateCourse", connection);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@CourseId", request.CourseId);
+                cmd.Parameters.AddWithValue("@CourseName", request.CourseName);
+                cmd.Parameters.AddWithValue("@TriesLimit", request.TriesLimit ?? 3);
+                cmd.Parameters.AddWithValue("@Duration", request.Duration ?? 40);
+
+                var pSuccess = new SqlParameter("@Success", SqlDbType.Bit) { Direction = ParameterDirection.Output };
+                var pError = new SqlParameter("@ErrorMessage", SqlDbType.NVarChar, -1) { Direction = ParameterDirection.Output };
+
+                cmd.Parameters.Add(pSuccess);
+                cmd.Parameters.Add(pError);
+
+                await connection.OpenAsync();
+                await cmd.ExecuteNonQueryAsync();
+
+                bool success = pSuccess.Value != DBNull.Value && (bool)pSuccess.Value;
+                string errorMessage = pError.Value?.ToString();
+
+                if (!success || !string.IsNullOrEmpty(errorMessage))
+                {
+                    return Json(new { success = false, message = errorMessage ?? "Update failed" });
+                }
 
                 return Json(new { success = true, message = "Course updated successfully" });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error: " + ex.Message });
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
 
         [HttpPost]
-        public IActionResult DeleteCourse(int courseId)
+        public async Task<IActionResult> DeleteCourse(int courseId)
         {
             try
             {
-                // Use existing sp_Admin_DeleteCourse
-                _context.Database.ExecuteSqlRaw("EXEC sp_Admin_DeleteCourse @CourseId",
-                    new SqlParameter("@CourseId", courseId));
+                using var connection = new SqlConnection(_connectionString);
+                using var cmd = new SqlCommand("sp_BranchManager_DeleteCourse", connection);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@CourseId", courseId);
+
+                var pSuccess = new SqlParameter("@Success", SqlDbType.Bit) { Direction = ParameterDirection.Output };
+                var pError = new SqlParameter("@ErrorMessage", SqlDbType.NVarChar, -1) { Direction = ParameterDirection.Output };
+
+                cmd.Parameters.Add(pSuccess);
+                cmd.Parameters.Add(pError);
+
+                await connection.OpenAsync();
+                await cmd.ExecuteNonQueryAsync();
+
+                bool success = pSuccess.Value != DBNull.Value && (bool)pSuccess.Value;
+                string errorMessage = pError.Value?.ToString();
+
+                if (!success || !string.IsNullOrEmpty(errorMessage))
+                {
+                    return Json(new { success = false, message = errorMessage ?? "Delete failed" });
+                }
 
                 return Json(new { success = true, message = "Course deleted successfully" });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error: " + ex.Message });
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
 
-        // ================= BRANCH OPERATIONS =================
-
+        // ================= ASSIGN COURSE TO TRACK =================
         [HttpPost]
-        public IActionResult UpdateBranch([FromBody] UpdateBranchRequest request)
+        public async Task<IActionResult> AssignCourseToTrack(int trackId, int courseId)
         {
             try
             {
-                // Get branchId from session/route
-                var branchId = HttpContext.Session.GetInt32("BranchId") ?? 0;
+                using var connection = new SqlConnection(_connectionString);
+                using var cmd = new SqlCommand("sp_BranchManager_AssignCourseToTrack", connection);
+                cmd.CommandType = CommandType.StoredProcedure;
 
-                // Check if branch manager is trying to update their own branch
-                if (request.BranchId != branchId)
-                    return Json(new { success = false, message = "Unauthorized: Can only update your own branch" });
+                cmd.Parameters.AddWithValue("@TrackId", trackId);
+                cmd.Parameters.AddWithValue("@CourseId", courseId);
 
-                // Use existing sp_Admin_UpdateBranch
-                _context.Database.ExecuteSqlRaw("EXEC sp_Admin_UpdateBranch @BranchId, @BranchName, @BranchLocation",
-                    new SqlParameter("@BranchId", request.BranchId),
-                    new SqlParameter("@BranchName", request.BranchName),
-                    new SqlParameter("@BranchLocation", request.BranchLocation)
-                );
+                var pSuccess = new SqlParameter("@Success", SqlDbType.Bit) { Direction = ParameterDirection.Output };
+                var pError = new SqlParameter("@ErrorMessage", SqlDbType.NVarChar, -1) { Direction = ParameterDirection.Output };
 
-                return Json(new { success = true, message = "Branch updated successfully" });
+                cmd.Parameters.Add(pSuccess);
+                cmd.Parameters.Add(pError);
+
+                await connection.OpenAsync();
+                await cmd.ExecuteNonQueryAsync();
+
+                bool success = pSuccess.Value != DBNull.Value && (bool)pSuccess.Value;
+                string errorMessage = pError.Value?.ToString();
+
+                if (!success || !string.IsNullOrEmpty(errorMessage))
+                {
+                    return Json(new { success = false, message = errorMessage ?? "Assignment failed" });
+                }
+
+                return Json(new { success = true, message = "Course assigned to track successfully" });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error: " + ex.Message });
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
-
-        // Note: Branch Manager cannot add/delete branches
-
         // ================= TRACK OPERATIONS =================
 
         [HttpPost]
-        public IActionResult AddTrack([FromBody] TrackRequest request)
+        public async Task<IActionResult> AddTrack([FromBody] TrackRequest request)
         {
             try
             {
-                // Use existing sp_Admin_AddTrack
-                _context.Database.ExecuteSqlRaw("EXEC sp_Admin_AddTrack @TrackName",
-                    new SqlParameter("@TrackName", request.TrackName)
-                );
+                // Validate input
+                if (string.IsNullOrWhiteSpace(request.TrackName))
+                {
+                    return Json(new { success = false, message = "Track name is required" });
+                }
 
-                return Json(new { success = true, message = "Track added successfully" });
+                // Get branchId from the request
+                int branchId = request.BranchId ?? 0;
+
+                if (branchId == 0)
+                {
+                    return Json(new { success = false, message = "Branch ID is required" });
+                }
+
+                using var connection = new SqlConnection(_connectionString);
+                using var cmd = new SqlCommand("sp_BranchManager_AddTrack", connection);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@TrackName", request.TrackName);
+                cmd.Parameters.AddWithValue("@BranchId", branchId);
+
+                var pTrackId = new SqlParameter("@TrackId", SqlDbType.Int)
+                {
+                    Direction = ParameterDirection.Output
+                };
+                var pError = new SqlParameter("@ErrorMessage", SqlDbType.NVarChar, -1)
+                {
+                    Direction = ParameterDirection.Output
+                };
+
+                cmd.Parameters.Add(pTrackId);
+                cmd.Parameters.Add(pError);
+
+                await connection.OpenAsync();
+                await cmd.ExecuteNonQueryAsync();
+
+                string errorMessage = pError.Value?.ToString();
+                if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    return Json(new { success = false, message = errorMessage });
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    message = "Track created successfully",
+                    trackId = pTrackId.Value
+                });
+            }
+            catch (SqlException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"SQL Error in AddTrack: {ex.Message}");
+                return Json(new { success = false, message = $"Database error: {ex.Message}" });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error: " + ex.Message });
+                System.Diagnostics.Debug.WriteLine($"Error in AddTrack: {ex.Message}");
+                return Json(new { success = false, message = ex.Message });
             }
         }
 
         [HttpPost]
-        public IActionResult UpdateTrack([FromBody] UpdateTrackRequest request)
+        public async Task<IActionResult> UpdateTrack([FromBody] UpdateTrackRequest request)
         {
             try
             {
-                // Use existing sp_Admin_UpdateTrack
-                _context.Database.ExecuteSqlRaw("EXEC sp_Admin_UpdateTrack @TrackId, @TrackName",
-                    new SqlParameter("@TrackId", request.TrackId),
-                    new SqlParameter("@TrackName", request.TrackName)
-                );
+                if (string.IsNullOrWhiteSpace(request.TrackName))
+                {
+                    return Json(new { success = false, message = "Track name is required" });
+                }
+
+                using var connection = new SqlConnection(_connectionString);
+                using var cmd = new SqlCommand("sp_BranchManager_UpdateTrack", connection);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@TrackId", request.TrackId);
+                cmd.Parameters.AddWithValue("@TrackName", request.TrackName);
+
+                var pSuccess = new SqlParameter("@Success", SqlDbType.Bit) { Direction = ParameterDirection.Output };
+                var pError = new SqlParameter("@ErrorMessage", SqlDbType.NVarChar, -1) { Direction = ParameterDirection.Output };
+
+                cmd.Parameters.Add(pSuccess);
+                cmd.Parameters.Add(pError);
+
+                await connection.OpenAsync();
+                await cmd.ExecuteNonQueryAsync();
+
+                bool success = pSuccess.Value != DBNull.Value && (bool)pSuccess.Value;
+                string errorMessage = pError.Value?.ToString();
+
+                if (!success || !string.IsNullOrEmpty(errorMessage))
+                {
+                    return Json(new { success = false, message = errorMessage ?? "Update failed" });
+                }
 
                 return Json(new { success = true, message = "Track updated successfully" });
             }
+            catch (SqlException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"SQL Error in UpdateTrack: {ex.Message}");
+                return Json(new { success = false, message = $"Database error: {ex.Message}" });
+            }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error: " + ex.Message });
+                System.Diagnostics.Debug.WriteLine($"Error in UpdateTrack: {ex.Message}");
+                return Json(new { success = false, message = ex.Message });
             }
         }
 
         [HttpPost]
-        public IActionResult DeleteTrack(int trackId)
+        public async Task<IActionResult> DeleteTrack(int trackId)
         {
             try
             {
-                // Check if track has students
-                var hasStudents = _context.Students.Any(s => s.TrackId == trackId);
-                if (hasStudents)
-                    return Json(new { success = false, message = "Cannot delete track that has students" });
+                if (trackId <= 0)
+                {
+                    return Json(new { success = false, message = "Invalid track ID" });
+                }
 
-                // Use existing sp_Admin_DeleteTrack
-                _context.Database.ExecuteSqlRaw("EXEC sp_Admin_DeleteTrack @TrackId",
-                    new SqlParameter("@TrackId", trackId));
+                using var connection = new SqlConnection(_connectionString);
+                using var cmd = new SqlCommand("sp_BranchManager_DeleteTrack", connection);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@TrackId", trackId);
+
+                var pSuccess = new SqlParameter("@Success", SqlDbType.Bit) { Direction = ParameterDirection.Output };
+                var pError = new SqlParameter("@ErrorMessage", SqlDbType.NVarChar, -1) { Direction = ParameterDirection.Output };
+
+                cmd.Parameters.Add(pSuccess);
+                cmd.Parameters.Add(pError);
+
+                await connection.OpenAsync();
+                await cmd.ExecuteNonQueryAsync();
+
+                bool success = pSuccess.Value != DBNull.Value && (bool)pSuccess.Value;
+                string errorMessage = pError.Value?.ToString();
+
+                if (!success || !string.IsNullOrEmpty(errorMessage))
+                {
+                    return Json(new { success = false, message = errorMessage ?? "Delete failed" });
+                }
 
                 return Json(new { success = true, message = "Track deleted successfully" });
             }
+            catch (SqlException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"SQL Error in DeleteTrack: {ex.Message}");
+                return Json(new { success = false, message = $"Database error: {ex.Message}" });
+            }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error: " + ex.Message });
+                System.Diagnostics.Debug.WriteLine($"Error in DeleteTrack: {ex.Message}");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RemoveCourseFromTrack(int trackId, int courseId)
+        {
+            try
+            {
+                using var connection = new SqlConnection(_connectionString);
+                using var cmd = new SqlCommand("sp_BranchManager_RemoveCourseFromTrack", connection);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@TrackId", trackId);
+                cmd.Parameters.AddWithValue("@CourseId", courseId);
+
+                var pSuccess = new SqlParameter("@Success", SqlDbType.Bit) { Direction = ParameterDirection.Output };
+                var pError = new SqlParameter("@ErrorMessage", SqlDbType.NVarChar, -1) { Direction = ParameterDirection.Output };
+
+                cmd.Parameters.Add(pSuccess);
+                cmd.Parameters.Add(pError);
+
+                await connection.OpenAsync();
+                await cmd.ExecuteNonQueryAsync();
+
+                bool success = pSuccess.Value != DBNull.Value && (bool)pSuccess.Value;
+                string errorMessage = pError.Value?.ToString();
+
+                if (!success || !string.IsNullOrEmpty(errorMessage))
+                {
+                    return Json(new { success = false, message = errorMessage ?? "Remove failed" });
+                }
+
+                return Json(new { success = true, message = "Course removed from track successfully" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
     }
+
+    // ================= VIEW MODEL CLASSES =================
+    public class StudentViewModel
+    {
+        public int StudentId { get; set; }
+        public int TrackId { get; set; }
+        public int BranchId { get; set; }
+        public int UserId { get; set; }
+        public string UserName { get; set; }
+        public string UserEmail { get; set; }
+        public int IntakeNumber { get; set; }
+        public string TrackName { get; set; }
+        public string BranchName { get; set; }
+    }
+
+    public class InstructorViewModel
+    {
+        public int InstructorId { get; set; }
+        public int UserId { get; set; }
+        public string UserName { get; set; }
+        public string UserEmail { get; set; }
+    }
+
+    public class TrackViewModel
+    {
+        public int TrackId { get; set; }
+        public string TrackName { get; set; }
+        public int StudentCount { get; set; }
+    }
+
+    // ================= REQUEST DTO CLASSES =================
+
+
+
+
+  
+
+
+
+    public class CourseRequest
+    {
+        public string CourseName { get; set; }
+        public int? TriesLimit { get; set; }
+        public int? Duration { get; set; }
+    }
+
+   
 }
-
-
-
-
-
-
-

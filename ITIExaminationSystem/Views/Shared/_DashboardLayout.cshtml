@@ -1,0 +1,65 @@
+@{
+    var userRole = ViewBag.UserRole ?? "Instructor"; // Default to Instructor if not set
+    var pageTitle = ViewBag.Title ?? "Dashboard";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ITI @userRole - @pageTitle</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="icon" type="image/png" href="/images/Gemini_Generated_Image_vi5243vi5243vi52.png">
+    <link href="/css/shared.css" rel="stylesheet" />
+    @RenderSection("Styles", required: false)
+</head>
+<body>
+    <div id="dashboard-view">
+        <div class="bg-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+        </div>
+
+        <!-- ========== HEADER ========== -->
+        <header class="admin-header">
+            <div class="header-left">
+                <div class="nav-logo-box"></div>
+                <span class="header-title">@userRole Portal</span>
+            </div>
+            <nav class="nav-links">
+                @if (userRole == "Admin")
+                {
+                    <!-- Admin Navigation (Tab Switchers) -->
+                    <button id="btn-students" class="nav-link" onclick="switchTab('students', this)">Students</button>
+                    <button id="btn-instructors" class="nav-link" onclick="switchTab('instructors', this)">Instructors</button>
+                    <button id="btn-courses" class="nav-link" onclick="switchTab('courses', this)">Courses</button>
+                    <button id="btn-branches" class="nav-link" onclick="switchTab('branches', this)">Branches</button>
+                    <button id="btn-tracks" class="nav-link" onclick="switchTab('tracks', this)">Tracks</button>
+                    <a style="text-decoration: none;" href="/Question/Index" class="nav-link @(pageTitle == "Questions" ? "active" : "")">Questions</a>
+                }
+                else
+                {
+                    <!-- Instructor Navigation (Links) -->
+                    <a style="text-decoration: none;" href="/Instructor/insDiplayStudents" class="nav-link @(pageTitle == "Students" ? "active" : "")">Students</a>
+                    <a style="text-decoration: none;" href="/Instructor/Courses" class="nav-link @(pageTitle == "Courses" ? "active" : "")">Courses</a>
+                    <a style="text-decoration: none;" href="/Instructor/Exams" class="nav-link @(pageTitle == "Exams" ? "active" : "")">Exams</a>
+                    <a style="text-decoration: none;" href="/Question/Index" class="nav-link @(pageTitle == "Questions" ? "active" : "")">Questions</a>
+                }
+            </nav>
+            <a style="text-decoration: none;" href="/Home/LoginPage" id="logoutBtn" class="nav-link logout-btn">Logout</a>
+        </header>
+
+        <!-- ========== MAIN CONTENT ========== -->
+        <main class="main-content">
+            @RenderBody()
+        </main>
+    </div>
+
+    <!-- ========== SCRIPTS ========== -->
+    <script src="~/js/shared.js"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

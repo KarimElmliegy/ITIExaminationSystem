@@ -1,7 +1,10 @@
 ﻿// ==========================================
-// GLOBAL STATE & CONFIGURATION
+// INSTRUCTOR DASHBOARD - INSTRUCTOR-SPECIFIC FUNCTIONALITY
+// Common modal functions moved to shared.js
 // ==========================================
-let currentModal = null;
+
+// Note: openModal, closeModal, createRippleEffect are now in shared.js
+
 let currentlyEditingRow = null;
 
 // DOM Elements
@@ -23,16 +26,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Setup table actions using event delegation
     setupTableActions();
 
-
-
-    // Add ripple effects to buttons
-    document.querySelectorAll('button:not(.btn-delete), .action-btn:not(.btn-delete)').forEach(button => {
-        button.addEventListener('click', function (e) {
-            createRippleEffect(this, e);
-        });
-    });
-
-    // Close modal on overlay click
+    // Close modal on overlay click (instructor-specific delete modals)
     if (modalOverlay) {
         modalOverlay.addEventListener('click', function (e) {
             if (e.target === this) {
@@ -49,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Close modal on Escape key
+    // Close modal on Escape key (instructor-specific delete modals)
     document.addEventListener('keydown', function (e) {
         if (e.key !== 'Escape') return;
 
@@ -110,7 +104,7 @@ function setupTableActions() {
             return;
         }
 
-        // ✅ Handle edit buttons for courses
+        // Handle edit buttons for courses
         const editBtn = e.target.closest('.btn-edit');
         if (editBtn && editBtn.hasAttribute('data-course-id')) {
             e.preventDefault();
@@ -124,7 +118,6 @@ function setupTableActions() {
 
             console.log('Edit Course:', { courseId, courseName, instName, instEmail, duration });
 
-            // ✅ Call the separate edit modal function
             openEditCourseModal(courseId, courseName, duration);
             return;
         }
@@ -164,81 +157,7 @@ if (logoutBtn) {
 }
 
 // ==========================================
-// MODAL MANAGEMENT
-// ==========================================
-function openModal(type) {
-    const modalId = `modal-${type}`;
-    currentModal = modalId;
-
-    const overlay = document.getElementById('modal-overlay');
-    const modal = document.getElementById(modalId);
-
-    if (!overlay || !modal) return;
-
-    document.body.classList.add('modal-open');
-    overlay.classList.remove('hidden');
-
-    // Reset form for ADD operations
-    const form = modal.querySelector('form');
-    if (form) form.reset();
-
-    setTimeout(() => {
-        modal.classList.remove('hidden');
-        modal.classList.add('step-enter');
-
-        const firstInput = modal.querySelector('input:not([type="hidden"]), select, textarea');
-        if (firstInput) firstInput.focus();
-    }, 50);
-
-    // Set proper title for add modals
-    const titleEl = modal.querySelector(".modal-title");
-    if (titleEl && type === 'course') {
-        titleEl.innerText = "Add New Course";
-    }
-
-    const submitBtn = modal.querySelector("button[type='submit']");
-    if (submitBtn && type === 'course') {
-        submitBtn.innerText = "Save Course";
-    }
-}
-
-function closeModal() {
-    if (!currentModal && !modalOverlay) return;
-
-    document.body.classList.remove('modal-open');
-    const overlay = document.getElementById('modal-overlay');
-    const modal = currentModal ? document.getElementById(currentModal) : null;
-
-    if (modal) {
-        modal.classList.add('step-exit');
-        setTimeout(() => {
-            modal.classList.add('hidden');
-            modal.classList.remove('step-enter', 'step-exit');
-            overlay.classList.add('hidden');
-            currentModal = null;
-            currentlyEditingRow = null;
-
-            // Reset all forms
-            document.querySelectorAll("form").forEach((f) => f.reset());
-        }, 400);
-    } else {
-        overlay.classList.add('hidden');
-        document.querySelectorAll('.modal-box').forEach(modal => {
-            modal.classList.add('hidden');
-            modal.classList.remove('step-enter', 'step-exit');
-        });
-    }
-
-    const step1 = document.getElementById('step-1');
-    const step2 = document.getElementById('step-2');
-    if (step1 && step2) {
-        step1.classList.remove('hidden');
-        step2.classList.add('hidden');
-    }
-}
-
-// ==========================================
-// ✅ OPEN EDIT COURSE MODAL
+// OPEN EDIT COURSE MODAL
 // ==========================================
 function openEditCourseModal(courseId, courseName, duration) {
     document.getElementById('edit-course-id').value = courseId;
@@ -255,9 +174,8 @@ function openEditCourseModal(courseId, courseName, duration) {
     modal.classList.remove('hidden');
 }
 
-
 // ==========================================
-// ✅ HANDLE EDIT COURSE FORM SUBMISSION
+// HANDLE EDIT COURSE FORM SUBMISSION
 // ==========================================
 function handleEditCourse(event) {
     event.preventDefault();
@@ -293,17 +211,23 @@ function handleEditCourse(event) {
         });
 }
 
-
 // ==========================================
-// ✅ HANDLE ADD COURSE FORM SUBMISSION
+// HANDLE ADD COURSE FORM SUBMISSION
 // ==========================================
 function handleAddCourse(event) {
     event.preventDefault();
 
+    const courseName = document.getElementById('inp-course-name').value;
+    const duration = document.getElementById('inp-course-dur').value;
+
+    if (!courseName || !duration) {
+        alert("Please fill in all fields");
+        return;
+    }
+
     const payload = {
-        CourseId: null,
-        CourseName: document.getElementById('inp-course-name').value,
-        Duration: parseInt(document.getElementById('inp-course-dur').value)
+        CourseName: courseName,
+        Duration: Number(duration)
     };
 
     fetch('/Instructor/AddCourse', {
@@ -313,45 +237,15 @@ function handleAddCourse(event) {
         },
         body: JSON.stringify(payload)
     })
-        .then(res => {
-            if (!res.ok) throw new Error();
+        .then(r => r.text())
+        .then(msg => {
             closeModal();
             window.location.reload();
         })
-        .catch(() => alert('Failed to save course'));
-}
-
-
-// ==========================================
-// EDIT STUDENT MODAL
-// ==========================================
-function openEditStudentModal(userId, userName, userEmail, branchId, trackId, intakeNumber) {
-    const decodeHTML = (html) => {
-        const txt = document.createElement('textarea');
-        txt.innerHTML = html;
-        return txt.value;
-    };
-
-    document.getElementById('edit-stud-id').value = userId;
-    document.getElementById('edit-stud-name').value = decodeHTML(userName || '');
-    document.getElementById('edit-stud-email').value = decodeHTML(userEmail || '');
-    document.getElementById('edit-stud-branch').value = branchId || '';
-    document.getElementById('edit-stud-track').value = trackId || '';
-    document.getElementById('edit-stud-intake').value = intakeNumber || '';
-
-    document.body.classList.add('modal-open');
-
-    if (modalOverlay) {
-        modalOverlay.classList.remove('hidden');
-    }
-
-    document.querySelectorAll('.modal-box').forEach(modal => modal.classList.add('hidden'));
-
-    const editModal = document.getElementById('modal-edit-student');
-    if (editModal) {
-        editModal.classList.remove('hidden');
-        currentModal = 'modal-edit-student';
-    }
+        .catch(err => {
+            console.error(err);
+            alert("Failed to add course");
+        });
 }
 
 // ==========================================
@@ -360,9 +254,12 @@ function openEditStudentModal(userId, userName, userEmail, branchId, trackId, in
 function openDeleteModal(userId, userName, userEmail) {
     createDeleteModal();
 
-    document.getElementById('delete-stud-id').value = userId;
-    const nameEl = document.getElementById('delete-student-name');
-    if (nameEl) nameEl.textContent = userName || 'Unknown Student';
+    document.getElementById('delete-user-id').value = userId;
+    const nameEl = document.getElementById('delete-user-name');
+    const emailEl = document.getElementById('delete-user-email');
+
+    if (nameEl) nameEl.textContent = userName || 'Unknown User';
+    if (emailEl) emailEl.textContent = userEmail || '';
 
     currentModal = 'modal-delete-student';
     document.body.classList.add('modal-open');
@@ -384,36 +281,33 @@ function openDeleteModal(userId, userName, userEmail) {
 }
 
 function createDeleteModal() {
-    const overlay = document.getElementById('modal-overlay');
-    const existing = document.getElementById('modal-delete-student');
-    if (existing) existing.remove();
+    if (document.getElementById('modal-delete-student')) return;
 
-    const deleteModal = document.createElement('div');
-    deleteModal.id = 'modal-delete-student';
-    deleteModal.className = 'modal-box hidden delete-modal-container';
-
-    deleteModal.innerHTML = `
-        <div class="icon-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                <line x1="12" y1="9" x2="12" y2="13"></line>
-                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-            </svg>
-        </div>
-        <h2>Delete Student</h2>
-        <p class="confirm-text">Are you sure you want to delete this student?</p>
-        <span id="delete-student-name" class="target-text">Loading...</span>
-        <p class="warning-details">
-            This action cannot be undone. All student data, including grades and course enrollments, will be permanently deleted.
-        </p>
-        <input type="hidden" id="delete-stud-id" />
-        <div class="button-row">
-            <button type="button" class="btn-cancel" onclick="cancelDelete()">Cancel</button>
-            <button type="button" class="btn-delete-red" onclick="performDeleteStudent()">Delete Student</button>
+    const modalHTML = `
+        <div id="modal-delete-student" class="modal-box delete-modal-container hidden" style="transition: all 0.3s ease;">
+            <div class="icon-box">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+            </div>
+            <h2>Delete Student</h2>
+            <p class="confirm-text">Are you sure you want to delete this student?</p>
+            <span class="target-text" id="delete-user-name">Student Name</span>
+            <p class="warning-details">This action cannot be undone. This will permanently delete the student account and remove all associated data from the system.</p>
+            <input type="hidden" id="delete-user-id" />
+            <div class="button-row">
+                <button type="button" class="btn-cancel" onclick="cancelDelete()">Cancel</button>
+                <button type="button" class="btn-delete-red" onclick="performDelete()">Delete Student</button>
+            </div>
         </div>
     `;
 
-    overlay.appendChild(deleteModal);
+    const overlay = document.getElementById('modal-overlay');
+    if (overlay) {
+        overlay.insertAdjacentHTML('afterend', modalHTML);
+    }
 }
 
 function cancelDelete() {
@@ -422,40 +316,26 @@ function cancelDelete() {
 
     if (modal) {
         modal.style.opacity = '0';
-        modal.style.transform = 'translateY(20px) scale(0.95)';
-        modal.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
-        overlay.style.opacity = '0';
-        overlay.style.backdropFilter = 'blur(0px)';
-
+        modal.style.transform = 'scale(0.95)';
         setTimeout(() => {
-            modal.remove();
+            modal.classList.add('hidden');
             overlay.classList.add('hidden');
             document.body.classList.remove('modal-open');
             currentModal = null;
-
-            overlay.style.opacity = '';
-            overlay.style.backdropFilter = '';
-            overlay.style.transition = '';
-        }, 400);
+        }, 300);
     }
 }
 
-function performDeleteStudent() {
-    const userId = document.getElementById('delete-stud-id').value;
+function performDelete() {
+    const userId = document.getElementById('delete-user-id').value;
     const deleteBtn = document.querySelector('#modal-delete-student .btn-delete-red');
 
-    if (!deleteBtn) {
-        console.error("Delete button not found.");
-        return;
-    }
+    if (!deleteBtn) return;
 
     const originalContent = deleteBtn.innerHTML;
-    const modal = document.getElementById('modal-delete-student');
 
     if (!userId) {
-        modal.style.animation = 'errorShake 0.5s ease';
-        setTimeout(() => modal.style.animation = '', 500);
-        alert('Invalid student ID');
+        alert('Invalid user ID');
         return;
     }
 
@@ -463,53 +343,36 @@ function performDeleteStudent() {
     deleteBtn.disabled = true;
     deleteBtn.innerHTML = `<div class="spinner" style="display:inline-block; width:16px; height:16px; border:2px solid white; border-top-color:transparent; border-radius:50%; animation:spin 1s linear infinite;"></div> Deleting...`;
 
-    fetch(`/Instructor/DeleteStudent?userId=${userId}`, {
+    fetch(`/Instructor/DeleteStudent?studentId=${userId}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
         }
     })
-    .then(response => {
-        if (response.ok) return response.text();
-        throw new Error('Failed to delete student');
-    })
-    .then(text => {
-        if (text === "Student deleted successfully") {
-            deleteBtn.classList.remove('loading');
-            deleteBtn.innerHTML = `<span>Deleted!</span>`;
-            deleteBtn.style.background = '#10b981';
-
-            const row = document.querySelector(`tr[data-user-id="${userId}"]`);
-            if (row) {
-                row.style.transition = 'all 0.5s ease';
-                row.style.opacity = '0';
-                row.style.transform = 'translateX(-50px)';
-
-                setTimeout(() => {
-                    row.remove();
-                    const statEl = document.getElementById('stat-students');
-                    if (statEl) statEl.innerText = parseInt(statEl.innerText) - 1;
-                    setTimeout(() => cancelDelete(), 300);
-                }, 500);
-            } else {
-                setTimeout(() => cancelDelete(), 1000);
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(text || 'Failed to delete student');
+                });
             }
-        } else {
-            throw new Error('Failed to delete student');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        deleteBtn.classList.remove('loading');
-        deleteBtn.disabled = false;
-        deleteBtn.innerHTML = originalContent;
-        alert('Deletion Failed: It seems this student has related data (answers/grades).');
-    });
+            return response.text();
+        })
+        .then(result => {
+            cancelDelete();
+            window.location.reload();
+        })
+        .catch(error => {
+            console.error('Delete error:', error);
+            alert('Error: ' + error.message);
+            deleteBtn.classList.remove('loading');
+            deleteBtn.disabled = false;
+            deleteBtn.innerHTML = originalContent;
+        });
 }
 
 // ==========================================
-// COURSE DELETE FUNCTIONS
+// DELETE COURSE MODAL FUNCTIONS
 // ==========================================
 function openDeleteCourseModal(courseId, courseName) {
     createDeleteCourseModal();
@@ -538,36 +401,33 @@ function openDeleteCourseModal(courseId, courseName) {
 }
 
 function createDeleteCourseModal() {
-    const overlay = document.getElementById('modal-overlay');
-    const existing = document.getElementById('modal-delete-course');
-    if (existing) existing.remove();
+    if (document.getElementById('modal-delete-course')) return;
 
-    const deleteModal = document.createElement('div');
-    deleteModal.id = 'modal-delete-course';
-    deleteModal.className = 'modal-box hidden delete-modal-container';
-
-    deleteModal.innerHTML = `
-        <div class="icon-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                <line x1="12" y1="9" x2="12" y2="13"></line>
-                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-            </svg>
-        </div>
-        <h2>Delete Course</h2>
-        <p class="confirm-text">Are you sure you want to delete this course?</p>
-        <span id="delete-course-name" class="target-text">Loading...</span>
-        <p class="warning-details">
-            This action cannot be undone. All course data, including questions and student answers, will be permanently deleted.
-        </p>
-        <input type="hidden" id="delete-course-id" />
-        <div class="button-row">
-            <button type="button" class="btn-cancel" onclick="cancelDeleteCourse()">Cancel</button>
-            <button type="button" class="btn-delete-red" onclick="performDeleteCourse()">Delete Course</button>
+    const modalHTML = `
+        <div id="modal-delete-course" class="modal-box delete-modal-container hidden" style="transition: all 0.3s ease;">
+            <div class="icon-box">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+            </div>
+            <h2>Delete Course</h2>
+            <p class="confirm-text">Are you sure you want to delete this course?</p>
+            <span class="target-text" id="delete-course-name">Course Name</span>
+            <p class="warning-details">This action cannot be undone. This will permanently delete the course and remove all associated exams and questions from the system.</p>
+            <input type="hidden" id="delete-course-id" />
+            <div class="button-row">
+                <button type="button" class="btn-cancel" onclick="cancelDeleteCourse()">Cancel</button>
+                <button type="button" class="btn-delete-red" onclick="performDeleteCourse()">Delete Course</button>
+            </div>
         </div>
     `;
 
-    overlay.appendChild(deleteModal);
+    const overlay = document.getElementById('modal-overlay');
+    if (overlay) {
+        overlay.insertAdjacentHTML('afterend', modalHTML);
+    }
 }
 
 function cancelDeleteCourse() {
@@ -576,17 +436,12 @@ function cancelDeleteCourse() {
 
     if (modal) {
         modal.style.opacity = '0';
-        modal.style.transform = 'scale(0.9)';
-        overlay.style.opacity = '0';
-
+        modal.style.transform = 'scale(0.95)';
         setTimeout(() => {
-            modal.remove();
+            modal.classList.add('hidden');
             overlay.classList.add('hidden');
             document.body.classList.remove('modal-open');
             currentModal = null;
-
-            overlay.style.opacity = '';
-            overlay.style.transition = '';
         }, 300);
     }
 }
@@ -615,145 +470,23 @@ function performDeleteCourse() {
             'X-Requested-With': 'XMLHttpRequest'
         }
     })
-    .then(response => {
-        if (response.ok) return response.text();
-        return response.text().then(text => { throw new Error(text) });
-    })
-    .then(text => {
-        if (text === "Course deleted successfully") {
-            const targetRow = document.querySelector(`button[data-course-id="${courseId}"]`)?.closest('tr');
-
-            if (targetRow) {
-                targetRow.style.transition = 'all 0.5s ease';
-                targetRow.style.opacity = '0';
-                setTimeout(() => {
-                    targetRow.remove();
-                    cancelDeleteCourse();
-                    const statEl = document.getElementById('stat-courses');
-                    if (statEl) statEl.innerText = parseInt(statEl.innerText) - 1;
-                }, 500);
-            } else {
-                window.location.reload();
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(text || 'Failed to delete course');
+                });
             }
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        deleteBtn.classList.remove('loading');
-        deleteBtn.disabled = false;
-        deleteBtn.innerHTML = originalContent;
-        alert('Deletion Failed: This course has related data (exams/questions) that cannot be auto-deleted.');
-    });
-}
-
-// ==========================================
-// OTHER UTILITY FUNCTIONS
-// ==========================================
-
-function showStep2() {
-    const step1 = document.getElementById('step-1');
-    const step2 = document.getElementById('step-2');
-
-    const inputs = step1.querySelectorAll('input[required]');
-    let isValid = true;
-
-    inputs.forEach(input => {
-        if (!input.value.trim()) {
-            input.style.borderColor = '#ef4444';
-            input.style.animation = 'shake 0.5s ease';
-            isValid = false;
-
-            setTimeout(() => {
-                input.style.animation = '';
-            }, 500);
-        } else {
-            input.style.borderColor = '#10b981';
-        }
-    });
-
-    if (!isValid) {
-        showNotification('Please fill in all required fields', 'error');
-        return;
-    }
-
-    step1.classList.add('step-exit');
-
-    setTimeout(() => {
-        step1.classList.add('hidden');
-        step2.classList.remove('hidden');
-        step2.classList.add('step-enter');
-
-        const firstInput = step2.querySelector('input');
-        if (firstInput) firstInput.focus();
-    }, 400);
-}
-
-function showStep1() {
-    const step1 = document.getElementById('step-1');
-    const step2 = document.getElementById('step-2');
-
-    step2.classList.add('step-exit');
-
-    setTimeout(() => {
-        step2.classList.add('hidden');
-        step1.classList.remove('hidden');
-        step1.classList.add('step-enter');
-    }, 400);
-}
-
-function showNotification(message, type = 'info') {
-    let container = document.querySelector('.notification-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.className = 'notification-container';
-        document.body.appendChild(container);
-    }
-
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <i data-lucide="${type === 'success' ? 'check-circle' : type === 'error' ? 'alert-circle' : 'info'}"></i>
-            <span>${message}</span>
-        </div>
-        <button onclick="this.parentElement.remove()" style="background: none; border: none; color: white; cursor: pointer; opacity: 0.7; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
-            <i data-lucide="x"></i>
-        </button>
-    `;
-
-    container.appendChild(notification);
-
-    if (window.lucide) {
-        lucide.createIcons();
-    }
-
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateX(100%)';
-        setTimeout(() => notification.remove(), 300);
-    }, 5000);
-}
-
-function createRippleEffect(button, event) {
-    const existingRipples = button.querySelectorAll('.ripple');
-    existingRipples.forEach(ripple => ripple.remove());
-
-    const ripple = document.createElement('span');
-    const rect = button.getBoundingClientRect();
-    const size = Math.max(rect.width, rect.height);
-    const x = event.clientX - rect.left - size / 2;
-    const y = event.clientY - rect.top - size / 2;
-
-    ripple.style.width = ripple.style.height = size + 'px';
-    ripple.style.left = x + 'px';
-    ripple.style.top = y + 'px';
-    ripple.classList.add('ripple');
-
-    button.appendChild(ripple);
-
-    setTimeout(() => {
-        if (ripple.parentNode === button) {
-            ripple.remove();
-        }
-    }, 600);
+            return response.text();
+        })
+        .then(result => {
+            cancelDeleteCourse();
+            window.location.reload();
+        })
+        .catch(error => {
+            console.error('Delete error:', error);
+            alert('Error: ' + error.message);
+            deleteBtn.classList.remove('loading');
+            deleteBtn.disabled = false;
+            deleteBtn.innerHTML = originalContent;
+        });
 }

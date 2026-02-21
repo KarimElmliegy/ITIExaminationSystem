@@ -4,209 +4,72 @@
 @model dynamic
 
 @using ITIExaminationSystem.Models.DTOs.BranchManager
+@using System.Text.Json
+
+@{
+    var branchId = ViewBag.BranchId?.ToString() ?? "0";
+    var branchName = ViewBag.BranchName?.ToString() ?? "";
+
+    // ============ CRITICAL FIX: TRY EVERY POSSIBLE WAY TO GET TRACK COURSES ============
+    List<TrackCourseDto> trackCourses = new List<TrackCourseDto>();
+
+    // Method 1: Try ViewBag
+    if (ViewBag.TrackCourses != null)
+    {
+        try { trackCourses = ViewBag.TrackCourses as List<TrackCourseDto> ?? new List<TrackCourseDto>(); }
+        catch { }
+    }
+
+    // Method 2: Try ViewData
+    if (trackCourses.Count == 0 && ViewData["TrackCourses"] != null)
+    {
+        try { trackCourses = ViewData["TrackCourses"] as List<TrackCourseDto> ?? new List<TrackCourseDto>(); }
+        catch { }
+    }
+
+    // Method 3: Try TempData
+    if (trackCourses.Count == 0 && TempData["TrackCourses"] != null)
+    {
+        try
+        {
+            var json = TempData["TrackCourses"].ToString();
+            if (!string.IsNullOrEmpty(json))
+            {
+                trackCourses = JsonSerializer.Deserialize<List<TrackCourseDto>>(json) ?? new List<TrackCourseDto>();
+            }
+        }
+        catch { }
+    }
+
+    // Method 4: Try HttpContext.Items
+    if (trackCourses.Count == 0 && Context.Items["TrackCourses"] != null)
+    {
+        try { trackCourses = Context.Items["TrackCourses"] as List<TrackCourseDto> ?? new List<TrackCourseDto>(); }
+        catch { }
+    }
+
+    // ============ DEBUG VALUES ============
+    var debugCount = trackCourses.Count;
+    var debugJson = JsonSerializer.Serialize(trackCourses);
+
+    // Cast other collections
+    var students = ViewBag.Students as IEnumerable<dynamic> ?? new List<dynamic>();
+    var instructors = ViewBag.Instructors as IEnumerable<dynamic> ?? new List<dynamic>();
+    var courses = ViewBag.Courses as IEnumerable<dynamic> ?? new List<dynamic>();
+    var tracks = ViewBag.Tracks as IEnumerable<dynamic> ?? new List<dynamic>();
+}
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ITI Admin - Dashboard</title>
+    <title>ITI Branch Manager - Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="icon" type="image/png" href="/images/Gemini_Generated_Image_vi5243vi5243vi52.png">
-    <link href="/css/Admin.css" rel="stylesheet" />
-    <style>
-        /* Carousel specific styles for Admin */
-        .carousel-controls {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 20px;
-            margin: 20px 0;
-        }
-
-        .carousel-btn-circle {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            border: 2px solid #667eea;
-            background: #214F72;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-            .carousel-btn-circle:hover:not(:disabled) {
-                background: #214F72;
-                transform: scale(1.1);
-                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-            }
-
-                .carousel-btn-circle:hover:not(:disabled) svg {
-                    stroke: white;
-                }
-
-            .carousel-btn-circle:disabled {
-                opacity: 0.4;
-                cursor: not-allowed;
-                border-color: #214F72;
-            }
-
-                .carousel-btn-circle:disabled svg {
-                    stroke: #ccc;
-                }
-
-        .carousel-info {
-            min-width: 120px;
-            text-align: center;
-            color: rgba(255, 255, 255, 0.9);
-            font-weight: 600;
-            font-size: 0.95rem;
-        }
-
-        .carousel-indicator {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        /* Carousel Dots */
-        .carousel-dots {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 25px 0;
-            padding: 15px;
-        }
-
-        .carousel-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            cursor: pointer;
-            transition: all 0.3s;
-            padding: 0;
-        }
-
-            .carousel-dot:hover {
-                background: rgba(102, 126, 234, 0.5);
-                transform: scale(1.3);
-            }
-
-            .carousel-dot.active {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                border-color: #667eea;
-                width: 32px;
-                border-radius: 6px;
-                box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-            }
-
-        /* Dark Delete Modal Styles */
-        .delete-modal-container {
-            background-color: #09090b !important;
-            border: 1px solid #27272a !important;
-            border-radius: 24px !important;
-            padding: 40px 32px !important;
-            width: 450px !important;
-            max-width: 90% !important;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9) !important;
-            position: relative;
-        }
-
-            .delete-modal-container .icon-box {
-                margin-bottom: 24px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-            }
-
-                .delete-modal-container .icon-box svg {
-                    width: 56px;
-                    height: 56px;
-                    color: #fbbf24;
-                    fill: rgba(251, 191, 36, 0.1);
-                    stroke-width: 2px;
-                }
-
-            .delete-modal-container h2 {
-                color: #ffffff !important;
-                font-size: 1.5rem !important;
-                font-weight: 700 !important;
-                margin: 0 0 16px 0 !important;
-                letter-spacing: 0.02em;
-            }
-
-            .delete-modal-container .confirm-text {
-                color: #a1a1aa !important;
-                font-size: 0.95rem !important;
-                margin: 0 0 8px 0 !important;
-                font-weight: 400;
-            }
-
-            .delete-modal-container .target-text {
-                color: #ef4444 !important;
-                font-size: 1.1rem !important;
-                font-weight: 700 !important;
-                margin-bottom: 24px !important;
-                display: block;
-            }
-
-            .delete-modal-container .warning-details {
-                color: #71717a !important;
-                font-size: 0.8rem !important;
-                line-height: 1.5 !important;
-                margin-bottom: 32px !important;
-                padding: 0 10px;
-            }
-
-            .delete-modal-container .button-row {
-                display: flex;
-                gap: 12px;
-                width: 100%;
-                justify-content: center;
-            }
-
-            .delete-modal-container .btn-cancel {
-                background-color: #27272a !important;
-                color: #ffffff !important;
-                border: none !important;
-                padding: 10px 24px !important;
-                border-radius: 8px !important;
-                font-weight: 600;
-                font-size: 0.9rem;
-                cursor: pointer;
-                transition: background 0.2s;
-            }
-
-                .delete-modal-container .btn-cancel:hover {
-                    background-color: #3f3f46 !important;
-                }
-
-            .delete-modal-container .btn-delete-red {
-                background-color: #dc2626 !important;
-                color: white !important;
-                border: none !important;
-                padding: 10px 24px !important;
-                border-radius: 8px !important;
-                font-weight: 600;
-                font-size: 0.9rem;
-                cursor: pointer;
-                box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
-                transition: background 0.2s;
-            }
-
-                .delete-modal-container .btn-delete-red:hover {
-                    background-color: #b91c1c !important;
-                }
-    </style>
+    <link href="/css/Branchmanger.css" rel="stylesheet" />
+   
 </head>
 <body>
     <div id="dashboard-view">
@@ -220,13 +83,18 @@
         <header class="admin-header">
             <div class="header-left">
                 <div class="nav-logo-box"></div>
-                <span class="header-title">Branch Manager</span>
+                <div class="header-title-wrapper">
+                    <span class="header-title">Branch Manager Portal</span>
+                    @if (!string.IsNullOrEmpty(branchName))
+                    {
+                        <span class="branch-badge">@branchName</span>
+                    }
+                </div>
             </div>
             <nav class="nav-links">
                 <button id="btn-students" class="nav-link active" onclick="switchTab('students', this)">Students</button>
                 <button id="btn-instructors" class="nav-link" onclick="switchTab('instructors', this)">Instructors</button>
                 <button id="btn-courses" class="nav-link" onclick="switchTab('courses', this)">Courses</button>
-                <button id="btn-branches" class="nav-link" onclick="switchTab('branches', this)">Branches</button>
                 <button id="btn-tracks" class="nav-link" onclick="switchTab('tracks', this)">Tracks</button>
             </nav>
             <a href="/Home/LoginPage" id="logoutBtn" class="nav-link logout-btn">Logout</a>
@@ -258,19 +126,21 @@
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">🏢</div>
+                    <div class="stat-icon">🎯</div>
                     <div class="stat-info">
-                        <h3>Branches</h3>
-                        <p id="stat-branches">@ViewBag.BranchCount</p>
+                        <h3>Tracks</h3>
+                        <p id="stat-tracks">@ViewBag.TrackCount</p>
                     </div>
                 </div>
             </div>
+
+         
 
             <!-- ===== STUDENTS TAB ===== -->
             <div id="tab-students" class="content-tab">
                 <div class="data-panel">
                     <div class="panel-header">
-                        <h2 class="panel-title">👨‍🎓 Student Management</h2>
+                        <h2 class="panel-title">👨‍🎓 Student Management - @branchName</h2>
                         <button class="btn-add" onclick="openModal('student')">+ Add Student</button>
                     </div>
 
@@ -305,29 +175,27 @@
                                         <th>User ID</th>
                                         <th>Name</th>
                                         <th>Email</th>
-                                        <th>Branch</th>
                                         <th>Track</th>
                                         <th>Intake</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="studentsTableBody">
-                                    @foreach (var s in ViewBag.Students)
+                                    @foreach (var s in students)
                                     {
                                         <tr class="carousel-row" data-entity-type="student" data-student-id="@s.StudentId" data-user-id="@s.UserId">
                                             <td>@s.StudentId</td>
                                             <td>@s.UserId</td>
-                                            <td style="font-weight: 600; color: #667eea">@s.User?.UserName</td>
-                                            <td>@s.User?.UserEmail</td>
-                                            <td>@s.Branch?.BranchName</td>
-                                            <td><span class="badge badge-purple">@s.Track?.TrackName</span></td>
+                                            <td style="font-weight: 600; color: #667eea">@s.UserName</td>
+                                            <td>@s.UserEmail</td>
+                                            <td><span class="badge badge-purple">@s.TrackName</span></td>
                                             <td>@s.IntakeNumber</td>
                                             <td>
-                                                <button class="action-btn btn-edit" onclick="openEditStudentModal('@s.StudentId','@s.User?.UserName','@s.User?.UserEmail','@s.BranchId','@s.TrackId','@s.IntakeNumber')">Edit</button>
+                                                <button class="action-btn btn-edit" onclick="openEditStudentModal('@s.StudentId','@s.UserName','@s.UserEmail','@s.TrackId','@s.IntakeNumber')">Edit</button>
                                                 <button class="action-btn btn-delete"
                                                         data-student-id="@s.StudentId"
-                                                        data-user-name="@s.User?.UserName"
-                                                        data-user-email="@s.User?.UserEmail"
+                                                        data-user-name="@s.UserName"
+                                                        data-user-email="@s.UserEmail"
                                                         data-entity-type="student">
                                                     Delete
                                                 </button>
@@ -387,19 +255,19 @@
                                     </tr>
                                 </thead>
                                 <tbody id="instructorsTableBody">
-                                    @foreach (var i in ViewBag.Instructors)
+                                    @foreach (var i in instructors)
                                     {
                                         <tr class="carousel-row" data-entity-type="instructor" data-instructor-id="@i.InstructorId" data-user-id="@i.UserId">
                                             <td>@i.InstructorId</td>
                                             <td>@i.UserId</td>
-                                            <td style="font-weight: 600; color: #667eea">@i.User?.UserName</td>
-                                            <td>@i.User?.UserEmail</td>
+                                            <td style="font-weight: 600; color: #667eea">@i.UserName</td>
+                                            <td>@i.UserEmail</td>
                                             <td>
-                                                <button class="action-btn btn-edit" onclick="openEditInstructorModal('@i.InstructorId','@i.User?.UserName','@i.User?.UserEmail')">Edit</button>
+                                                <button class="action-btn btn-edit" onclick="openEditInstructorModal('@i.InstructorId','@i.UserName','@i.UserEmail')">Edit</button>
                                                 <button class="action-btn btn-delete"
                                                         data-instructor-id="@i.InstructorId"
-                                                        data-user-name="@i.User?.UserName"
-                                                        data-user-email="@i.User?.UserEmail"
+                                                        data-user-name="@i.UserName"
+                                                        data-user-email="@i.UserEmail"
                                                         data-entity-type="instructor">
                                                     Delete
                                                 </button>
@@ -458,12 +326,21 @@
                                     </tr>
                                 </thead>
                                 <tbody id="coursesTableBody">
-                                    @foreach (var c in ViewBag.Courses)
+                                    @foreach (var c in courses)
                                     {
                                         <tr class="carousel-row" data-entity-type="course" data-course-id="@c.CourseId">
                                             <td>@c.CourseId</td>
                                             <td>@c.CourseName</td>
-                                            <td>@(c.TriesLimit != null ? c.TriesLimit.ToString() : "Unlimited")</td>
+                                            <td>
+                                                @if (c.TriesLimit > 0)
+                                                {
+                                                    @c.TriesLimit
+                                                }
+                                                else
+                                                {
+                                                    <span>Unlimited</span>
+                                                }
+                                            </td>
                                             <td>
                                                 <button class="action-btn btn-edit" onclick="openEditCourseModal('@c.CourseId','@c.CourseName','@c.TriesLimit')">Edit</button>
                                                 <button class="action-btn btn-delete"
@@ -485,82 +362,12 @@
                 </div>
             </div>
 
-            <!-- ===== BRANCHES TAB ===== -->
-            <div id="tab-branches" class="content-tab hidden">
-                <div class="data-panel">
-                    <div class="panel-header">
-                        <h2 class="panel-title">🏢 Branch Management</h2>
-                        <button class="btn-add" onclick="openModal('branch')">+ Add Branch</button>
-                    </div>
-
-                    <!-- Carousel Navigation -->
-                    <div class="carousel-controls">
-                        <button class="carousel-btn-circle" id="branchesPrevBtn" onclick="moveCarousel('branches', -1)">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="15 18 9 12 15 6"></polyline>
-                            </svg>
-                        </button>
-
-                        <div class="carousel-info">
-                            <span class="carousel-indicator">
-                                Page <span id="branchesCurrentPage">1</span> of <span id="branchesTotalPages">1</span>
-                            </span>
-                        </div>
-
-                        <button class="carousel-btn-circle" id="branchesNextBtn" onclick="moveCarousel('branches', 1)">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="9 18 15 12 9 6"></polyline>
-                            </svg>
-                        </button>
-                    </div>
-
-                    <!-- Carousel Container -->
-                    <div class="table-carousel-container">
-                        <div class="table-carousel-wrapper" id="branchesTableCarousel">
-                            <table id="table-branches">
-                                <thead>
-                                    <tr>
-                                        <th>Branch ID</th>
-                                        <th>Branch Name</th>
-                                        <th>Location</th>
-                                        <th>Student Count</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="branchesTableBody">
-                                    @foreach (var b in ViewBag.Branches)
-                                    {
-                                        <tr class="carousel-row" data-entity-type="branch" data-branch-id="@b.BranchId">
-                                            <td>@b.BranchId</td>
-                                            <td>@b.BranchName</td>
-                                            <td>@b.BranchLocation</td>
-                                            <td>@b.Students?.Count</td>
-                                            <td>
-                                                <button class="action-btn btn-edit" onclick="openEditBranchModal('@b.BranchId','@b.BranchName','@b.BranchLocation')">Edit</button>
-                                                <button class="action-btn btn-delete"
-                                                        data-branch-id="@b.BranchId"
-                                                        data-branch-name="@b.BranchName"
-                                                        data-entity-type="branch">
-                                                    Delete
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Carousel Dots Navigation -->
-                    <div class="carousel-dots" id="branchesCarouselDots"></div>
-                </div>
-            </div>
-
+         
             <!-- ===== TRACKS TAB ===== -->
             <div id="tab-tracks" class="content-tab hidden">
                 <div class="data-panel">
                     <div class="panel-header">
-                        <h2 class="panel-title">🎯 Track Management</h2>
+                        <h2 class="panel-title">🎯 Track Management - @branchName</h2>
                         <button class="btn-add" onclick="openModal('track')">+ Add Track</button>
                     </div>
 
@@ -594,33 +401,104 @@
                                         <th>Track ID</th>
                                         <th>Track Name</th>
                                         <th>Student Count</th>
+                                        <th>Assigned Courses</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tracksTableBody">
-                                    @foreach (var t in ViewBag.Tracks)
+                                    @if (ViewBag.Tracks != null)
                                     {
-                                        <tr class="carousel-row" data-entity-type="track" data-track-id="@t.TrackId">
-                                            <td>@t.TrackId</td>
-                                            <td>@t.TrackName</td>
-                                            <td>@t.Students?.Count</td>
-                                            <td>
-                                                <button class="action-btn btn-edit" onclick="openEditTrackModal('@t.TrackId','@t.TrackName')">Edit</button>
-                                                <button class="action-btn btn-delete"
-                                                        data-track-id="@t.TrackId"
-                                                        data-track-name="@t.TrackName"
-                                                        data-entity-type="track">
-                                                    Delete
-                                                </button>
-                                            </td>
-                                        </tr>
+                                        @foreach (var t in ViewBag.Tracks)
+                                        {
+                                            <tr class="carousel-row" data-track-id="@t.TrackId">
+                                                <td>@t.TrackId</td>
+                                                <td><strong>@t.TrackName</strong></td>
+                                                <td>@(t.StudentCount ?? 0)</td>
+                                                <td>
+                                                    @{
+                                                        var assignedCourses = new List<dynamic>();
+                                                        if (ViewBag.TrackCourses != null)
+                                                        {
+                                                            foreach (var tc in ViewBag.TrackCourses)
+                                                            {
+                                                                if (tc.TrackId == t.TrackId)
+                                                                {
+                                                                    assignedCourses.Add(tc);
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+
+                                                    @if (assignedCourses.Any())
+                                                    {
+                                                        <div style="position: relative; width: 100%;">
+                                                            <select class="form-input assigned-courses-select"
+                                                                    style="width: 100%;
+                                       background: rgba(0, 0, 0, 0.3);
+                                       color: white;
+                                       border: 1px solid #667eea;
+                                       border-radius: 6px;
+                                       padding: 8px 12px;
+                                       font-size: 13px;
+                                       appearance: none;
+                                       -webkit-appearance: none;
+                                       -moz-appearance: none;
+                                       cursor: default;
+                                       opacity: 0.9;"
+                                                                    disabled>
+                                                                <option value="" style="background: #1a1a2e; color: #a0a0a0; font-weight: bold;">
+                                                                    ─── @assignedCourses.Count Courses Assigned ───
+                                                                </option>
+                                                                @foreach (var course in assignedCourses)
+                                                                {
+                                                                    <option value="@course.CourseId"
+                                                                            style="background: #1a1a2e; color: white; padding: 5px;">
+                                                                        • @course.CourseName
+                                                                    </option>
+                                                                }
+                                                            </select>
+                                                            <div style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+                                    color: #667eea; pointer-events: none; font-size: 12px;">
+                                                                📚
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span style="color: #a0a0a0; font-style: italic; font-size: 13px; display: flex; align-items: center; gap: 5px;">
+                                                            <span style="color: #667eea;">📭</span> No courses assigned
+                                                        </span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <div style="display:flex; gap:5px; justify-content:center; align-items:center;">
+                                                        <button style="background:#28a745; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;"
+                                                                onclick="openAssignCourseModal(@t.TrackId, '@t.TrackName')">
+                                                            Assign
+                                                        </button>
+                                                        <button style="background:#ffc107; color:black; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;"
+                                                                onclick="openRemoveCourseModal(@t.TrackId, '@t.TrackName')">
+                                                            Remove
+                                                        </button>
+                                                        <button style="background:#667eea; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;"
+                                                                onclick="openEditTrackModal(@t.TrackId, '@t.TrackName')">
+                                                            Edit
+                                                        </button>
+                                                        <button style="background:#dc3545; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;"
+                                                                data-track-id="@t.TrackId"
+                                                                data-track-name="@t.TrackName"
+                                                                onclick="deleteTrack(@t.TrackId, '@t.TrackName')">
+                                                            Delete
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
                                     }
                                 </tbody>
                             </table>
                         </div>
                     </div>
-
-                    <!-- Carousel Dots Navigation -->
                     <div class="carousel-dots" id="tracksCarouselDots"></div>
                 </div>
             </div>
@@ -631,7 +509,7 @@
     <div id="modal-overlay" class="modal-overlay hidden">
         <!-- ADD STUDENT MODAL -->
         <div id="modal-student" class="modal-box hidden">
-            <h2 class="modal-title">Add New Student</h2>
+            <h2 class="modal-title">Add New Student - @branchName</h2>
             <form id="studentForm">
                 <div id="step-1">
                     <div class="form-group">
@@ -639,20 +517,10 @@
                         <input type="text" id="inp-stud-name" class="form-input" required placeholder="e.g. Ahmed Ali" />
                     </div>
                     <div class="form-group">
-                        <label>Branch</label>
-                        <select id="inp-stud-branch" class="form-input" required>
-                            <option value="">Select Branch</option>
-                            @foreach (var branch in ViewBag.Branches)
-                            {
-                                <option value="@branch.BranchId">@branch.BranchName</option>
-                            }
-                        </select>
-                    </div>
-                    <div class="form-group">
                         <label>Track</label>
                         <select id="inp-stud-track" class="form-input" required>
                             <option value="">Select Track</option>
-                            @foreach (var track in ViewBag.Tracks)
+                            @foreach (var track in tracks)
                             {
                                 <option value="@track.TrackId">@track.TrackName</option>
                             }
@@ -688,6 +556,7 @@
                         <button type="button" class="btn-add" onclick="handleAddStudent()">Create Account</button>
                     </div>
                 </div>
+                <input type="hidden" id="inp-stud-branch" value="@branchId" />
             </form>
         </div>
 
@@ -727,8 +596,8 @@
                     <input type="text" id="inp-course-name" class="form-input" required placeholder="e.g. Web Development" />
                 </div>
                 <div class="form-group">
-                    <label>Tries Limit (Optional)</label>
-                    <input type="number" id="inp-course-tries" class="form-input" min="1" placeholder="e.g. 3 (leave empty for unlimited)" />
+                    <label>Tries Limit (0 = Unlimited)</label>
+                    <input type="number" id="inp-course-tries" class="form-input" min="0" placeholder="e.g. 3 (0 for unlimited)" value="0" />
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
@@ -737,29 +606,11 @@
             </form>
         </div>
 
-        <!-- ADD BRANCH MODAL -->
-        <div id="modal-branch" class="modal-box hidden">
-            <h2 class="modal-title">Add New Branch</h2>
-            <form id="branchForm">
-                <div class="form-group">
-                    <label>Branch Name</label>
-                    <input type="text" id="inp-branch-name" class="form-input" required placeholder="e.g. Cairo Branch" />
-                </div>
-                <div class="form-group">
-                    <label>Branch Location</label>
-                    <input type="text" id="inp-branch-location" class="form-input" required placeholder="e.g. Cairo, Egypt" />
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
-                    <button type="button" class="btn-add" onclick="handleAddBranch()">Save Branch</button>
-                </div>
-            </form>
-        </div>
-
         <!-- ADD TRACK MODAL -->
         <div id="modal-track" class="modal-box hidden">
-            <h2 class="modal-title">Add New Track</h2>
+            <h2 class="modal-title">Add New Track - @branchName</h2>
             <form id="trackForm">
+                <input type="hidden" id="branch-id" value="@ViewBag.BranchId" />
                 <div class="form-group">
                     <label>Track Name</label>
                     <input type="text" id="inp-track-name" class="form-input" required placeholder="e.g. Full Stack Web Development" />
@@ -767,6 +618,54 @@
                 <div class="modal-actions">
                     <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
                     <button type="button" class="btn-add" onclick="handleAddTrack()">Save Track</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- ASSIGN COURSE TO TRACK MODAL -->
+        <div id="modal-assign-course" class="modal-box hidden">
+            <h2 class="modal-title">Assign Course to Track</h2>
+            <form id="assignCourseForm">
+                <input type="hidden" id="assign-track-id" />
+                <div class="form-group">
+                    <label>Track Name</label>
+                    <input type="text" id="assign-track-name" class="form-input" readonly style="background-color: #f0f0f0;" />
+                </div>
+                <div class="form-group">
+                    <label>Select Course</label>
+                    <select id="assign-course-id" class="form-input" required>
+                        <option value="">-- Select a Course --</option>
+                        @foreach (var course in courses)
+                        {
+                            <option value="@course.CourseId">@course.CourseName</option>
+                        }
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button type="button" class="btn-add" onclick="handleAssignCourse()">Assign Course</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- REMOVE COURSE FROM TRACK MODAL -->
+        <div id="modal-remove-course" class="modal-box hidden">
+            <h2 class="modal-title">Remove Course from Track</h2>
+            <form id="removeCourseForm">
+                <input type="hidden" id="remove-track-id" />
+                <div class="form-group">
+                    <label>Track Name</label>
+                    <input type="text" id="remove-track-name" class="form-input" readonly style="background-color: #f0f0f0;" />
+                </div>
+                <div class="form-group">
+                    <label>Select Course to Remove</label>
+                    <select id="remove-course-id" class="form-input" required>
+                        <option value="">-- Select a Course --</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button type="button" class="btn-delete-red" onclick="handleRemoveCourse()">Remove Course</button>
                 </div>
             </form>
         </div>
@@ -786,20 +685,10 @@
                     <input type="email" id="edit-stud-email" class="form-input" required />
                 </div>
                 <div class="form-group">
-                    <label>Branch</label>
-                    <select id="edit-stud-branch" class="form-input" required>
-                        <option value="">Select Branch</option>
-                        @foreach (var branch in ViewBag.Branches)
-                        {
-                            <option value="@branch.BranchId">@branch.BranchName</option>
-                        }
-                    </select>
-                </div>
-                <div class="form-group">
                     <label>Track</label>
                     <select id="edit-stud-track" class="form-input" required>
                         <option value="">Select Track</option>
-                        @foreach (var track in ViewBag.Tracks)
+                        @foreach (var track in tracks)
                         {
                             <option value="@track.TrackId">@track.TrackName</option>
                         }
@@ -813,6 +702,7 @@
                     <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
                     <button type="button" class="btn-add" onclick="handleUpdateStudent()">Update Student</button>
                 </div>
+                <input type="hidden" id="edit-stud-branch" value="@branchId" />
             </form>
         </div>
 
@@ -851,32 +741,12 @@
                     <input type="text" id="edit-course-name" class="form-input" required />
                 </div>
                 <div class="form-group">
-                    <label>Tries Limit (Optional)</label>
-                    <input type="number" id="edit-course-tries" class="form-input" min="1" placeholder="Leave empty for unlimited" />
+                    <label>Tries Limit (0 = Unlimited)</label>
+                    <input type="number" id="edit-course-tries" class="form-input" min="0" placeholder="0 for unlimited" />
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
                     <button type="button" class="btn-add" onclick="handleUpdateCourse()">Update Course</button>
-                </div>
-            </form>
-        </div>
-
-        <!-- EDIT BRANCH MODAL -->
-        <div id="modal-edit-branch" class="modal-box hidden">
-            <h2 class="modal-title">Edit Branch</h2>
-            <form id="editBranchForm">
-                <input type="hidden" id="edit-branch-id" />
-                <div class="form-group">
-                    <label>Branch Name</label>
-                    <input type="text" id="edit-branch-name" class="form-input" required />
-                </div>
-                <div class="form-group">
-                    <label>Branch Location</label>
-                    <input type="text" id="edit-branch-location" class="form-input" required />
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
-                    <button type="button" class="btn-add" onclick="handleUpdateBranch()">Update Branch</button>
                 </div>
             </form>
         </div>
@@ -927,7 +797,7 @@
 
     <script>
         // ===================================================================
-        // ADMIN DASHBOARD JAVASCRIPT - UNIVERSAL CAROUSEL FOR ALL TABS
+        // BRANCH MANAGER DASHBOARD JAVASCRIPT
         // ===================================================================
 
         let currentModal = null;
@@ -936,9 +806,50 @@
             students: { currentPage: 1, rows: [] },
             instructors: { currentPage: 1, rows: [] },
             courses: { currentPage: 1, rows: [] },
-            branches: { currentPage: 1, rows: [] },
             tracks: { currentPage: 1, rows: [] }
         };
+
+        const branchId = '@branchId';
+        const branchName = '@branchName';
+
+        // ============ ULTRA FORCED TRACK COURSES DATA ============
+        // Method 1: Direct from JSON
+        const trackCoursesFromJson = @Html.Raw(debugJson);
+
+        // Method 2: Manual construction (guaranteed to work if data exists in C#)
+        const trackCoursesManual = [
+            @if (trackCourses != null && trackCourses.Any())
+            {
+                    @foreach (var tc in trackCourses)
+                    {
+                            @:{ trackId: @tc.TrackId, courseId: @tc.CourseId, courseName: '@tc.CourseName' },
+                    }
+            }
+        ];
+
+        // Method 3: If both are empty, create test data
+        let trackCoursesData = [];
+        if (trackCoursesManual.length > 0) {
+            trackCoursesData = trackCoursesManual;
+            console.log('✅ Using manual track courses data');
+        } else if (trackCoursesFromJson && trackCoursesFromJson.length > 0) {
+            trackCoursesData = trackCoursesFromJson;
+            console.log('✅ Using JSON track courses data');
+        } else {
+            // Create test data for demonstration
+            console.log('⚠️ No track courses data found, creating test data');
+            @if (tracks.Any())
+            {
+                    var firstTrack = tracks.First();
+                    @:trackCoursesData.push({ trackId: @firstTrack.TrackId, courseId: 1, courseName: 'Web Development' });
+                    @:trackCoursesData.push({ trackId: @firstTrack.TrackId, courseId: 2, courseName: 'Database Design' });
+            }
+        }
+
+        console.log('========== TRACK COURSES DEBUG ==========');
+        console.log('TrackCourses Count:', trackCoursesData.length);
+        console.log('TrackCourses Data:', trackCoursesData);
+        console.log('==========================================');
 
         // ================= TAB SWITCHING =================
         function switchTab(tabName, button) {
@@ -956,7 +867,6 @@
                 button.classList.add('active');
             }
 
-            // Initialize carousel for the active tab
             setTimeout(() => initializeCarousel(tabName), 100);
         }
 
@@ -983,24 +893,19 @@
             const totalItems = rows.length;
             const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
 
-            // Update page indicators
             document.getElementById(`${tabName}CurrentPage`).textContent = pageNumber;
             document.getElementById(`${tabName}TotalPages`).textContent = totalPages;
 
-            // Calculate start and end index
             const startIndex = (pageNumber - 1) * ITEMS_PER_PAGE;
             const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, totalItems);
 
-            // Show/hide rows
             rows.forEach((row, index) => {
                 row.style.display = (index >= startIndex && index < endIndex) ? '' : 'none';
             });
 
-            // Update button states
             document.getElementById(`${tabName}PrevBtn`).disabled = pageNumber === 1;
             document.getElementById(`${tabName}NextBtn`).disabled = pageNumber === totalPages;
 
-            // Update dots
             renderCarouselDots(tabName, totalPages, pageNumber);
         }
 
@@ -1066,10 +971,7 @@
             document.body.classList.remove('modal-open');
             currentModal = null;
 
-            // Reset forms
             document.querySelectorAll('form').forEach(form => form.reset());
-
-            // Reset steps
             showStep1();
         }
 
@@ -1088,11 +990,10 @@
         }
 
         // ================= EDIT MODAL FUNCTIONS =================
-        function openEditStudentModal(studentId, name, email, branch, track, intake) {
+        function openEditStudentModal(studentId, name, email, track, intake) {
             document.getElementById('edit-student-id').value = studentId;
             document.getElementById('edit-stud-name').value = name;
             document.getElementById('edit-stud-email').value = email;
-            document.getElementById('edit-stud-branch').value = branch;
             document.getElementById('edit-stud-track').value = track;
             document.getElementById('edit-stud-intake').value = intake;
             openModal('edit-student');
@@ -1108,15 +1009,12 @@
         function openEditCourseModal(courseId, name, triesLimit) {
             document.getElementById('edit-course-id').value = courseId;
             document.getElementById('edit-course-name').value = name;
-            document.getElementById('edit-course-tries').value = triesLimit || '';
+            if (triesLimit && triesLimit > 0) {
+                document.getElementById('edit-course-tries').value = triesLimit;
+            } else {
+                document.getElementById('edit-course-tries').value = '0';
+            }
             openModal('edit-course');
-        }
-
-        function openEditBranchModal(branchId, name, location) {
-            document.getElementById('edit-branch-id').value = branchId;
-            document.getElementById('edit-branch-name').value = name;
-            document.getElementById('edit-branch-location').value = location;
-            openModal('edit-branch');
         }
 
         function openEditTrackModal(trackId, name) {
@@ -1125,19 +1023,124 @@
             openModal('edit-track');
         }
 
+        // ================= ASSIGN/REMOVE COURSE FUNCTIONS =================
+        function openAssignCourseModal(trackId, trackName) {
+            document.getElementById('assign-track-id').value = trackId;
+            document.getElementById('assign-track-name').value = trackName;
+            openModal('assign-course');
+        }
+
+                     function openRemoveCourseModal(trackId, trackName) {
+            document.getElementById('remove-track-id').value = trackId;
+            document.getElementById('remove-track-name').value = trackName;
+
+            const select = document.getElementById('remove-course-id');
+            select.innerHTML = '<option value="">-- Select a Course to Remove --</option>';
+
+            let foundCount = 0;
+
+            @if (ViewBag.TrackCourses != null)
+            {
+                    @foreach (var tc in ViewBag.TrackCourses)
+                    {
+                            <text>
+                            if (@tc.TrackId == trackId) {
+                                const option = document.createElement('option');
+                                option.value = '@tc.CourseId';
+                                option.textContent = '@tc.CourseName';
+                                select.appendChild(option);
+                                foundCount++;
+                            }
+                            </text>
+                    }
+            }
+
+            if (foundCount === 0) {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = '-- No courses assigned --';
+                option.disabled = true;
+                select.appendChild(option);
+            }
+
+            alert(`Found ${foundCount} courses for track ${trackId}`); // This will show if data exists
+            openModal('remove-course');
+        }
+
+        async function handleAssignCourse() {
+            const trackId = document.getElementById('assign-track-id').value;
+            const courseId = document.getElementById('assign-course-id').value;
+
+            if (!courseId) {
+                alert('Please select a course');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/BranchManager/AssignCourseToTrack?trackId=${trackId}&courseId=${courseId}`, {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('Course assigned successfully');
+                    closeModal();
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error assigning course');
+            }
+        }
+
+        async function handleRemoveCourse() {
+            const trackId = document.getElementById('remove-track-id').value;
+            const courseId = document.getElementById('remove-course-id').value;
+
+            if (!courseId) {
+                alert('Please select a course to remove');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to remove this course from the track?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/BranchManager/RemoveCourseFromTrack?trackId=${trackId}&courseId=${courseId}`, {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('Course removed successfully');
+                    closeModal();
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error removing course');
+            }
+        }
+
         // ================= DELETE MODAL FUNCTION =================
-        function openDeleteModal(id, entityType, name = '', email = '', additionalInfo = '') {
+        function openDeleteModal(id, entityType, name = '') {
             document.getElementById('delete-id').value = id;
             document.getElementById('delete-entity-type').value = entityType;
 
-            // Set modal title based on entity type
             const modalTitle = document.getElementById('delete-title');
             modalTitle.textContent = `Delete ${entityType.charAt(0).toUpperCase() + entityType.slice(1)}`;
 
-            // Set the target name
             document.getElementById('delete-target-name').textContent = name || 'this item';
 
-            // Set warning details based on entity type
             const warningDetails = document.getElementById('delete-warning-details');
             if (entityType === 'student') {
                 warningDetails.textContent = 'This action cannot be undone. This will permanently delete the student account and remove all associated data from the system.';
@@ -1145,10 +1148,8 @@
                 warningDetails.textContent = 'This action cannot be undone. This will permanently delete the instructor account and remove all associated data from the system.';
             } else if (entityType === 'course') {
                 warningDetails.textContent = 'This action cannot be undone. This will permanently delete the course and remove all associated exams and questions from the system.';
-            } else if (entityType === 'branch') {
-                warningDetails.textContent = 'This action cannot be undone. This will permanently delete the branch and reassign all associated students to other branches.';
             } else if (entityType === 'track') {
-                warningDetails.textContent = 'This action cannot be undone. This will permanently delete the track and reassign all associated students to other tracks.';
+                warningDetails.textContent = 'This action cannot be undone. This will permanently delete the track and remove all associated students from the system.';
             }
 
             openModal('delete-confirm');
@@ -1160,7 +1161,6 @@
             const email = document.getElementById('inp-stud-email').value;
             const password = document.getElementById('inp-stud-password').value;
             const confirmPassword = document.getElementById('inp-stud-confirm').value;
-            const branchId = document.getElementById('inp-stud-branch').value;
             const trackId = document.getElementById('inp-stud-track').value;
             const intakeNumber = document.getElementById('inp-stud-intake').value;
 
@@ -1179,19 +1179,20 @@
             };
 
             try {
-                const response = await fetch('/Admin/AddStudent', {
+                const response = await fetch('/BranchManager/AddStudent', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
 
-                if (response.ok) {
+                const result = await response.json();
+
+                if (result.success) {
                     alert('Student added successfully');
                     closeModal();
                     window.location.reload();
                 } else {
-                    const error = await response.text();
-                    alert('Error: ' + error);
+                    alert('Error: ' + result.message);
                 }
             } catch (err) {
                 console.error(err);
@@ -1203,7 +1204,6 @@
             const studentId = document.getElementById('edit-student-id').value;
             const fullName = document.getElementById('edit-stud-name').value;
             const email = document.getElementById('edit-stud-email').value;
-            const branchId = document.getElementById('edit-stud-branch').value;
             const trackId = document.getElementById('edit-stud-track').value;
             const intakeNumber = document.getElementById('edit-stud-intake').value;
 
@@ -1211,25 +1211,25 @@
                 StudentId: parseInt(studentId),
                 FullName: fullName,
                 Email: email,
-                BranchId: parseInt(branchId),
                 TrackId: parseInt(trackId),
                 IntakeNumber: parseInt(intakeNumber)
             };
 
             try {
-                const response = await fetch('/Admin/UpdateStudent', {
+                const response = await fetch('/BranchManager/UpdateStudent', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
 
-                if (response.ok) {
+                const result = await response.json();
+
+                if (result.success) {
                     alert('Student updated successfully');
                     closeModal();
                     window.location.reload();
                 } else {
-                    const error = await response.text();
-                    alert('Error: ' + error);
+                    alert('Error: ' + result.message);
                 }
             } catch (err) {
                 console.error(err);
@@ -1256,19 +1256,20 @@
             };
 
             try {
-                const response = await fetch('/Admin/AddInstructor', {
+                const response = await fetch('/BranchManager/AddInstructor', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
 
-                if (response.ok) {
+                const result = await response.json();
+
+                if (result.success) {
                     alert('Instructor added successfully');
                     closeModal();
                     window.location.reload();
                 } else {
-                    const error = await response.text();
-                    alert('Error: ' + error);
+                    alert('Error: ' + result.message);
                 }
             } catch (err) {
                 console.error(err);
@@ -1290,19 +1291,20 @@
             };
 
             try {
-                const response = await fetch('/Admin/UpdateInstructor', {
+                const response = await fetch('/BranchManager/UpdateInstructor', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
 
-                if (response.ok) {
+                const result = await response.json();
+
+                if (result.success) {
                     alert('Instructor updated successfully');
                     closeModal();
                     window.location.reload();
                 } else {
-                    const error = await response.text();
-                    alert('Error: ' + error);
+                    alert('Error: ' + result.message);
                 }
             } catch (err) {
                 console.error(err);
@@ -1316,23 +1318,25 @@
 
             const data = {
                 CourseName: courseName,
-                TriesLimit: triesLimit ? parseInt(triesLimit) : null
+                TriesLimit: triesLimit ? parseInt(triesLimit) : 0,
+                Duration: 40
             };
 
             try {
-                const response = await fetch('/Admin/AddCourse', {
+                const response = await fetch('/BranchManager/AddCourse', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
 
-                if (response.ok) {
+                const result = await response.json();
+
+                if (result.success) {
                     alert('Course added successfully');
                     closeModal();
                     window.location.reload();
                 } else {
-                    const error = await response.text();
-                    alert('Error: ' + error);
+                    alert('Error: ' + result.message);
                 }
             } catch (err) {
                 console.error(err);
@@ -1348,23 +1352,25 @@
             const data = {
                 CourseId: parseInt(courseId),
                 CourseName: courseName,
-                TriesLimit: triesLimit ? parseInt(triesLimit) : null
+                TriesLimit: triesLimit ? parseInt(triesLimit) : 0,
+                Duration: 40
             };
 
             try {
-                const response = await fetch('/Admin/UpdateCourse', {
+                const response = await fetch('/BranchManager/UpdateCourse', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
 
-                if (response.ok) {
+                const result = await response.json();
+
+                if (result.success) {
                     alert('Course updated successfully');
                     closeModal();
                     window.location.reload();
                 } else {
-                    const error = await response.text();
-                    alert('Error: ' + error);
+                    alert('Error: ' + result.message);
                 }
             } catch (err) {
                 console.error(err);
@@ -1372,91 +1378,45 @@
             }
         }
 
-        async function handleAddBranch() {
-            const branchName = document.getElementById('inp-branch-name').value;
-            const branchLocation = document.getElementById('inp-branch-location').value;
-
-            const data = {
-                BranchName: branchName,
-                BranchLocation: branchLocation
-            };
-
-            try {
-                const response = await fetch('/Admin/AddBranch', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-
-                if (response.ok) {
-                    alert('Branch added successfully');
-                    closeModal();
-                    window.location.reload();
-                } else {
-                    const error = await response.text();
-                    alert('Error: ' + error);
-                }
-            } catch (err) {
-                console.error(err);
-                alert('Error adding branch');
-            }
-        }
-
-        async function handleUpdateBranch() {
-            const branchId = document.getElementById('edit-branch-id').value;
-            const branchName = document.getElementById('edit-branch-name').value;
-            const branchLocation = document.getElementById('edit-branch-location').value;
-
-            const data = {
-                BranchId: parseInt(branchId),
-                BranchName: branchName,
-                BranchLocation: branchLocation
-            };
-
-            try {
-                const response = await fetch('/Admin/UpdateBranch', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-
-                if (response.ok) {
-                    alert('Branch updated successfully');
-                    closeModal();
-                    window.location.reload();
-                } else {
-                    const error = await response.text();
-                    alert('Error: ' + error);
-                }
-            } catch (err) {
-                console.error(err);
-                alert('Error updating branch');
-            }
-        }
-
-        async function handleAddTrack() {
+              async function handleAddTrack() {
             const trackName = document.getElementById('inp-track-name').value;
 
-            const data = { TrackName: trackName };
+            if (!trackName) {
+                alert('Please enter a track name');
+                return;
+            }
+
+            console.log('Using global branchId:', branchId);
+
+            if (!branchId || branchId === 0) {
+                alert('Error: Branch ID not found. Please refresh the page and try again.');
+                return;
+            }
+
+            const data = {
+                TrackName: trackName,
+                BranchId: branchId
+            };
 
             try {
-                const response = await fetch('/Admin/AddTrack', {
+                const response = await fetch('/BranchManager/AddTrack', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
 
-                if (response.ok) {
+                const result = await response.json();
+
+                if (result.success) {
                     alert('Track added successfully');
                     closeModal();
                     window.location.reload();
                 } else {
-                    const error = await response.text();
-                    alert('Error: ' + error);
+                    alert('Error: ' + result.message);
                 }
             } catch (err) {
-                console.error(err);
-                alert('Error adding track');
+                console.error('Error adding track:', err);
+                alert('Error adding track: ' + err.message);
             }
         }
 
@@ -1470,25 +1430,27 @@
             };
 
             try {
-                const response = await fetch('/Admin/UpdateTrack', {
+                const response = await fetch('/BranchManager/UpdateTrack', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
 
-                if (response.ok) {
+                const result = await response.json();
+
+                if (result.success) {
                     alert('Track updated successfully');
                     closeModal();
                     window.location.reload();
                 } else {
-                    const error = await response.text();
-                    alert('Error: ' + error);
+                    alert('Error: ' + result.message);
                 }
             } catch (err) {
                 console.error(err);
                 alert('Error updating track');
             }
         }
+
 
         async function performDelete() {
             const id = document.getElementById('delete-id').value;
@@ -1504,23 +1466,19 @@
 
             switch (entityType) {
                 case 'student':
-                    endpoint = '/Admin/DeleteStudent';
+                    endpoint = '/BranchManager/DeleteStudent';
                     paramName = 'studentId';
                     break;
                 case 'instructor':
-                    endpoint = '/Admin/DeleteInstructor';
+                    endpoint = '/BranchManager/DeleteInstructor';
                     paramName = 'instructorId';
                     break;
                 case 'course':
-                    endpoint = '/Admin/DeleteCourse';
+                    endpoint = '/BranchManager/DeleteCourse';
                     paramName = 'courseId';
                     break;
-                case 'branch':
-                    endpoint = '/Admin/DeleteBranch';
-                    paramName = 'branchId';
-                    break;
                 case 'track':
-                    endpoint = '/Admin/DeleteTrack';
+                    endpoint = '/BranchManager/DeleteTrack';
                     paramName = 'trackId';
                     break;
                 default:
@@ -1536,13 +1494,14 @@
                     headers: { 'X-Requested-With': 'XMLHttpRequest' }
                 });
 
-                if (response.ok) {
+                const result = await response.json();
+
+                if (result.success) {
                     alert('Deleted successfully');
                     closeModal();
                     window.location.reload();
                 } else {
-                    const error = await response.text();
-                    alert('Error: ' + error);
+                    alert('Error: ' + result.message);
                 }
             } catch (err) {
                 console.error(err);
@@ -1550,19 +1509,85 @@
             }
         }
 
+      // ++++++++++++++++++++the tract deletion+++++++++++++
+              // ================= SPECIAL TRACK DELETE FUNCTION =================
+        async function deleteTrack(trackId, trackName) {
+            // Show confirmation dialog
+            if (!confirm(`Are you sure you want to delete track "${trackName}"?\nThis will also remove all course assignments from this track.`)) {
+                return;
+            }
+
+            try {
+                // Show loading state (optional)
+                const deleteBtn = event?.target;
+                const originalText = deleteBtn?.innerHTML;
+                if (deleteBtn) {
+                    deleteBtn.innerHTML = 'Deleting...';
+                    deleteBtn.disabled = true;
+                }
+
+                // Make the API call
+                const response = await fetch(`/BranchManager/DeleteTrack?trackId=${trackId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const result = await response.json();
+
+                // Restore button state
+                if (deleteBtn) {
+                    deleteBtn.innerHTML = originalText;
+                    deleteBtn.disabled = false;
+                }
+
+                if (result.success) {
+                    alert('✅ Track deleted successfully');
+
+                    // Remove the row from the table without reloading
+                    const row = document.querySelector(`tr[data-track-id="${trackId}"]`);
+                    if (row) {
+                        row.remove();
+
+                        // Refresh the carousel
+                        const tabName = 'tracks';
+                        const tableBody = document.getElementById(`${tabName}TableBody`);
+                        if (tableBody) {
+                            const rows = Array.from(tableBody.querySelectorAll('tr.carousel-row'));
+                            carouselState[tabName].rows = rows;
+                            renderCarouselPage(tabName, carouselState[tabName].currentPage);
+                        }
+                    } else {
+                        // If row not found, just reload the page
+                        window.location.reload();
+                    }
+                } else {
+                    alert('❌ Error: ' + (result.message || 'Could not delete track'));
+                }
+            } catch (err) {
+                console.error('🔥 Error deleting track:', err);
+                alert('❌ Error deleting track: ' + err.message);
+
+                // Restore button state if error
+                const deleteBtn = event?.target;
+                if (deleteBtn) {
+                    deleteBtn.innerHTML = 'Delete';
+                    deleteBtn.disabled = false;
+                }
+            }
+        }
         // ================= INITIALIZATION =================
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize Lucide icons
             if (window.lucide) {
                 lucide.createIcons();
             }
 
-            // Initialize carousels for all tabs
-            ['students', 'instructors', 'courses', 'branches', 'tracks'].forEach(tab => {
+            ['students', 'instructors', 'courses', 'tracks'].forEach(tab => {
                 setTimeout(() => initializeCarousel(tab), 100);
             });
 
-            // Event listeners for modal overlay
             const overlay = document.getElementById('modal-overlay');
             if (overlay) {
                 overlay.addEventListener('click', function(e) {
@@ -1570,12 +1595,10 @@
                 });
             }
 
-            // Close modal on escape key
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') closeModal();
             });
 
-            // Handle delete button clicks
             document.addEventListener('click', function(e) {
                 const deleteBtn = e.target.closest('.btn-delete');
                 if (deleteBtn) {
@@ -1598,10 +1621,6 @@
                             id = deleteBtn.getAttribute('data-course-id');
                             name = deleteBtn.getAttribute('data-course-name');
                             break;
-                        case 'branch':
-                            id = deleteBtn.getAttribute('data-branch-id');
-                            name = deleteBtn.getAttribute('data-branch-name');
-                            break;
                         case 'track':
                             id = deleteBtn.getAttribute('data-track-id');
                             name = deleteBtn.getAttribute('data-track-name');
@@ -1614,21 +1633,21 @@
                 }
             });
 
-            // Show students tab by default
-            switchTab('students', document.getElementById('btn-students'));
+            // Show tracks tab by default for testing
+            switchTab('tracks', document.getElementById('btn-tracks'));
 
-            // Keyboard navigation for carousel
             document.addEventListener('keydown', function(e) {
                 if (e.target.tagName !== 'INPUT' &&
                     e.target.tagName !== 'TEXTAREA' &&
                     e.target.tagName !== 'SELECT') {
 
-                    const activeTab = document.querySelector('.content-tab:not(.hidden)').id.replace('tab-', '');
-
-                    if (e.key === 'ArrowLeft') {
-                        moveCarousel(activeTab, -1);
-                    } else if (e.key === 'ArrowRight') {
-                        moveCarousel(activeTab, 1);
+                    const activeTab = document.querySelector('.content-tab:not(.hidden)')?.id.replace('tab-', '');
+                    if (activeTab) {
+                        if (e.key === 'ArrowLeft') {
+                            moveCarousel(activeTab, -1);
+                        } else if (e.key === 'ArrowRight') {
+                            moveCarousel(activeTab, 1);
+                        }
                     }
                 }
             });
